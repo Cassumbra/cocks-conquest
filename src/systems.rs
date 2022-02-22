@@ -5,42 +5,79 @@ use bevy_ascii_terminal::*;
 use bevy_tiled_camera::*;
 use super::*;
 
-pub fn setup(mut commands: Commands) {
+pub fn setup(mut commands: Commands, asset_server: Res<AssetServer>, mut texture_atlasses: ResMut<Assets<TextureAtlas>>) {
+    let font_handle = asset_server.load("CGA8x8thick_transparent.png");
+    let font_atlas = TextureAtlas::from_grid(font_handle, Vec2::new(8.0, 8.0), 16, 16);
+    let font_atlas_handle = texture_atlasses.add(font_atlas);
+
     let size = [20, 20];
 
-    let mut term_bundle = TerminalBundle::new().with_size(size);
-    let terminal = &mut term_bundle.terminal;
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
-    commands.spawn_bundle(term_bundle);
+    //commands.spawn_bundle(TiledCameraBundle::new()
+    //    .with_tile_count(size)
+    //    .with_pixels_per_tile(8));
 
-    commands.spawn_bundle(TiledCameraBundle::new()
-        .with_tile_count(size));
-
-    commands.spawn().insert(Renderable{ tile: Tile {
-            glyph: '_',
-            fg_color: Color::WHITE,
-            bg_color: Color::rgba(1.0, 0.0, 0.0, 1.0),
+    commands.spawn_bundle(SpriteSheetBundle {
+        transform: Transform::from_xyz(0.0, 0.0, 0.0),
+        visibility: Visibility { is_visible: true },
+        texture_atlas: font_atlas_handle.clone(),
+        sprite: TextureAtlasSprite{
+            color: Color::BLUE,
+            bg_color: Color::BLACK,
+            index: 1,
+            flip_x: false,
+            flip_y: false,
+            custom_size: None,
         },
-        order: 64
-    })
-    .insert(Position{
-        x: 0,
-        y: 0,
-    });
-    
-    commands.spawn().insert(Renderable{ tile: Tile {
-            glyph: '@',
-            fg_color: Color::RED,
-            bg_color: Color::rgba(1.0, 1.0, 0.0, 0.5),
-        },
-    order: 128
-    })
-    .insert(Position{
-        x: 0,
-        y: 0,
+        ..Default::default()
     });
 
+    commands.spawn_bundle(SpriteSheetBundle {
+        transform: Transform::from_xyz(1.0, 0.0, 0.0),
+        visibility: Visibility { is_visible: true },
+        texture_atlas: font_atlas_handle.clone(),
+        sprite: TextureAtlasSprite{
+            color: Color::BLUE,
+            bg_color: Color::BLACK,
+            index: 1,
+            flip_x: false,
+            flip_y: false,
+            custom_size: None,
+        },
+        ..Default::default()
+    });
+
+    commands.spawn_bundle(SpriteSheetBundle {
+        transform: Transform::from_xyz(2.0, 0.0, 0.0),
+        visibility: Visibility { is_visible: true },
+        texture_atlas: font_atlas_handle.clone(),
+        sprite: TextureAtlasSprite{
+            color: Color::BLUE,
+            bg_color: Color::BLACK,
+            index: 1,
+            flip_x: false,
+            flip_y: false,
+            custom_size: None,
+        },
+        ..Default::default()
+    });
     
+    commands.spawn_bundle(SpriteSheetBundle {
+        transform: Transform::from_xyz(24.0, 0.0, 0.0),
+        visibility: Visibility { is_visible: true },
+        texture_atlas: font_atlas_handle.clone(),
+        sprite: TextureAtlasSprite{
+            color: Color::BLUE,
+            bg_color: Color::BLACK,
+            index: 1,
+            flip_x: false,
+            flip_y: false,
+            custom_size: None,
+        },
+        ..Default::default()
+    });
+
 }
 
 pub fn update_render_order(mut commands: Commands, mut order: ResMut<RenderOrder>, query: Query<(Entity, &Renderable, &Position)>) {
@@ -48,7 +85,7 @@ pub fn update_render_order(mut commands: Commands, mut order: ResMut<RenderOrder
     //entities.sort_by_key(|e| e.1.order);
     commands.insert_resource(query.iter().collect::<Vec<_>>().sort_by_key(|e| e.1.order));
 }
-
+/*
 /// Rendering system
 /// Should render all tiles and all entities with "render"
 pub fn render(mut commands: Commands, query: Query<(&Renderable, &Position)>, mut term_query: Query<&mut Terminal>) {
@@ -102,4 +139,4 @@ fn blend_colors(color1: Color, color2: Color) -> Color {
     let new_blue = blend_color_component(color1.a(), color2.a(), new_alpha, color1.b(), color2.b());
 
     Color::rgba(new_red, new_green, new_blue, new_alpha)
-}
+}*/

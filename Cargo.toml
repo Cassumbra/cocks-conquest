@@ -10,5 +10,15 @@ edition = "2021"
 bevy = { version = "0.6.0", features = ["dynamic"] }
 bevy_ascii_terminal = { version = "0.9.0" }
 bevy_tiled_camera = { version = "0.3.0" }
+sark_grids = "0.1.5"
+rand = { version = "0.8.5" }
+pathfinding = "3.0.10"
+bevy-inspector-egui = "0.8.2"
 
 #bevy_ecs_tilemap = { version = "0.5.0"}
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

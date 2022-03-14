@@ -6,7 +6,6 @@ use sark_grids::Grid;
 use super::super::*;
 
 pub fn setup(
-    mut game_state: ResMut<State<GameState>>, 
     mut commands: Commands,
     map_size: Res<MapSize>,
     mut bottom_size: Res<BottomSize>,
@@ -23,13 +22,9 @@ pub fn setup(
 
     let collidables: Grid<Option<Entity>> = Grid::default([map_size.width, map_size.height]);
     commands.insert_resource(Collidables(collidables));
-    
-    game_state.set(GameState::MapGen).unwrap();
 }
 
 pub fn setup_actors(
-    mut game_state: ResMut<State<GameState>>,
-    //mut run_state: ResMut<State<RunState>>,
     mut commands: Commands,
     rooms: Res<Rooms>,
 ) {
@@ -45,7 +40,8 @@ pub fn setup_actors(
         commands.spawn()
             .insert_bundle(actors::SoldierBundle{..Default::default()})
             .insert(Position(room.center()))
-            .insert(Name::new(format!("Soldier {}", i)));
+            .insert(Name::new(format!("Soldier {}", i)))
+            .insert(AI{ai_state: AIState::EngageMelee, ..Default::default()});
     }
 
     //game_state.set(GameState::Playing).unwrap();

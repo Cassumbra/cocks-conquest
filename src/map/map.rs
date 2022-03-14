@@ -4,19 +4,14 @@ use std::cmp::{min, max};
 use bevy::prelude::*;
 use sark_grids::grid::Grid;
 use rand::Rng;
-use super::super::*;
+use super::*;
 
 
 pub fn entity_map_rooms_passages (
     mut has_run: Local<bool>,
-    mut game_state: ResMut<State<GameState>>,
     mut commands: Commands,
     map_size: Res<MapSize>,
 ) {
-    if *has_run {
-        game_state.set(GameState::PlayerPlacement).unwrap();
-        return;
-    }
     
 
     let mut map_objects: Grid<Option<Entity>> = Grid::default([map_size.width, map_size.height]);

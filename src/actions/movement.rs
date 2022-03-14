@@ -3,6 +3,10 @@ use bevy::prelude::*;
 use sark_grids::grid::Grid;
 use super::super::*;
 
+
+
+
+
 pub fn do_point_move(
     mut commands: Commands,
     mut ev_collidable_change: EventWriter<CollidableChangeEvent>,

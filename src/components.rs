@@ -1,7 +1,10 @@
 
+use std::collections::VecDeque;
+
 // Unglob later
 use bevy::{prelude::*, utils::HashMap};
 use bevy_ascii_terminal::*;
+use sark_grids::Grid;
 
 
 
@@ -60,13 +63,74 @@ pub struct AIDoNothing;
 pub struct AIWalkAtPlayer;
 
 //New AI
-#[derive(Component, Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum AIState{Wander, EngageMelee, EngageRanged}
 impl Default for AIState {
     fn default() -> AIState {
         AIState::Wander
     }
 }
+
+#[derive(Component, Clone, PartialEq)]
+pub struct AI{
+    pub ai_state: AIState,
+    pub path: Vec<IVec2>,
+    pub movements_allowed: Vec<IVec2>,
+}
+impl Default for AI {
+    fn default() -> AI {
+        AI {
+            ai_state: AIState::Wander,
+            path: Vec::<IVec2>::new(),
+            movements_allowed: vec![
+                // Cardinals first. We should only look at diagonals if they're faster.
+                // We're going around the way we would go around a circle in radians too. Idk why, just feels right.
+                IVec2::new(1, 0), IVec2::new(0, 1), IVec2::new(-1, 0), IVec2::new(0, -1),
+                IVec2::new(1, 1), IVec2::new(-1, 1), IVec2::new(-1, -1), IVec2::new(1, -1),
+            ]
+        }
+    }
+}
+impl AI {
+    pub fn bfs (&self, start: IVec2, goal: IVec2, collidables: &Grid<Option<Entity>>) -> Vec<IVec2> {
+        // Set our start to the frontier zone, with no origin point.
+        let mut frontier = VecDeque::<IVec2>::new();
+        frontier.push_back(start);
+
+        let mut came_from: HashMap<IVec2, Option<IVec2>> = HashMap::default();
+        came_from.insert(start, None);
+
+        while !frontier.is_empty() {
+            let current = frontier.pop_front().expect("Frontier unexpectedly empty!");
+            for direction in self.movements_allowed.iter() {
+                let next = current + *direction;
+                if !collidables[next].is_some() &&
+                    !came_from.contains_key(&next) {
+                    frontier.push_back(next);
+                    came_from.insert(next, Some(current));
+                }
+            }
+        }
+
+        
+
+        let mut current = goal;
+        let mut path = VecDeque::<IVec2>::new();
+
+        while current != start {
+            path.push_front(current);
+            current = came_from[&current].expect("Path unexpectedly empty!");
+        }
+
+        path.push_front(start);
+        
+
+
+        Vec::<IVec2>::from(path)
+    }
+}
+
+
 
 //
 #[derive(Component, Default, Copy, Clone)]

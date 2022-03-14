@@ -67,10 +67,10 @@ pub fn player_input(
                         exit.send(AppExit);
                     }
                     Some(KeyCode::NumpadAdd) | Some(KeyCode::Equals) => {
-                        window::change_size(1, &map_size, &bottom_size, &mut sprite_magnification, &mut windows)
+                        rendering::window::change_size(1, &map_size, &bottom_size, &mut sprite_magnification, &mut windows)
                     }
                     Some(KeyCode::NumpadSubtract) | Some(KeyCode::Minus) => {
-                        window::change_size(-1, &map_size, &bottom_size, &mut sprite_magnification, &mut windows)
+                        rendering::window::change_size(-1, &map_size, &bottom_size, &mut sprite_magnification, &mut windows)
                     }
 
                     _ => {}

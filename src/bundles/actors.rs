@@ -34,7 +34,6 @@ pub struct SoldierBundle {
     pub position: Position,
     pub renderable: Renderable,
     pub collides: Collides,
-    pub ai: AIWalkAtPlayer,
     pub takes_turns: TakesTurns,
 }
 impl Default for SoldierBundle {
@@ -50,7 +49,6 @@ impl Default for SoldierBundle {
                 order: 128
             },
             collides: Collides,
-            ai: AIWalkAtPlayer,
             takes_turns: TakesTurns,
         }
     }

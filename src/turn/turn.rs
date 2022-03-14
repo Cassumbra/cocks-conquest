@@ -1,6 +1,6 @@
 // Unglob later
 use bevy::prelude::*;
-use super::super::*;
+use super::*;
 
 /// Updates the order in which entities take turns.
 /// Only gets updated when necessary.

@@ -1,8 +1,21 @@
-// Unglob later
-use bevy::{prelude::*, window::WindowId};
-use bevy_ascii_terminal::*;
-use super::super::*;
+use bevy::prelude::{Commands, Color, Query, Added, Changed, Or, Res, Entity, Component};
+use bevy_ascii_terminal::{Tile, Terminal};
+use bevy::prelude::{App, Plugin};
+use super::{BottomSize, RenderOrder, Position};
 
+pub mod window;
+
+
+//Components
+#[derive(Component, Default, Copy, Clone)]
+pub struct Renderable {
+    pub tile: Tile,
+    pub order: u8,
+}
+
+
+
+//Systems
 /// Updates the order in which entities are drawn.
 /// Only gets updated when necessary.
 pub fn update_render_order(

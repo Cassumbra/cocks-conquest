@@ -8,26 +8,31 @@ mod components;
 use components::*;
 mod resources;
 use resources::*;
-mod events;
-use events::*;
-mod bundles;
-use bundles::*;
 
 // The pluginification!
-mod setup;
-use setup::*;
-mod ai;
-use ai::*;
-mod player;
-use player::*;
+#[path = "actors/actors.rs"]
+mod actors;
+use actors::*;
+
+#[path = "actions/actions.rs"]
 mod actions;
 use actions::*;
+
+#[path ="turn/turn.rs"]
 mod turn;
 use turn::*;
+
+#[path = "map/map.rs"]
 mod map;
 use map::*;
+
+#[path = "rendering/rendering.rs"]
 mod rendering;
 use rendering::*;
+
+#[path = "setup/setup.rs"]
+mod setup;
+use setup::*;
 
 
 fn main () {
@@ -36,8 +41,7 @@ fn main () {
     .add_plugins(DefaultPlugins)
     .add_plugin(TerminalPlugin)
     .add_plugin(TiledCameraPlugin)
-    .add_plugin(WorldInspectorPlugin::new())
-    
+    //.add_plugin(WorldInspectorPlugin::new())
 
     .init_resource::<RenderOrder>()
     .init_resource::<MapSize>()
@@ -47,26 +51,34 @@ fn main () {
     .init_resource::<Turns>()
     .init_resource::<Rooms>()
 
-    .add_event::<CollidableChangeEvent>()
-    .add_event::<PointMoveEvent>()
+
 
     .add_startup_stage("setup", SystemStage::parallel())
     .add_startup_stage_after("setup", "map_gen", SystemStage::parallel())
     .add_startup_stage_after("map_gen", "actor_placement", SystemStage::parallel())
     
-    .add_stage("pre_update", SystemStage::parallel())
-    .add_stage_after("pre_update", "update", SystemStage::parallel())
-    .add_stage_after("update", "post_update", SystemStage::parallel())
 
-    
-    .add_plugin(SetupPlugin)
-    .add_plugin(AIPlugin)
-    .add_plugin(PlayerPlugin)
     .add_plugin(ActionPlugin)
-    .add_plugin(TurnPlugin)
-    .add_plugin(MapPlugin)
-    .add_plugin(RenderingPlugin)
 
+    .add_startup_system_to_stage("setup", setup::setup)
+    .add_startup_system_to_stage("map_gen", map::entity_map_rooms_passages)
+    .add_startup_system_to_stage("actor_placement", actors::setup_actors)
+
+
+    .add_system(rendering::update_render_order)
+    .add_system(rendering::render)
+
+    .add_system(turn::update_turn_order.label("update_turn_order"))
+    .add_system(turn::update_turn.label("update_turn").after("update_turn_order"))
+    .add_system_set(
+        SystemSet::new()
+            .label("actor_turn")
+            .after("update_turn_order")
+            .with_system(ai::generic_brain)
+            .with_system(player::player_input)
+    )
+    .add_system(movement::do_point_move.label("movement").after("actor_turn"))
+    .add_system(movement::update_collidables_new.after("movement"))
 
     .run();
 }

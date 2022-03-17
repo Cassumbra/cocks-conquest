@@ -4,9 +4,20 @@ use sark_grids::grid::Grid;
 use super::super::*;
 
 
+// Events
+// We may make a "LineMoveEvent" later.
+pub struct PointMoveEvent {
+    pub entity: Entity,
+    pub movement: IVec2,
+}
 
+pub struct CollidableChangeEvent {
+    pub old_position: IVec2,
+    pub new_position: IVec2,
+    pub entity: Entity,
+}
 
-
+// Systems
 pub fn do_point_move(
     mut commands: Commands,
     mut ev_collidable_change: EventWriter<CollidableChangeEvent>,
@@ -34,37 +45,31 @@ pub fn do_point_move(
                 }
             }
             else {
+                let old_pos = pos.0;
                 pos.0 = new_pos;
+                ev_collidable_change.send(CollidableChangeEvent{
+                    old_position: old_pos,
+                    new_position: new_pos,
+                    entity: ev.entity,
+                });
             }
-
-            ev_collidable_change.send(CollidableChangeEvent{
-                old_position: pos.0,
-                new_position: new_pos,
-                entity: ev.entity,
-            });
         }
     }
 }
 
 pub fn update_collidables_new( 
-    mut commands: Commands,
     mut ev_collidable_change: EventReader<CollidableChangeEvent>,
     query: Query<(Entity, &Position), (With<Collides>, Added<Collides>)>,
     mut collidables: ResMut<Collidables>,
 ) {
-    let mut collidable_grid = collidables.0.clone();
-
     for (ent, pos) in query.iter() {
-        println!("SHOULD ONLY SEE THIS A FEW TIMES");
-        collidable_grid[[pos.0.x as u32, pos.0.y as u32]] = Some(ent);
+        collidables.0[[pos.0.x as u32, pos.0.y as u32]] = Some(ent);
     }
     for ev in ev_collidable_change.iter() {
-        
-        collidable_grid[[ev.old_position.x as u32, ev.old_position.y as u32]] = None;
-        collidable_grid[[ev.new_position.x as u32, ev.new_position.y as u32]] = Some(ev.entity);
+        //println!("Collidable update");
+        collidables.0[[ev.old_position.x as u32, ev.old_position.y as u32]] = None;
+        collidables.0[[ev.new_position.x as u32, ev.new_position.y as u32]] = Some(ev.entity);
     }
-
-    commands.insert_resource(Collidables(collidable_grid));
 }
 
 pub fn update_collidables( 

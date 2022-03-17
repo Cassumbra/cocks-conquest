@@ -1,0 +1,31 @@
+system ordering
+
+player/ai do their turn
+-They send event to advance to next turn
+-They send event for handling their movement or attack or whatever
+
+movement/attack needs to be picked up by its system to be handled
+
+collidables need to be assigned to collidable resource (requires stage change to be detected)
+
+turn advance event needs to be picked up so it can get the next entity doing their thing
+
+repeat
+
+---
+
+new system ordering
+
+event is fired for turn start. systems that handle turns pick this up and use it. event contains entity. systems compare this entity to whatever query they have to see if they're meant to handle it.
+
+player/ai do their turn
+-They send event to advance to next turn
+-They send event for handling their movement or attack or whatever
+
+movement/attack needs to be picked up by its system to be handled
+
+collidables need to be assigned to collidable resource (requires stage change to be detected)
+
+turn advance event needs to be picked up so it can get the next entity doing their thing
+
+repeat

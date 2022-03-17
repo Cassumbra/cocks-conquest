@@ -1,14 +1,20 @@
 // Unglob later
 use bevy::prelude::*;
-use rand::Rng;
-use pathfinding::prelude::{astar, absdiff};
-use sark_grids::Grid;
-use super::super::*;
 
+use super::super::{Position, Entity, Collidables, Turns, TakesTurns};
+use super::super::actors::player::Player;
+
+// Events
+pub struct BumpEvent {
+    pub bumping_entity: Entity,
+    pub bumped_entity: Entity,
+}
+
+// Systems
 pub fn melee_attack (
     mut commands: Commands,
-    attacker_query: Query<(Entity, &Position), (With<TakesTurns>, With<AIWalkAtPlayer>, With<IsTurn>)>,
-    player_query: Query<&Position, (With<Player>)>,
+    attacker_query: Query<(Entity, &Position), With<TakesTurns>>,
+    player_query: Query<&Position, With<Player>>,
     mut turns: ResMut<Turns>,
     collidables: Res<Collidables>,
 ) {

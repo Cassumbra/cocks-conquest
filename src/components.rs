@@ -1,92 +1,22 @@
 
+use std::collections::VecDeque;
+
 // Unglob later
 use bevy::{prelude::*, utils::HashMap};
 use bevy_ascii_terminal::*;
+use sark_grids::Grid;
 
 
-
-#[derive(Component, Default, Copy, Clone)]
-pub struct Renderable {
-    pub tile: Tile,
-    pub order: u8,
-}
-
-
-//Stat types
-#[derive(Clone)]
-pub enum StatType{Health, Resistance, CumPoints}
-impl Default for StatType {
-    fn default() -> StatType {
-        StatType::Health
-    }
-}
-
-//Stats
-#[derive(Component, Default, Clone)]
-pub struct Stats(HashMap<StatType, i32>);
-
-//Interact types
-#[derive(Clone)]
-pub struct Attack {
-    pub interact_text: Vec<String>,
-    pub damage: i32,
-    pub damage_type: StatType,
-    pub cost: Option<StatType>,
-}
-impl Default for Attack {
-    fn default() -> Attack {
-        Attack {
-            interact_text: vec!["{attacker} hits {attacked} for {amount} damage!".to_string()],
-            damage: 1,
-            damage_type: StatType::Health,
-            cost: None,
-        }
-    }
-}
-
-#[derive(Component, Clone, Default)]
-pub struct MeleeAttacker {
-    pub attacks: Vec<Attack>,
-}
-
-//Actor types
-#[derive(Component, Default, Copy, Clone)]
-pub struct Player;
-
-#[derive(Component, Default, Copy, Clone)]
-pub struct AIDoNothing;
-
-#[derive(Component, Default, Copy, Clone)]
-pub struct AIWalkAtPlayer;
-
-//New AI
-#[derive(Component, Copy, Clone)]
-pub enum AIState{Wander, EngageMelee, EngageRanged}
-impl Default for AIState {
-    fn default() -> AIState {
-        AIState::Wander
-    }
-}
-
-//
 #[derive(Component, Default, Copy, Clone)]
 pub struct Collides;
 
-#[derive(Component, Default, Copy, Clone)]
-pub struct TakesTurns;
-
-#[derive(Component, Default, Copy, Clone)]
-pub struct IsTurn;
-
-#[derive(Component)]
-pub struct MapObject;
-
 // Shapes.
+
 // A point.
 #[derive(Component, Default, Copy, Clone)]
 pub struct Position(pub IVec2);
 
-#[derive(Component, Default, Copy, Clone)]
+#[derive(Component, Default, Copy, Clone, PartialEq)]
 pub struct Rectangle {
     pub pos1: IVec2,
     pub pos2: IVec2,

@@ -1,7 +1,36 @@
-// Unglob later
 use bevy::prelude::*;
-use super::super::*;
+use super::*;
 
+// Plugin
+#[derive(Default)]
+pub struct TurnPlugin;
+
+impl Plugin for TurnPlugin {
+    fn build(&self, app: &mut App) {
+        app
+        .init_resource::<Turns>();
+    }
+}
+
+// Resources
+#[derive(Default)]
+pub struct Turns {
+    pub order: Vec<Entity>,
+    pub current: usize,
+    pub progress: bool,
+}
+impl Turns {
+    pub fn is_turn(&self, entity: &Entity) -> bool {
+        //println!("{:?}", self.order);
+        self.order.len() > 0 && self.order[self.current] == *entity && !self.progress
+    }
+    pub fn progress_turn(&mut self) {
+        self.progress = true;
+    }
+
+}
+
+// Systems
 /// Updates the order in which entities take turns.
 /// Only gets updated when necessary.
 pub fn update_turn_order(
@@ -19,7 +48,6 @@ pub fn update_turn_order(
 }
 
 pub fn update_turn(
-    mut commands: Commands,
     mut turns: ResMut<Turns>,
 ) {
     if turns.progress {
@@ -29,20 +57,7 @@ pub fn update_turn(
             next_turn = 0;
         }
 
-        commands.entity(turns.order[turns.current]).remove::<IsTurn>();
-        commands.entity(turns.order[next_turn]).insert(IsTurn);
-
         turns.current = next_turn;
         turns.progress = false;
-    }
-}
-
-pub fn ensure_turn_exists(
-    query: Query<Entity, With<IsTurn>>,
-    mut commands: Commands,
-    mut turns: ResMut<Turns>,
-) {
-    if !query.iter().next().is_some() && turns.order.len() != 0 {
-        commands.entity(turns.order[turns.current]).insert(IsTurn);
     }
 }

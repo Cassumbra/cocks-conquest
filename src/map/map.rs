@@ -2,7 +2,41 @@ use std::cmp::{min, max};
 use bevy::prelude::*;
 use sark_grids::grid::Grid;
 use rand::Rng;
+use crate::actions::movement::Collidables;
+
 use super::*;
+
+//Plugin
+#[derive(Default)]
+pub struct MapPlugin;
+
+impl Plugin for MapPlugin {
+    fn build(&self, app: &mut App) {
+        app
+        .init_resource::<MapSize>()
+        .init_resource::<Rooms>();
+    }
+}
+
+// Resources
+#[derive(Default)]
+pub struct Rooms(pub Vec<Rectangle>);
+
+
+pub struct MapSize {
+    pub width: u32,
+    pub height: u32,
+}
+impl Default for MapSize {
+    fn default() -> MapSize {
+        MapSize {
+            width: 80,
+            height: 40,
+        }
+    }
+}
+
+
 
 
 // Bundles

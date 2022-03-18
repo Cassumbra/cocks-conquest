@@ -5,9 +5,10 @@ use bevy_ascii_terminal::Tile;
 use crate::actions::movement::PointMoveEvent;
 use crate::components::Collides;
 use crate::rendering::Renderable;
+use crate::rendering::window::WindowChangeEvent;
 
 use super::actors::TakesTurns;
-use super::{rendering, BottomSize, Position, SpriteMagnification, MapSize, Turns};
+use super::{rendering, BottomSize, Position, MapSize, Turns};
 
 
 // Components
@@ -50,11 +51,10 @@ pub fn player_input(
     mut ev_key: EventReader<KeyboardInput>,
     mut ev_movement_event: EventWriter<PointMoveEvent>,
     mut ev_exit: EventWriter<AppExit>,
-    //mut ev_window_change: EventWriter<WindowChangeEvent>,
+    mut ev_window_change: EventWriter<WindowChangeEvent>,
 
     map_size: Res<MapSize>,
     bottom_size: Res<BottomSize>,
-    mut sprite_magnification: ResMut<SpriteMagnification>,
     mut windows: ResMut<Windows>,
     mut turns: ResMut<Turns>,
 ) {
@@ -108,10 +108,10 @@ pub fn player_input(
                             ev_exit.send(AppExit);
                         }
                         Some(KeyCode::NumpadAdd) | Some(KeyCode::Equals) => {
-                            rendering::window::change_size(1, &map_size, &bottom_size, &mut sprite_magnification, &mut windows)
+                            ev_window_change.send(WindowChangeEvent(1));
                         }
                         Some(KeyCode::NumpadSubtract) | Some(KeyCode::Minus) => {
-                            rendering::window::change_size(-1, &map_size, &bottom_size, &mut sprite_magnification, &mut windows)
+                            ev_window_change.send(WindowChangeEvent(-1));
                         }
 
                         _ => {}

@@ -4,6 +4,19 @@ use sark_grids::grid::Grid;
 use super::super::*;
 
 
+//Plugin
+#[derive(Default)]
+pub struct MovementPlugin;
+
+impl Plugin for MovementPlugin {
+    fn build(&self, app: &mut App) {
+        app
+        .add_event::<PointMoveEvent>()
+        .add_event::<CollidableChangeEvent>()
+        .init_resource::<Collidables>();
+    }
+}
+
 // Events
 // We may make a "LineMoveEvent" later.
 pub struct PointMoveEvent {
@@ -16,6 +29,10 @@ pub struct CollidableChangeEvent {
     pub new_position: IVec2,
     pub entity: Entity,
 }
+
+// Resources
+#[derive(Default, Clone)]
+pub struct Collidables(pub Grid<Option<Entity>>);
 
 // Systems
 pub fn do_point_move(
@@ -57,7 +74,7 @@ pub fn do_point_move(
     }
 }
 
-pub fn update_collidables_new( 
+pub fn update_collidables( 
     mut ev_collidable_change: EventReader<CollidableChangeEvent>,
     query: Query<(Entity, &Position), (With<Collides>, Added<Collides>)>,
     mut collidables: ResMut<Collidables>,
@@ -69,28 +86,5 @@ pub fn update_collidables_new(
         //println!("Collidable update");
         collidables.0[[ev.old_position.x as u32, ev.old_position.y as u32]] = None;
         collidables.0[[ev.new_position.x as u32, ev.new_position.y as u32]] = Some(ev.entity);
-    }
-}
-
-pub fn update_collidables( 
-    mut commands: Commands,
-    query: Query<(Entity, &Position), With<Collides>>,
-    collidables_changed: Query<(&Collides, &Position), Or<(Changed<Collides>, Added<Collides>, Changed<Position>, Added<Position>)>>,
-    map_size: Res<MapSize>,
-) {
-    if collidables_changed.iter().next().is_some() {
-        let mut collidables: Grid<Option<Entity>> = Grid::default([map_size.width, map_size.height]);
-
-        for (ent, pos) in query.iter() {
-            if collidables[[pos.0.x as u32, pos.0.y as u32]].is_some() {
-                eprintln!("ERROR: Collidables clipping! Destroying old collidable!");
-                let old_ent = collidables[[pos.0.x as u32, pos.0.y as u32]].unwrap();
-                commands.entity(old_ent).despawn();
-            }
-            collidables[[pos.0.x as u32, pos.0.y as u32]] = Some(ent);
-        }
-
-        commands.insert_resource(Collidables(collidables));
-
     }
 }

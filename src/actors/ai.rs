@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use bevy::utils::HashMap;
 use sark_grids::Grid;
 use rand::Rng;
-use crate::actions::movement::PointMoveEvent;
+use crate::actions::movement::{PointMoveEvent, Collidables};
 
 use super::*;
 use super::player::Player;

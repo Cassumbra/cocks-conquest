@@ -1,8 +1,9 @@
 // Unglob later
 use bevy::prelude::*;
 
-use super::super::{Position, Entity, Collidables, Turns, TakesTurns};
+use super::super::{Position, Entity, Turns, TakesTurns};
 use super::super::actors::player::Player;
+use super::movement::Collidables;
 
 // Events
 pub struct BumpEvent {

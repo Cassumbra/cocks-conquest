@@ -2,12 +2,10 @@
 use bevy::prelude::*;
 use bevy_ascii_terminal::*;
 use bevy_tiled_camera::*;
-use bevy_inspector_egui::WorldInspectorPlugin;
+//use bevy_inspector_egui::WorldInspectorPlugin;
 
 mod components;
 use components::*;
-mod resources;
-use resources::*;
 
 // The pluginification!
 #[path = "actors/actors.rs"]
@@ -32,7 +30,7 @@ use rendering::*;
 
 #[path = "setup/setup.rs"]
 mod setup;
-use setup::*;
+//use setup::*;
 
 
 fn main () {
@@ -43,30 +41,24 @@ fn main () {
     .add_plugin(TiledCameraPlugin)
     //.add_plugin(WorldInspectorPlugin::new())
 
-    .init_resource::<RenderOrder>()
-    .init_resource::<MapSize>()
-    .init_resource::<BottomSize>()
-    .init_resource::<SpriteMagnification>()
-    .init_resource::<Collidables>()
-    .init_resource::<Turns>()
-    .init_resource::<Rooms>()
-
-
+    .add_plugin(actions::ActionPlugin)
+    .add_plugin(window::WindowPlugin)
+    .add_plugin(rendering::RenderingPlugin)
+    .add_plugin(turn::TurnPlugin)
+    .add_plugin(movement::MovementPlugin)
+    .add_plugin(map::MapPlugin)
 
     .add_startup_stage("setup", SystemStage::parallel())
     .add_startup_stage_after("setup", "map_gen", SystemStage::parallel())
     .add_startup_stage_after("map_gen", "actor_placement", SystemStage::parallel())
     
-
-    .add_plugin(ActionPlugin)
-
     .add_startup_system_to_stage("setup", setup::setup)
     .add_startup_system_to_stage("map_gen", map::entity_map_rooms_passages)
     .add_startup_system_to_stage("actor_placement", actors::setup_actors)
 
-
     .add_system(rendering::update_render_order)
     .add_system(rendering::render)
+    .add_system(window::change_size)
 
     .add_system(turn::update_turn_order.label("update_turn_order"))
     .add_system(turn::update_turn.label("update_turn").after("update_turn_order"))
@@ -78,7 +70,7 @@ fn main () {
             .with_system(player::player_input)
     )
     .add_system(movement::do_point_move.label("movement").after("actor_turn"))
-    .add_system(movement::update_collidables_new.after("movement"))
+    .add_system(movement::update_collidables.after("movement"))
 
     .run();
 }

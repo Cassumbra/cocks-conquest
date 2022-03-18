@@ -1,10 +1,20 @@
-use bevy::prelude::{Commands, Color, Query, Added, Changed, Or, Res, Entity, Component};
+use bevy::prelude::*;
 use bevy_ascii_terminal::{Tile, Terminal};
-use bevy::prelude::{App, Plugin};
-use super::{BottomSize, RenderOrder, Position};
+use super::Position;
 
 pub mod window;
 
+//Plugin
+#[derive(Default)]
+pub struct RenderingPlugin;
+
+impl Plugin for RenderingPlugin {
+    fn build(&self, app: &mut App) {
+        app
+        .init_resource::<RenderOrder>()
+        .init_resource::<BottomSize>();
+    }
+}
 
 //Components
 #[derive(Component, Default, Copy, Clone)]
@@ -13,7 +23,28 @@ pub struct Renderable {
     pub order: u8,
 }
 
+//Resources
+#[derive(Default)]
+pub struct RenderOrder(pub Vec<Entity>);
 
+// We need to make a more sophisticated way for doing this the next time we do this.
+// This should work for now, though.
+
+// TODO: When remaking this, create display entities with width and height. Have a ScreenSize resource.
+// Display entities are parents of entities with a renderable component.
+// ScreenSize determines the max size of display entities.
+// Display entities can be made with a rectangle component and a display tag component.
+// Future me: Take these plans at your own discretion. Also, don't bother working on any of this shit if you're not even future me.
+pub struct BottomSize {
+    pub height: u32,
+}
+impl Default for BottomSize {
+    fn default() -> BottomSize {
+        BottomSize {
+            height: 10,
+        }
+    }
+}
 
 //Systems
 /// Updates the order in which entities are drawn.

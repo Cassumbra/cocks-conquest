@@ -1,12 +1,33 @@
 use bevy::prelude::*;
 use super::*;
 
+// Plugin
 #[derive(Default)]
 pub struct TurnPlugin;
 
-// 
-pub struct StartTurnEvent {
-    pub entity: Entity,
+impl Plugin for TurnPlugin {
+    fn build(&self, app: &mut App) {
+        app
+        .init_resource::<Turns>();
+    }
+}
+
+// Resources
+#[derive(Default)]
+pub struct Turns {
+    pub order: Vec<Entity>,
+    pub current: usize,
+    pub progress: bool,
+}
+impl Turns {
+    pub fn is_turn(&self, entity: &Entity) -> bool {
+        //println!("{:?}", self.order);
+        self.order.len() > 0 && self.order[self.current] == *entity && !self.progress
+    }
+    pub fn progress_turn(&mut self) {
+        self.progress = true;
+    }
+
 }
 
 // Systems

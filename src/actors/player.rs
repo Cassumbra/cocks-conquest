@@ -8,7 +8,7 @@ use crate::rendering::Renderable;
 use crate::rendering::window::WindowChangeEvent;
 
 use super::actors::TakesTurns;
-use super::{rendering, BottomSize, Position, MapSize, Turns};
+use super::{rendering, BottomSize, Position, MapSize, Turns, Vision, MindMap};
 
 
 // Components
@@ -16,13 +16,15 @@ use super::{rendering, BottomSize, Position, MapSize, Turns};
 pub struct Player;
 
 // Bundles
-#[derive(Bundle, Copy, Clone)]
+#[derive(Bundle, Clone)]
 pub struct PlayerBundle {
     pub position: Position,
     pub renderable: Renderable,
     pub collides: Collides,
     pub player: Player,
     pub takes_turns: TakesTurns,
+    pub vision: Vision,
+    pub mind_map: MindMap,
 }
 impl Default for PlayerBundle {
     fn default() -> PlayerBundle {
@@ -39,6 +41,8 @@ impl Default for PlayerBundle {
             collides: Collides,
             player: Player,
             takes_turns: TakesTurns,
+            vision: Vision{..Default::default()},
+            mind_map: MindMap{..Default::default()},
         }
     }
 }
@@ -48,14 +52,12 @@ impl Default for PlayerBundle {
 /// 
 pub fn player_input(
     query: Query<Entity, (With<Position>, With<Player>, With<TakesTurns>)>,
+
     mut ev_key: EventReader<KeyboardInput>,
     mut ev_movement_event: EventWriter<PointMoveEvent>,
     mut ev_exit: EventWriter<AppExit>,
     mut ev_window_change: EventWriter<WindowChangeEvent>,
 
-    map_size: Res<MapSize>,
-    bottom_size: Res<BottomSize>,
-    mut windows: ResMut<Windows>,
     mut turns: ResMut<Turns>,
 ) {
     for ent in query.iter() {
@@ -63,6 +65,7 @@ pub fn player_input(
             for ev in ev_key.iter() {
                 if ev.state == ElementState::Pressed {
                     match ev.key_code {
+                        // Cardinal Movement
                         Some(KeyCode::I) | Some(KeyCode::Numpad8) => {
                             ev_movement_event.send(PointMoveEvent{entity: ent, movement: IVec2::new(0, 1)});
                             turns.progress_turn();
@@ -102,6 +105,11 @@ pub fn player_input(
                         Some(KeyCode::K) | Some(KeyCode::Numpad5) => {
                             turns.progress_turn();
                         }
+
+                        // Actions (TODO)
+                        // Sploot!
+                        // Heal
+                        // (Melee doesn't need a keybind cause you just do it by walking into guys)
 
                         // Other stuff
                         Some(KeyCode::Escape) => {

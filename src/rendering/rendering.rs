@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 use bevy_ascii_terminal::{Tile, Terminal};
+use crate::actors::{Vision, player::Player, MindMap};
+
 use super::Position;
 
 pub mod window;
@@ -68,48 +70,66 @@ pub fn update_render_order(
 /// Renders all entities with render and position components.
 pub fn render(
     query: Query<(&Renderable, &Position)>,
+    player_query: Query<(&Vision, &MindMap), With<Player>>,
     mut term_query: Query<&mut Terminal>,
+
     order: Res<RenderOrder>,
     bottom_size: Res<BottomSize>,
 ) {
     let mut terminal = term_query.single_mut();
-    
+    let (vis, mind_map) = player_query.single();
+
     terminal.clear();
     
     //terminal.draw_border_single();
 
+    
+    for (index, position) in mind_map.seen.iter_2d() {
+        for (entity, tile) in position {
+            let i_pos_x = index.x as i32;
+            let i_pos_y = index.y + bottom_size.height as i32;
+
+            let new_tile = Tile {
+                glyph: tile.glyph,
+                fg_color: change_brightness(greyscale(tile.fg_color), -0.90),
+                bg_color: tile.bg_color //change_brightness(greyscale(tile.bg_color), -0.90),
+            };
+        
+            terminal.put_tile([i_pos_x, i_pos_y], new_tile)
+        }
+    }
+
     for e in order.0.iter() {
         if let Ok((rend, pos)) = query.get(*e) {
+            //if vis.0.visible[pos.0] {
+                let i_pos_x = pos.0.x as i32;
+                let i_pos_y = pos.0.y + bottom_size.height as i32;
+                
+                let tile = rend.tile;
+                
+                let current_tile = terminal.get_tile([i_pos_x, i_pos_y]);
 
-            let i_pos_x = pos.0.x as i32;
-            let i_pos_y = pos.0.y + bottom_size.height as i32;
-            
-            let current_tile = terminal.get_tile([i_pos_x, i_pos_y]);
-
-            let tile = rend.tile;
-            
-            if tile.bg_color.a() == 1.0 {
-                terminal.put_tile([i_pos_x, i_pos_y], tile);
-            }
-            else if tile.bg_color.a() == 0.0 {
-                let new_tile = Tile {
-                    glyph: tile.glyph,
-                    fg_color: tile.fg_color,
-                    bg_color: current_tile.bg_color,
-                };
-    
-                terminal.put_tile([i_pos_x, i_pos_y], new_tile);
-            }
-            else {
-                let new_tile = Tile {
-                    glyph: tile.glyph,
-                    fg_color: tile.fg_color,
-                    bg_color: blend_colors(tile.bg_color, current_tile.bg_color),
-                };
-                terminal.put_tile([i_pos_x, i_pos_y], new_tile);
-            }
-        } else {
-
+                if tile.bg_color.a() == 1.0 {
+                    terminal.put_tile([i_pos_x, i_pos_y], tile);
+                }
+                else if tile.bg_color.a() == 0.0 {
+                    let new_tile = Tile {
+                        glyph: tile.glyph,
+                        fg_color: tile.fg_color,
+                        bg_color: current_tile.bg_color,
+                    };
+        
+                    terminal.put_tile([i_pos_x, i_pos_y], new_tile);
+                }
+                else {
+                    let new_tile = Tile {
+                        glyph: tile.glyph,
+                        fg_color: tile.fg_color,
+                        bg_color: blend_colors(tile.bg_color, current_tile.bg_color),
+                    };
+                    terminal.put_tile([i_pos_x, i_pos_y], new_tile);
+                }
+            //}
         }
     }
 }
@@ -130,4 +150,21 @@ fn blend_colors(color1: Color, color2: Color) -> Color {
     let new_blue = blend_color_component(color1.a(), color2.a(), new_alpha, color1.b(), color2.b());
 
     Color::rgba(new_red, new_green, new_blue, new_alpha)
+}
+
+fn greyscale(color: Color) -> Color {
+    let brightness = (color.r() + color.g() + color.b()) / 3.0;
+    Color::rgba(brightness, brightness, brightness, color.a())
+}
+
+// Modifies a color's brightness by some percentage.
+fn change_brightness(color: Color, amount: f32) -> Color {
+    let new_red = (color.r() + (color.r() * amount))
+        .clamp(0.0, 1.0);
+    let new_green = (color.g() + (color.g() * amount))
+        .clamp(0.0, 1.0);
+    let new_blue = (color.b() + (color.b() * amount))
+        .clamp(0.0, 1.0);
+
+    Color::rgba(new_red, new_green, new_blue, color.a())
 }

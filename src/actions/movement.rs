@@ -1,6 +1,7 @@
 // Unglob later
 use bevy::prelude::*;
 use sark_grids::grid::Grid;
+use adam_fov_rs::{VisibilityMap, fov};
 use super::super::*;
 
 
@@ -34,9 +35,9 @@ pub struct CollidableChangeEvent {
 #[derive(Default, Clone)]
 pub struct Collidables(pub Grid<Option<Entity>>);
 
+
 // Systems
 pub fn do_point_move(
-    mut commands: Commands,
     mut ev_collidable_change: EventWriter<CollidableChangeEvent>,
     mut ev_movement_event: EventReader<PointMoveEvent>,
     mut query: Query<(&mut Position, Option<&Collides>, Option<&Name>)>,

@@ -35,6 +35,7 @@ pub fn change_size(
     mut windows:  ResMut<Windows>,
 ) {
     if let Some(window_change) = ev_window_change.iter().next() {
+        // Unreadable garbage below lol
         let screen_size_width = map_size.width;
         let screen_size_height = map_size.height + bottom_size.height;
         let change = window_change.0;

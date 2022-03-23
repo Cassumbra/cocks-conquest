@@ -1,4 +1,5 @@
-// Unglob later
+// Working title: Cock's Conquest (Cocklike)
+
 use bevy::prelude::*;
 use bevy_ascii_terminal::*;
 use bevy_tiled_camera::*;
@@ -51,10 +52,12 @@ fn main () {
     .add_startup_stage("setup", SystemStage::parallel())
     .add_startup_stage_after("setup", "map_gen", SystemStage::parallel())
     .add_startup_stage_after("map_gen", "actor_placement", SystemStage::parallel())
+    .add_startup_stage_after("actor_placement", "setup_vision", SystemStage::parallel())
     
     .add_startup_system_to_stage("setup", setup::setup)
     .add_startup_system_to_stage("map_gen", map::entity_map_rooms_passages)
     .add_startup_system_to_stage("actor_placement", actors::setup_actors)
+    .add_startup_system_to_stage("setup_vision", actors::setup_vision)
 
     .add_system(rendering::update_render_order)
     .add_system(rendering::render)
@@ -70,7 +73,9 @@ fn main () {
             .with_system(player::player_input)
     )
     .add_system(movement::do_point_move.label("movement").after("actor_turn"))
-    .add_system(movement::update_collidables.after("movement"))
+    .add_system(movement::update_collidables.label("update_collidables").after("movement"))
+    .add_system(actors::update_vision.label("update_vision").after("update_collidables"))
+    .add_system(actors::update_mind_map.after("update_vision"))
 
     .run();
 }

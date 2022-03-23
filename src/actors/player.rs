@@ -1,6 +1,7 @@
 use bevy::input::{keyboard::KeyboardInput, ElementState};
 use bevy::prelude::*;
 use bevy::app::AppExit;
+use bevy::utils::HashMap;
 use bevy_ascii_terminal::Tile;
 use crate::actions::movement::PointMoveEvent;
 use crate::components::Collides;
@@ -8,7 +9,7 @@ use crate::rendering::Renderable;
 use crate::rendering::window::WindowChangeEvent;
 
 use super::actors::TakesTurns;
-use super::{rendering, BottomSize, Position, MapSize, Turns, Vision, MindMap};
+use super::{Position, Turns, Vision, MindMap, Stats, StatType};
 
 
 // Components
@@ -25,9 +26,15 @@ pub struct PlayerBundle {
     pub takes_turns: TakesTurns,
     pub vision: Vision,
     pub mind_map: MindMap,
+    pub stats: Stats,
 }
 impl Default for PlayerBundle {
     fn default() -> PlayerBundle {
+
+        let mut stat_data: HashMap<StatType, i32> = HashMap::default();
+        stat_data.insert(StatType::Health, 3);
+        stat_data.insert(StatType::CumPoints, 20);
+
         PlayerBundle {
             position: Position (IVec2::new(0, 0)),
             renderable: Renderable {
@@ -43,6 +50,7 @@ impl Default for PlayerBundle {
             takes_turns: TakesTurns,
             vision: Vision{..Default::default()},
             mind_map: MindMap{..Default::default()},
+            stats: Stats(stat_data),
         }
     }
 }

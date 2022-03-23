@@ -74,6 +74,7 @@ fn main () {
     )
     .add_system(movement::do_point_move.label("movement").after("actor_turn"))
     .add_system(movement::update_collidables.label("update_collidables").after("movement"))
+    .add_system(interactions::melee_attack.label("melee_attack").after("movement"))
     .add_system(actors::update_vision.label("update_vision").after("update_collidables"))
     .add_system(actors::update_mind_map.after("update_vision"))
 

@@ -2,7 +2,7 @@
 use bevy::prelude::*;
 use sark_grids::grid::Grid;
 use adam_fov_rs::{VisibilityMap, fov};
-use super::super::*;
+use super::{super::*, interactions::BumpEvent};
 
 
 //Plugin
@@ -39,7 +39,9 @@ pub struct Collidables(pub Grid<Option<Entity>>);
 // Systems
 pub fn do_point_move(
     mut ev_collidable_change: EventWriter<CollidableChangeEvent>,
+    mut ev_bump_event: EventWriter<BumpEvent>,
     mut ev_movement_event: EventReader<PointMoveEvent>,
+
     mut query: Query<(&mut Position, Option<&Collides>, Option<&Name>)>,
     map_size: Res<MapSize>,
     collidables: Res<Collidables>,
@@ -48,19 +50,24 @@ pub fn do_point_move(
         if let Ok((mut pos, col, opt_name)) = query.get_mut(ev.entity) {
             let new_pos = pos.0 + ev.movement;
 
-            if new_pos.x >= map_size.width as i32 || new_pos.y >= map_size.height as i32 || new_pos.x <= -1 || new_pos.y <= -1 ||
-                col.is_some() && collidables.0[[new_pos.x as u32, new_pos.y as u32 ]].is_some() {
+            if let Some(collidable_entity) = collidables.0[[new_pos.x as u32, new_pos.y as u32]] {
+                if col.is_some() {
+                    // When we remake our game, we should create some logs.
+                    // We need a log that is shown to the player, and we need a debug log.
+                    // An error log may be good too.
+                    // Error and debug may be combined?
+                    if let Some(name) = opt_name {
+                        println!("{} bonked at {:?}.", name.as_str(), pos.0)
+                    }
+                    else {
+                        println!("{:?} bonked at {:?}.", ev.entity, pos.0)
+                    }
+                    ev_bump_event.send(BumpEvent{bumping_entity: ev.entity, bumped_entity: collidable_entity})
+                }
                 
-                // When we remake our game, we should create some logs.
-                // We need a log that is shown to the player, and we need a debug log.
-                // An error log may be good too.
-                // Error and debug may be combined?
-                if let Some(name) = opt_name {
-                    println!("{} bonked at {:?}.", name.as_str(), pos.0)
-                }
-                else {
-                    println!("{:?} bonked at {:?}.", ev.entity, pos.0)
-                }
+            }
+            else if new_pos.x >= map_size.width as i32 || new_pos.y >= map_size.height as i32 || new_pos.x <= -1 || new_pos.y <= -1 {
+                // Nothing for us to bonk. We are simply attempting to walk into the infinity, which is not allowed (at this moment)
             }
             else {
                 let old_pos = pos.0;

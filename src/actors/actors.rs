@@ -67,6 +67,7 @@ pub fn setup_vision (
 }
 
 // This and the mindmap will need to store more than just an entity or a tile later when we get to allowing players to look around and examine stuff
+// Eventually, we should add a "peeking" mechanic for AI and Player to allow them to look and shoot things as if they were doing so from a position next to themselves.
 pub fn update_vision (
     mut ev_point_move: EventReader<PointMoveEvent>,
 
@@ -128,7 +129,7 @@ pub fn update_mind_map (
 }
 
 // Misc Data
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub enum StatType{Health, Resistance, CumPoints}
 impl Default for StatType {
     fn default() -> StatType {
@@ -141,7 +142,7 @@ pub struct Attack {
     pub interact_text: Vec<String>,
     pub damage: i32,
     pub damage_type: StatType,
-    pub cost: Option<StatType>,
+    pub cost: Option<(i32, StatType)>,
 }
 impl Default for Attack {
     fn default() -> Attack {
@@ -173,13 +174,22 @@ impl VisibilityMap for Map {
 }
 
 // Components
-#[derive(Component, Default, Clone)]
-pub struct Stats(HashMap<StatType, i32>);
+#[derive(Component, Clone)]
+pub struct Stats(pub HashMap<StatType, i32>);
+impl Default for Stats {
+    fn default() -> Stats {
+        let mut stats: HashMap<StatType, i32> = HashMap::default();
+        stats.insert(StatType::Health, 3);
+        Stats(
+            stats
+        )
+    }
+}
 
 #[derive(Component, Default, Copy, Clone)]
 pub struct TakesTurns;
 
-#[derive(Component, Clone, Default)]
+#[derive(Component, Default, Clone)]
 pub struct MeleeAttacker {
     pub attacks: Vec<Attack>,
 }
@@ -200,9 +210,16 @@ pub struct SoldierBundle {
     pub collides: Collides,
     pub takes_turns: TakesTurns,
     pub vision: Vision,
+    pub stats: Stats,
+    pub melee_attacker: MeleeAttacker,
 }
 impl Default for SoldierBundle {
     fn default() -> SoldierBundle {
+
+        let mut stat_data: HashMap<StatType, i32> = HashMap::default();
+        stat_data.insert(StatType::Health, 3);
+        stat_data.insert(StatType::Resistance, 3);
+
         SoldierBundle {
             position: Position (IVec2::new(0, 0)),
             renderable: Renderable {
@@ -216,6 +233,16 @@ impl Default for SoldierBundle {
             collides: Collides,
             takes_turns: TakesTurns,
             vision: Vision{..Default::default()},
+            stats: Stats(stat_data),
+            melee_attacker: MeleeAttacker{attacks: vec![
+                Attack{
+                    interact_text: vec!["{attacker} stabs {attacked} for {amount} damage!".to_string(),
+                                        "{attacker} slashes {attacked} for {amount} damage!".to_string(),],
+                    damage: 1,
+                    damage_type: StatType::Health,
+                    cost: None,
+                }
+            ]}
         }
     }
 }

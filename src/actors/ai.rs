@@ -170,6 +170,8 @@ impl AI {
 
 // Systems
 // We should probably make this pathfind to any entity OK, even if it isnt the player. Soon.
+// We should probably split this up into three different systems later. Or more.
+// State change handling, Pathing, Actions
 pub fn generic_brain (
     mut ev_movement_event: EventWriter<PointMoveEvent>,
     mut ai_query: Query<(&Position, &mut AI, &Vision)>,
@@ -290,9 +292,25 @@ pub fn generic_brain (
                 });
                 ai.path.pop_front();
             } 
-            if ai.path.len() == 1 || !need_to_move {
-                ai.path = VecDeque::from([ai_pos.0, ai_pos.0]);
-                
+            else {
+                //ai.path = VecDeque::from([ai_pos.0, ai_pos.0]);
+                match ai.state {
+                    AIState::Engage(engagement) => {
+                        if let Ok(target_pos) = actors_query.get(engagement.entity) {
+                            if ai_pos.0.as_vec2().distance(target_pos.0.as_vec2()) <= 1.0 {
+                                let delta = target_pos.0 - ai_pos.0;
+                                ev_movement_event.send(PointMoveEvent{
+                                    entity: ai_ent,
+                                    movement: delta,
+                                });
+                            }
+                        }
+                    }
+
+                    _ => {
+
+                    }
+                }
             }
         } 
 

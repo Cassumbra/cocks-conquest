@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 pub mod movement;
-mod interactions;
+pub mod interactions;
 
 #[derive(Default)]
 pub struct ActionPlugin;

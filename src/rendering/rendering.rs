@@ -101,7 +101,7 @@ pub fn render(
 
     for e in order.0.iter() {
         if let Ok((rend, pos)) = query.get(*e) {
-            //if vis.0.visible[pos.0] {
+            if vis.0.visible[pos.0] {
                 let i_pos_x = pos.0.x as i32;
                 let i_pos_y = pos.0.y + bottom_size.height as i32;
                 
@@ -129,7 +129,7 @@ pub fn render(
                     };
                     terminal.put_tile([i_pos_x, i_pos_y], new_tile);
                 }
-            //}
+            }
         }
     }
 }

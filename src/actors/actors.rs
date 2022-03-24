@@ -142,7 +142,8 @@ pub struct Attack {
     pub interact_text: Vec<String>,
     pub damage: i32,
     pub damage_type: StatType,
-    pub cost: Option<(i32, StatType)>,
+    pub cost: i32,
+    pub cost_type: StatType,
 }
 impl Default for Attack {
     fn default() -> Attack {
@@ -150,7 +151,8 @@ impl Default for Attack {
             interact_text: vec!["{attacker} hits {attacked} for {amount} damage!".to_string()],
             damage: 1,
             damage_type: StatType::Health,
-            cost: None,
+            cost: 0,
+            cost_type: StatType::Health,
         }
     }
 }
@@ -240,7 +242,8 @@ impl Default for SoldierBundle {
                                         "{attacker} slashes {attacked} for {amount} damage!".to_string(),],
                     damage: 1,
                     damage_type: StatType::Health,
-                    cost: None,
+                    cost: 0,
+                    cost_type: StatType::Health,
                 }
             ]}
         }

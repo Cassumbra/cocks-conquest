@@ -46,7 +46,6 @@ fn main () {
     .add_plugin(window::WindowPlugin)
     .add_plugin(rendering::RenderingPlugin)
     .add_plugin(turn::TurnPlugin)
-    .add_plugin(movement::MovementPlugin)
     .add_plugin(map::MapPlugin)
 
     .add_startup_stage("setup", SystemStage::parallel())

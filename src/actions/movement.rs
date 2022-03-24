@@ -4,20 +4,6 @@ use sark_grids::grid::Grid;
 use adam_fov_rs::{VisibilityMap, fov};
 use super::{super::*, interactions::BumpEvent};
 
-
-//Plugin
-#[derive(Default)]
-pub struct MovementPlugin;
-
-impl Plugin for MovementPlugin {
-    fn build(&self, app: &mut App) {
-        app
-        .add_event::<PointMoveEvent>()
-        .add_event::<CollidableChangeEvent>()
-        .init_resource::<Collidables>();
-    }
-}
-
 // Events
 // We may make a "LineMoveEvent" later.
 pub struct PointMoveEvent {

@@ -201,7 +201,7 @@ pub fn generic_brain (
         if let Some((player_ent, player_pos)) = player_query.iter().next() {
             // Path to the player if we see them.
             if !matches!(ai.state, AIState::Engage(..)) && vis.0.visible[player_pos.0] {
-                ai.state = AIState::Engage(Engagement{distance: 3.5, entity: player_ent })
+                ai.state = AIState::Engage(Engagement{distance: 1.5, entity: player_ent })
             }
             // Wander around if there's nothing better for us to do.
             else if matches!(ai.state, AIState::None) {
@@ -275,6 +275,7 @@ pub fn generic_brain (
             }
         }
         
+
         if ai.path.len() < 1 || (ai.path.len() > 0 && collidables.0[ai.path[1]].is_some()) {
             ai.halted_count += 1;
             if ai.halted_count == 3 {
@@ -282,37 +283,36 @@ pub fn generic_brain (
                 ai.state = AIState::None;
             }
         }
+
+        if need_to_move {
+            let to_move = ai.path[1];
+            let delta = to_move - ai_pos.0;
+            ev_movement_event.send(PointMoveEvent{
+                entity: ai_ent,
+                movement: delta,
+            });
+            ai.path.pop_front();
+        } 
         else {
-            if need_to_move {
-                let to_move = ai.path[1];
-                let delta = to_move - ai_pos.0;
-                ev_movement_event.send(PointMoveEvent{
-                    entity: ai_ent,
-                    movement: delta,
-                });
-                ai.path.pop_front();
-            } 
-            else {
-                //ai.path = VecDeque::from([ai_pos.0, ai_pos.0]);
-                match ai.state {
-                    AIState::Engage(engagement) => {
-                        if let Ok(target_pos) = actors_query.get(engagement.entity) {
-                            if ai_pos.0.as_vec2().distance(target_pos.0.as_vec2()) <= 1.0 {
-                                let delta = target_pos.0 - ai_pos.0;
-                                ev_movement_event.send(PointMoveEvent{
-                                    entity: ai_ent,
-                                    movement: delta,
-                                });
-                            }
+            //ai.path = VecDeque::from([ai_pos.0, ai_pos.0]);
+            match ai.state {
+                AIState::Engage(engagement) => {
+                    if let Ok(target_pos) = actors_query.get(engagement.entity) {
+                        if ai_pos.0.as_vec2().distance(target_pos.0.as_vec2()) <= 1.5 {
+                            let delta = target_pos.0 - ai_pos.0;
+                            ev_movement_event.send(PointMoveEvent{
+                                entity: ai_ent,
+                                movement: delta,
+                            });
                         }
                     }
+                }
 
-                    _ => {
+                _ => {
 
-                    }
                 }
             }
-        } 
+        }
 
         
         turns.progress_turn();

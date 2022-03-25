@@ -59,7 +59,8 @@ fn main () {
     .add_startup_system_to_stage("setup_vision", actors::setup_vision)
 
     .add_system(rendering::update_render_order)
-    .add_system(rendering::render)
+    .add_system(rendering::render.label("render"))
+    .add_system(rendering::render_stats.label("render_stats").after("render"))
     .add_system(window::change_size)
 
     .add_system(turn::update_turn_order.label("update_turn_order"))

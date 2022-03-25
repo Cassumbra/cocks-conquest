@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_ascii_terminal::{Tile, Terminal};
-use crate::actors::{Vision, player::Player, MindMap};
+use crate::actors::{Vision, player::Player, MindMap, Stats};
 
 use super::Position;
 
@@ -68,7 +68,7 @@ pub fn update_render_order(
 
 /// Rendering system.
 /// Renders all entities with render and position components.
-pub fn render(
+pub fn render (
     query: Query<(&Renderable, &Position)>,
     player_query: Query<(&Vision, &MindMap), With<Player>>,
     mut term_query: Query<&mut Terminal>,
@@ -79,10 +79,7 @@ pub fn render(
     let mut terminal = term_query.single_mut();
     let (vis, mind_map) = player_query.single();
 
-    terminal.clear();
-    
-    //terminal.draw_border_single();
-
+    //terminal.clear();
     
     for (index, position) in mind_map.seen.iter_2d() {
         for (entity, tile) in position {
@@ -131,6 +128,29 @@ pub fn render(
                 }
             }
         }
+    }
+}
+
+pub fn render_stats (
+    player_query: Query<(Entity, &Stats, Option<&Name>), With<Player>>,
+    mut term_query: Query<&mut Terminal>,
+
+    bottom_size: Res<BottomSize>,
+) {
+    let mut terminal = term_query.single_mut();
+
+    let (player, stats, opt_name) = player_query.single();
+
+    let mut name = player.id().to_string();
+
+    if let Some(temp_name) = opt_name {
+        name = temp_name.to_string();
+    }
+    
+    terminal.put_string([1, bottom_size.height as i32], &name);
+
+    for stat in stats.0.iter() {
+
     }
 }
 

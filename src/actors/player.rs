@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use bevy::input::{keyboard::KeyboardInput, ElementState};
 use bevy::prelude::*;
 use bevy::app::AppExit;
@@ -30,11 +32,6 @@ pub struct PlayerBundle {
 }
 impl Default for PlayerBundle {
     fn default() -> PlayerBundle {
-
-        let mut stat_data: HashMap<StatType, i32> = HashMap::default();
-        stat_data.insert(StatType::Health, 3);
-        stat_data.insert(StatType::CumPoints, 20);
-
         PlayerBundle {
             position: Position (IVec2::new(0, 0)),
             renderable: Renderable {
@@ -50,7 +47,10 @@ impl Default for PlayerBundle {
             takes_turns: TakesTurns,
             vision: Vision{..Default::default()},
             mind_map: MindMap{..Default::default()},
-            stats: Stats(stat_data),
+            stats: Stats(BTreeMap::from([
+                ("health".to_string(), 3),
+                ("cum points".to_string(), 20),
+            ])),
         }
     }
 }

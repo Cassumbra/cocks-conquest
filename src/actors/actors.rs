@@ -1,8 +1,8 @@
 use adam_fov_rs::{VisibilityMap, fov};
-use bevy::utils::HashMap;
+use std::collections::BTreeMap;
 use bevy::prelude::{App, Plugin, Component};
 use sark_grids::Grid;
-use crate::actions::movement::{CollidableChangeEvent, Collidables, PointMoveEvent};
+use crate::actions::movement::{Collidables, PointMoveEvent};
 
 use super::*;
 
@@ -59,6 +59,7 @@ pub fn setup_actors (
 
 pub fn setup_vision (
     mut ev_movement_event: EventWriter<PointMoveEvent>,
+
     vision_query: Query<Entity, With<Vision>>,
 ) {
     for ent in vision_query.iter() {
@@ -123,8 +124,6 @@ pub fn update_mind_map (
                 }
             }
         }
-
-
     }
 }
 
@@ -141,23 +140,23 @@ impl Default for StatType {
 pub struct Attack {
     pub interact_text: Vec<String>,
     pub damage: i32,
-    pub damage_type: StatType,
+    pub damage_type: String,
     pub cost: i32,
-    pub cost_type: StatType,
+    pub cost_type: String,
 }
 impl Default for Attack {
     fn default() -> Attack {
         Attack {
             interact_text: vec!["{attacker} hits {attacked} for {amount} damage!".to_string()],
             damage: 1,
-            damage_type: StatType::Health,
+            damage_type: "health".to_string(),
             cost: 0,
-            cost_type: StatType::Health,
+            cost_type: "health".to_string(),
         }
     }
 }
 
-#[derive(Component, Default, Clone)]
+#[derive(Component, Default, Debug, Clone)]
 pub struct Map {
     pub visible: Grid<bool>,
     pub opaque: Grid<Option<Entity>>,
@@ -177,13 +176,13 @@ impl VisibilityMap for Map {
 
 // Components
 #[derive(Component, Clone)]
-pub struct Stats(pub HashMap<StatType, i32>);
+pub struct Stats(pub BTreeMap<String, i32>);
 impl Default for Stats {
     fn default() -> Stats {
-        let mut stats: HashMap<StatType, i32> = HashMap::default();
-        stats.insert(StatType::Health, 3);
         Stats(
-            stats
+            BTreeMap::from([
+                ("health".to_string(), 3),
+            ])
         )
     }
 }
@@ -196,7 +195,7 @@ pub struct MeleeAttacker {
     pub attacks: Vec<Attack>,
 }
 
-#[derive(Component, Default, Clone)]
+#[derive(Component, Default, Debug, Clone)]
 pub struct Vision (pub Map);
 
 #[derive(Component, Default, Clone)]
@@ -217,11 +216,6 @@ pub struct SoldierBundle {
 }
 impl Default for SoldierBundle {
     fn default() -> SoldierBundle {
-
-        let mut stat_data: HashMap<StatType, i32> = HashMap::default();
-        stat_data.insert(StatType::Health, 3);
-        stat_data.insert(StatType::Resistance, 3);
-
         SoldierBundle {
             position: Position (IVec2::new(0, 0)),
             renderable: Renderable {
@@ -235,15 +229,18 @@ impl Default for SoldierBundle {
             collides: Collides,
             takes_turns: TakesTurns,
             vision: Vision{..Default::default()},
-            stats: Stats(stat_data),
+            stats: Stats(BTreeMap::from([
+                ("health".to_string(), 3),
+                ("resistance".to_string(), 3),
+            ])),
             melee_attacker: MeleeAttacker{attacks: vec![
                 Attack{
                     interact_text: vec!["{attacker} stabs {attacked} for {amount} damage!".to_string(),
                                         "{attacker} slashes {attacked} for {amount} damage!".to_string(),],
-                    damage: 1,
-                    damage_type: StatType::Health,
+                    damage: -1,
+                    damage_type: "health".to_string(),
                     cost: 0,
-                    cost_type: StatType::Health,
+                    cost_type: "health".to_string(),
                 }
             ]}
         }

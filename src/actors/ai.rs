@@ -276,22 +276,24 @@ pub fn generic_brain (
         }
         
 
-        if ai.path.len() < 1 || (ai.path.len() > 0 && collidables.0[ai.path[1]].is_some()) {
-            ai.halted_count += 1;
-            if ai.halted_count == 3 {
-                ai.halted_count = 0;
-                ai.state = AIState::None;
-            }
-        }
+
 
         if need_to_move {
-            let to_move = ai.path[1];
-            let delta = to_move - ai_pos.0;
-            ev_movement_event.send(PointMoveEvent{
-                entity: ai_ent,
-                movement: delta,
-            });
-            ai.path.pop_front();
+            if ai.path.len() < 1 || (ai.path.len() > 0 && collidables.0[ai.path[1]].is_some()) {
+                ai.halted_count += 1;
+                if ai.halted_count == 3 {
+                    ai.halted_count = 0;
+                    ai.state = AIState::None;
+                }
+            } else {
+                let to_move = ai.path[1];
+                let delta = to_move - ai_pos.0;
+                ev_movement_event.send(PointMoveEvent{
+                    entity: ai_ent,
+                    movement: delta,
+                });
+                ai.path.pop_front();
+            }
         } 
         else {
             //ai.path = VecDeque::from([ai_pos.0, ai_pos.0]);

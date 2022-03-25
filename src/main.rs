@@ -55,7 +55,9 @@ fn main () {
     
     .add_startup_system_to_stage("setup", setup::setup)
     .add_startup_system_to_stage("map_gen", map::entity_map_rooms_passages)
-    .add_startup_system_to_stage("actor_placement", actors::setup_actors)
+    .add_startup_system_to_stage("actor_placement", actors::setup_actors.label("setup_actors"))
+    .add_startup_system_to_stage("actor_placement", rendering::update_render_order.after("setup_actors"))
+    .add_startup_system_to_stage("actor_placement", movement::update_collidables.after("setup_actors"))
     .add_startup_system_to_stage("setup_vision", actors::setup_vision)
 
     .add_system(rendering::update_render_order)

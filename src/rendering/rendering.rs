@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_ascii_terminal::{Tile, Terminal};
+use inflector::Inflector;
 use crate::actors::{Vision, player::Player, MindMap, Stats};
 
 use super::Position;
@@ -79,6 +80,8 @@ pub fn render (
     let mut terminal = term_query.single_mut();
     let (vis, mind_map) = player_query.single();
 
+    //this is NOT GOOD
+    //but clearing the terminal results in screwiness soooo
     //terminal.clear();
     
     for (index, position) in mind_map.seen.iter_2d() {
@@ -147,10 +150,15 @@ pub fn render_stats (
         name = temp_name.to_string();
     }
     
-    terminal.put_string([1, bottom_size.height as i32], &name);
+    let print_string = format![" {}    ", &name];
+    terminal.put_string([1, bottom_size.height as i32], &print_string);
+
+    let mut current_length = print_string.len();
 
     for stat in stats.0.iter() {
-
+        let print_string = format!["{}: {}  ", stat.0.to_title_case(), stat.1];
+        terminal.put_string([current_length as i32, bottom_size.height as i32], &print_string);
+        current_length += print_string.len();
     }
 }
 

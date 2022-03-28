@@ -1,8 +1,8 @@
 // Unglob later
 use bevy::prelude::*;
 use sark_grids::grid::Grid;
-use adam_fov_rs::{VisibilityMap, fov};
-use super::{super::*, interactions::BumpEvent};
+use super::interactions::BumpEvent;
+use super::super::*;
 
 // Events
 // We may make a "LineMoveEvent" later.
@@ -70,7 +70,12 @@ pub fn do_point_move(
 
 pub fn update_collidables( 
     mut ev_collidable_change: EventReader<CollidableChangeEvent>,
-    query: Query<(Entity, &Position), (With<Collides>, Added<Collides>)>,
+
+    query: Query<(Entity, &Position), (With<Collides>, Added<Collides>, Changed<Collides>)>,
+    remove_query: Query<&Position>,
+
+    removed_collides: RemovedComponents<Collides>,
+
     mut collidables: ResMut<Collidables>,
 ) {
     for (ent, pos) in query.iter() {
@@ -80,5 +85,10 @@ pub fn update_collidables(
         //println!("Collidable update");
         collidables.0[[ev.old_position.x as u32, ev.old_position.y as u32]] = None;
         collidables.0[[ev.new_position.x as u32, ev.new_position.y as u32]] = Some(ev.entity);
+    }
+    for entity in removed_collides.iter() {
+        if let Ok(pos) = remove_query.get(entity) {
+            collidables.0[[pos.0.x as u32, pos.0.y as u32]] = None;
+        }
     }
 }

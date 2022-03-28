@@ -10,6 +10,7 @@ impl Plugin for ActionPlugin {
     fn build(&self, app: &mut App) {
         app
         .add_event::<interactions::BumpEvent>()
+        .add_event::<interactions::ActorRemovedEvent>()
         .add_event::<movement::CollidableChangeEvent>()
         .add_event::<movement::PointMoveEvent>();
     }

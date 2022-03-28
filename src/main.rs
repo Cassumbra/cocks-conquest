@@ -17,6 +17,10 @@ use actors::*;
 mod actions;
 use actions::*;
 
+#[path = "log/log.rs"]
+mod log;
+use log::*;
+
 #[path ="turn/turn.rs"]
 mod turn;
 use turn::*;
@@ -42,7 +46,9 @@ fn main () {
     .add_plugin(TiledCameraPlugin)
     //.add_plugin(WorldInspectorPlugin::new())
 
+    .add_plugin(actors::ActorPlugin)
     .add_plugin(actions::ActionPlugin)
+    .add_plugin(log::LogPlugin)
     .add_plugin(window::WindowPlugin)
     .add_plugin(rendering::RenderingPlugin)
     .add_plugin(turn::TurnPlugin)
@@ -58,7 +64,7 @@ fn main () {
     .add_startup_system_to_stage("actor_placement", actors::setup_actors.label("setup_actors"))
     .add_startup_system_to_stage("actor_placement", rendering::update_render_order.after("setup_actors"))
     .add_startup_system_to_stage("actor_placement", movement::update_collidables.after("setup_actors"))
-    .add_startup_system_to_stage("setup_vision", actors::setup_vision)
+    .add_startup_system_to_stage("setup_vision", vision::setup_vision)
 
     .add_system(rendering::update_render_order)
     .add_system(rendering::render.label("render"))
@@ -70,15 +76,35 @@ fn main () {
     .add_system_set(
         SystemSet::new()
             .label("actor_turn")
-            .after("update_turn_order")
+            .after("update_turn")
             .with_system(ai::generic_brain)
+            .with_system(ai::tranced_brain)
             .with_system(player::player_input)
     )
-    .add_system(movement::do_point_move.label("movement").after("actor_turn"))
-    .add_system(movement::update_collidables.label("update_collidables").after("movement"))
-    .add_system(interactions::melee_attack.label("melee_attack").after("movement"))
-    .add_system(actors::update_vision.label("update_vision").after("update_collidables"))
-    .add_system(actors::update_mind_map.after("update_vision"))
+    .add_system_set(
+        SystemSet::new()
+            .label("actor_actions")
+            .after("actor_turn")
+            .with_system(movement::do_point_move)
+            
+    )
+    .add_system_set(
+        SystemSet::new()
+            .label("action_effects")
+            .after("actor_actions")
+            // Melee attacks are curently an effect of bumping (see point move)
+            .with_system(interactions::vore_attack.label("vore_attack").before("melee_attack"))
+            .with_system(interactions::melee_attack.label("melee_attack"))
+            
+    )
+    
+    .add_system_to_stage(CoreStage::PostUpdate, interactions::update_vore.label("update_vore").before("do_stat_change"))
+    .add_system_to_stage(CoreStage::PostUpdate, stats::do_stat_change.label("do_stat_change"))
+    .add_system_to_stage(CoreStage::PostUpdate, stats::update_fatal.label("update_fatal").after("do_stat_change"))
+    .add_system_to_stage(CoreStage::PostUpdate, movement::update_collidables.label("update_collidables"))
+    .add_system_to_stage(CoreStage::PostUpdate, vision::update_vision.label("update_vision").after("update_collidables"))
+    .add_system_to_stage(CoreStage::PostUpdate, vision::update_mind_map.after("update_vision"))
+
 
     .run();
 }

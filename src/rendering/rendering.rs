@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 use bevy_ascii_terminal::{Tile, Terminal};
 use inflector::Inflector;
-use crate::actors::{Vision, player::Player, MindMap, Stats};
+use crate::actors::{player::Player, vision::{Vision, MindMap}};
+use crate::actors::stats::Stats;
 
-use super::Position;
+use super::*;
 
 pub mod window;
 

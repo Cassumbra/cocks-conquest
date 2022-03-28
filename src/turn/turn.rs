@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use crate::actions::interactions::ActorRemovedEvent;
+
 use super::*;
 
 // Plugin
@@ -24,6 +26,9 @@ impl Turns {
         //println!("{:?}", self.order);
         self.order.len() > 0 && self.order[self.current] == *entity && !self.progress
     }
+    pub fn was_turn(&self, entity: &Entity) -> bool {
+        self.order.len() > 0 && self.order[self.current] == *entity && self.progress
+    }
     pub fn progress_turn(&mut self) {
         self.progress = true;
     }
@@ -34,12 +39,17 @@ impl Turns {
 /// Updates the order in which entities take turns.
 /// Only gets updated when necessary.
 pub fn update_turn_order(
-    //mut commands: Commands,
     query: Query<Entity, With<TakesTurns>>,
     turns_changed: Query<(Entity, &TakesTurns), Or<(Changed<TakesTurns>, Added<TakesTurns>)>>,
+
+    mut ev_actor_remove_event: EventReader<ActorRemovedEvent>,
+
     mut turns: ResMut<Turns>,
 ) {
-    if turns_changed.iter().next().is_some() {
+
+    if turns_changed.iter().next().is_some() || 
+       ev_actor_remove_event.iter().next().is_some()
+    {
         turns.order = Vec::new();
         for ent in query.iter() {
             turns.order.push(ent);

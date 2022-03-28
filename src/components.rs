@@ -1,11 +1,4 @@
-
-use std::collections::VecDeque;
-
-// Unglob later
-use bevy::{prelude::*, utils::HashMap};
-use bevy_ascii_terminal::*;
-use sark_grids::Grid;
-
+use bevy::prelude::*;
 
 #[derive(Component, Default, Copy, Clone)]
 pub struct Collides;

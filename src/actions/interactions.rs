@@ -1,4 +1,4 @@
-use crate::actors::{MeleeAttacker, Stats, Attack};
+use crate::{actors::{stats::{Stats, StatChangeEvent, Tranced}, TakesTurns}, components::{Position, Collides}, rendering::Renderable, turn::Turns};
 use bevy::prelude::*;
 use rand::Rng;
 
@@ -12,25 +12,18 @@ pub struct BumpEvent {
     pub bumped_entity: Entity,
 }
 
+pub struct ActorRemovedEvent;
+
 // Systems
 pub fn melee_attack (
     mut ev_bump_event: EventReader<BumpEvent>,
+    mut ev_stat_change: EventWriter<StatChangeEvent>,
 
     name_query: Query<&Name>,
     attacker_query: Query<&MeleeAttacker>,
     mut stats_query: Query<&mut Stats>,
 ) {
     for ev in ev_bump_event.iter() {
-        
-        // Setup stuff
-
-        // Go into loop, check random attacks
-        // Check if there is a cost
-        //  Check if cost is able to be paid
-        // Check if attack type matches with a stat the attacked has
-
-        // if bumping guy has ability to attack (also get the ability to attack as a thingy)
-
         if let Ok(attacker_comp) = attacker_query.get(ev.bumping_entity) {
             if stats_query.get(ev.bumped_entity).is_ok() {
                 let mut rng = rand::thread_rng();
@@ -72,7 +65,8 @@ pub fn melee_attack (
 
                         if attack_valid && (has_cost == can_pay) {
                             if let Ok(mut stats_attacked) = stats_query.get_mut(ev.bumped_entity) {
-                                *stats_attacked.0.get_mut(&attack.damage_type).unwrap() += attack.damage;
+                                ev_stat_change.send(StatChangeEvent{stat: attack.damage_type, amount: attack.damage, entity: ev.bumped_entity});
+                                //*stats_attacked.0.get_mut(&attack.damage_type).unwrap() += attack.damage;
 
                                 let vars = HashMap::from([
                                     ("attacker".to_string(), attacker_name),
@@ -84,9 +78,8 @@ pub fn melee_attack (
                                 println!("{}", strfmt(&attack.interact_text[text_index], &vars).unwrap());
                             }
 
-                            //attack.interact_text[text_index]), &["fuuuck"] 
-
                             if has_cost {
+                                // TODO: IMPLEMENT THIS
 
                             }
                             break;
@@ -95,59 +88,101 @@ pub fn melee_attack (
                 }
             }
         }
+    }
+}
 
-        /*
-        if let Ok(attacker_comp) = attacker_query.get_mut(ev.bumping_entity) {
-            if let Ok(mut attacked_stats) = stats_query.get_mut(ev.bumped_entity) {
-                let attacker = ev.bumping_entity;
-                let attacked = ev.bumped_entity;
+pub fn vore_attack(
+    mut commands: Commands,
 
-                let mut costly_attack = false;
+    mut ev_bump_event: EventReader<BumpEvent>,
 
-                let mut rng = rand::thread_rng();
+    prey_query: Query<&Tranced>,
+    pred_query: Query<&DoesVore>,
+) {
+    // TODO: print stuff to log (once we make one)
 
-                let mut remaining_attacks = attacker_comp.attacks.clone();
-                let mut attack_index = rng.gen_range(0..remaining_attacks.len());
+    for ev in ev_bump_event.iter() {
+        if prey_query.get(ev.bumped_entity).is_ok() &&
+           pred_query.get(ev.bumping_entity).is_ok()
+        {
+            commands.entity(ev.bumped_entity)
+                .remove::<Collides>()
+                .remove::<Renderable>()
+                .remove::<TakesTurns>()
+                .insert(Digesting{
+                    turns_to_digest: 3,
+                });
+            commands.entity(ev.bumping_entity)
+                .push_children(&[ev.bumped_entity]);
+        }
+    }
+}
 
+pub fn update_vore (
+    mut commands: Commands,
 
+    mut prey_query: Query<(&mut Digesting)>,
+    mut pred_query: Query<(Entity, &mut Stats, &Children), With<TakesTurns>>,
 
-                while remaining_attacks.len() != 0 {
-                    let attack = &remaining_attacks[attack_index];
+    mut ev_actor_remove_event: EventWriter<ActorRemovedEvent>,
 
-                    // Check if the attacked is affected by the attack.
-                    if attacked_stats.0.contains_key(&attack.damage_type) {
-                        // Check if there is a cost for the attack.
-                        if let Some((cost, cost_type)) = &attack.cost {
-                            if let Some(attacker_stats) = &opt_attacker_stats {
-                                if attacker_stats.0.contains_key(cost_type) {
-                                    costly_attack = true;
-                                }
-                            }
-                        }
-                        // Apply attack.
-                        if let Some(stat) = attacked_stats.0.get_mut(&attack.damage_type) {
-                            *stat += attack.damage;
-                        }
-                        break;
+    turns: Res<Turns>,
+) {
+    // TODO: print stuff to log (once we make one)
+
+    for (pred, mut stats, prey) in pred_query.iter_mut() {
+        
+        if turns.was_turn(&pred) {
+            for p in prey.iter() {
+                if let Ok(mut digestion) = prey_query.get_mut(*p) {
+                    digestion.turns_to_digest -= 1;
+                    if digestion.turns_to_digest == 0 {
+                        commands.entity(*p).despawn();
+                        ev_actor_remove_event.send(ActorRemovedEvent);
+                        *stats.0.get_mut("cum points").unwrap() += 15;
                     }
+                } 
 
-                    // Need to actually do the other stuff here oops i forgor
-                }
-
-                // Apply attack cost, if necessary.
-                if costly_attack {
-                    let attack = &remaining_attacks[attack_index];
-                    
-                    if let Some((cost, cost_type)) = &attack.cost {
-                        if let Some(mut attacker_stats) = opt_attacker_stats {
-                            if let Some(stat) = attacker_stats.0.get_mut(cost_type) {
-                                *stat += cost;
-                            }
-                        }
-                    }
-                }
             }
         }
-        */
     }
+
+
+}
+
+// Misc Data
+#[derive(Clone)]
+pub struct Attack {
+    pub interact_text: Vec<String>,
+    pub damage: i32,
+    pub damage_type: String,
+    pub cost: i32,
+    pub cost_type: String,
+}
+impl Default for Attack {
+    fn default() -> Attack {
+        Attack {
+            interact_text: vec!["{attacker} hits {attacked} for {amount} damage!".to_string()],
+            damage: 1,
+            damage_type: "health".to_string(),
+            cost: 0,
+            cost_type: "health".to_string(),
+        }
+    }
+}
+
+
+
+// Components
+#[derive(Component, Default, Clone)]
+pub struct MeleeAttacker {
+    pub attacks: Vec<Attack>,
+}
+
+#[derive(Component, Default, Copy, Clone)]
+pub struct DoesVore;
+
+#[derive(Component, Default, Copy, Clone)]
+pub struct Digesting {
+    pub turns_to_digest: u8,
 }

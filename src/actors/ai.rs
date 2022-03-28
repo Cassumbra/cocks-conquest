@@ -2,7 +2,6 @@ use std::cmp::{Ordering, Reverse};
 use std::collections::{VecDeque, BinaryHeap};
 use bevy::utils::{HashMap, HashSet};
 use sark_grids::Grid;
-use adam_fov_rs::{VisibilityMap, fov};
 use rand::Rng;
 use crate::actions::movement::{PointMoveEvent, Collidables};
 
@@ -174,7 +173,7 @@ impl AI {
 // State change handling, Pathing, Actions
 pub fn generic_brain (
     mut ev_movement_event: EventWriter<PointMoveEvent>,
-    mut ai_query: Query<(&Position, &mut AI, &Vision)>,
+    mut ai_query: Query<(&Position, &mut AI, &Vision), Without<Tranced>>,
     actors_query: Query<&Position, With<TakesTurns>>,
     player_query: Query<(Entity, &Position), With<Player>>,
     mut turns: ResMut<Turns>,
@@ -275,9 +274,6 @@ pub fn generic_brain (
             }
         }
         
-
-
-
         if need_to_move {
             if ai.path.len() < 1 || (ai.path.len() > 0 && collidables.0[ai.path[1]].is_some()) {
                 ai.halted_count += 1;
@@ -317,6 +313,17 @@ pub fn generic_brain (
         }
 
         
+        turns.progress_turn();
+    }
+}
+
+pub fn tranced_brain (
+    ai_query: Query<&AI, With<Tranced>>,
+
+    mut turns: ResMut<Turns>,
+) {
+    let ai_ent = turns.order[turns.current];
+    if let Ok(_ai) = ai_query.get(ai_ent) {
         turns.progress_turn();
     }
 }

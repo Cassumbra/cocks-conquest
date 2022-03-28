@@ -11,7 +11,9 @@ impl Plugin for ActionPlugin {
         app
         .add_event::<interactions::BumpEvent>()
         .add_event::<interactions::ActorRemovedEvent>()
+        .add_event::<interactions::HealActionEvent>()
         .add_event::<movement::CollidableChangeEvent>()
         .add_event::<movement::PointMoveEvent>();
+
     }
 }

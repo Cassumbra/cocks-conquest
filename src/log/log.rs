@@ -7,7 +7,7 @@ pub struct LogPlugin;
 impl Plugin for LogPlugin {
     fn build(&self, app: &mut App) {
         app
-        .init_resource::<Vec<Vec<LogFragment>>>();
+        .init_resource::<Log>();
     }
 }
 
@@ -19,5 +19,5 @@ pub struct LogFragment {
 }
 
 // Resources
-//#[derive(Default)]
-//pub struct Log()
+#[derive(Default)]
+pub struct Log(Vec<Vec<LogFragment>>);

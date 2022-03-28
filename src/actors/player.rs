@@ -4,7 +4,7 @@ use bevy::input::ElementState;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::app::AppExit;
 
-use crate::actions::interactions::{MeleeAttacker, Attack, DoesVore};
+use crate::actions::interactions::{MeleeAttacker, Attack, DoesVore, HealActionEvent, CanHeal};
 use crate::actions::movement::PointMoveEvent;
 use crate::rendering::window::WindowChangeEvent;
 
@@ -30,6 +30,7 @@ pub struct PlayerBundle {
     pub fatal_stats: FatalStats,
     pub melee_attacker: MeleeAttacker,
     pub does_vore: DoesVore,
+    pub can_heal: CanHeal,
 }
 impl Default for PlayerBundle {
     fn default() -> PlayerBundle {
@@ -64,6 +65,7 @@ impl Default for PlayerBundle {
                 }
             ]},
             does_vore: DoesVore,
+            can_heal: CanHeal,
         }
     }
 }
@@ -71,54 +73,53 @@ impl Default for PlayerBundle {
 // Systems
 /// Player input.
 /// 
-pub fn player_input(
+pub fn player_input_game (
     query: Query<Entity, (With<Position>, With<Player>, With<TakesTurns>)>,
 
     mut ev_key: EventReader<KeyboardInput>,
     mut ev_movement_event: EventWriter<PointMoveEvent>,
-    mut ev_exit: EventWriter<AppExit>,
-    mut ev_window_change: EventWriter<WindowChangeEvent>,
+    mut ev_heal_event: EventWriter<HealActionEvent>,
 
     mut turns: ResMut<Turns>,
 ) {
-    let player = turns.order[turns.current];
-    if let Ok(ent) = query.get(player) {
+    let ent = turns.order[turns.current];
+    if let Ok(player) = query.get(ent) {
         for ev in ev_key.iter() {
             if ev.state == ElementState::Pressed {
                 match ev.key_code {
                     // Cardinal Movement
                     Some(KeyCode::I) | Some(KeyCode::Numpad8) => {
-                        ev_movement_event.send(PointMoveEvent{entity: ent, movement: IVec2::new(0, 1)});
+                        ev_movement_event.send(PointMoveEvent{entity: player, movement: IVec2::new(0, 1)});
                         turns.progress_turn();
                     }
                     Some(KeyCode::Comma) | Some(KeyCode::Numpad2) => {
-                        ev_movement_event.send(PointMoveEvent{entity: ent, movement: IVec2::new(0, -1)});
+                        ev_movement_event.send(PointMoveEvent{entity: player, movement: IVec2::new(0, -1)});
                         turns.progress_turn();
                     }
                     Some(KeyCode::J) | Some(KeyCode::Numpad4) => {
-                        ev_movement_event.send(PointMoveEvent{entity: ent, movement: IVec2::new(-1, 0)});
+                        ev_movement_event.send(PointMoveEvent{entity: player, movement: IVec2::new(-1, 0)});
                         turns.progress_turn();
                     }
                     Some(KeyCode::L) | Some(KeyCode::Numpad6) => {
-                        ev_movement_event.send(PointMoveEvent{entity: ent, movement: IVec2::new(1, 0)});
+                        ev_movement_event.send(PointMoveEvent{entity: player, movement: IVec2::new(1, 0)});
                         turns.progress_turn();
                     }
         
                     // Diagonal Movement
                     Some(KeyCode::U) | Some(KeyCode::Numpad7) => {
-                        ev_movement_event.send(PointMoveEvent{entity: ent, movement: IVec2::new(-1, 1)});
+                        ev_movement_event.send(PointMoveEvent{entity: player, movement: IVec2::new(-1, 1)});
                         turns.progress_turn();
                     }
                     Some(KeyCode::O) | Some(KeyCode::Numpad9) => {
-                        ev_movement_event.send(PointMoveEvent{entity: ent, movement: IVec2::new(1, 1)});
+                        ev_movement_event.send(PointMoveEvent{entity: player, movement: IVec2::new(1, 1)});
                         turns.progress_turn();
                     }
                     Some(KeyCode::M) | Some(KeyCode::Numpad1) => {
-                        ev_movement_event.send(PointMoveEvent{entity: ent, movement: IVec2::new(-1, -1)});
+                        ev_movement_event.send(PointMoveEvent{entity: player, movement: IVec2::new(-1, -1)});
                         turns.progress_turn();
                     }
                     Some(KeyCode::Period) | Some(KeyCode::Numpad3) => {
-                        ev_movement_event.send(PointMoveEvent{entity: ent, movement: IVec2::new(1, -1)});
+                        ev_movement_event.send(PointMoveEvent{entity: player, movement: IVec2::new(1, -1)});
                         turns.progress_turn();
                     }
 
@@ -127,25 +128,42 @@ pub fn player_input(
                         turns.progress_turn();
                     }
 
+                    // Heal
+                    Some(KeyCode::V) => {
+                        ev_heal_event.send(HealActionEvent{healing_entity: player});
+                        turns.progress_turn();
+                    }
+
                     // Actions (TODO)
                     // Sploot!
                     // Heal
                     // (Melee doesn't need a keybind cause you just do it by walking into guys)
 
-                    // Other stuff
-                    // These need to be moved elsewhere and be not tied to the turn system.
-                    Some(KeyCode::Escape) => {
-                        ev_exit.send(AppExit);
-                    }
-                    Some(KeyCode::NumpadAdd) | Some(KeyCode::Equals) => {
-                        ev_window_change.send(WindowChangeEvent(1));
-                    }
-                    Some(KeyCode::NumpadSubtract) | Some(KeyCode::Minus) => {
-                        ev_window_change.send(WindowChangeEvent(-1));
-                    }
-
                     _ => {}
                 }
+            }
+        }
+    }
+}
+
+pub fn player_input_meta (
+    mut ev_key: EventReader<KeyboardInput>,
+    mut ev_exit: EventWriter<AppExit>,
+    mut ev_window_change: EventWriter<WindowChangeEvent>,
+) {
+    for ev in ev_key.iter() {
+        if ev.state == ElementState::Pressed {
+            match ev.key_code {
+                Some(KeyCode::Escape) => {
+                    ev_exit.send(AppExit);
+                }
+                Some(KeyCode::NumpadAdd) | Some(KeyCode::Equals) => {
+                    ev_window_change.send(WindowChangeEvent(1));
+                }
+                Some(KeyCode::NumpadSubtract) | Some(KeyCode::Minus) => {
+                    ev_window_change.send(WindowChangeEvent(-1));
+                }
+                _ => {}
             }
         }
     }

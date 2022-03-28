@@ -79,13 +79,15 @@ fn main () {
             .after("update_turn")
             .with_system(ai::generic_brain)
             .with_system(ai::tranced_brain)
-            .with_system(player::player_input)
+            .with_system(player::player_input_game)
+            .with_system(player::player_input_meta)
     )
     .add_system_set(
         SystemSet::new()
             .label("actor_actions")
             .after("actor_turn")
             .with_system(movement::do_point_move)
+            .with_system(interactions::heal_action)
             
     )
     .add_system_set(

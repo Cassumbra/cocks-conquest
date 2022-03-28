@@ -14,6 +14,10 @@ pub struct BumpEvent {
 
 pub struct ActorRemovedEvent;
 
+pub struct HealActionEvent{
+    pub healing_entity: Entity,
+}
+
 // Systems
 pub fn melee_attack (
     mut ev_bump_event: EventReader<BumpEvent>,
@@ -146,7 +150,22 @@ pub fn update_vore (
             }
         }
     }
+}
 
+pub fn heal_action (
+    mut heal_query: Query<&mut Stats, With<CanHeal>>,
+
+    mut ev_heal_event: EventReader<HealActionEvent>,
+) {
+    for ev in ev_heal_event.iter() {
+        if let Ok(mut stats) = heal_query.get_mut(ev.healing_entity) {
+            // Both of these should be retrieved dynamically from the CanHeal component and/or a MaxStats component in the future.
+            if stats.0.get("cum points").unwrap() >= &5 && stats.0.get("health").unwrap() < &3 {
+                *stats.0.get_mut("cum points").unwrap() -= 5;
+                *stats.0.get_mut("health").unwrap() += 1;
+            }
+        }
+    }
 
 }
 
@@ -179,6 +198,7 @@ pub struct MeleeAttacker {
     pub attacks: Vec<Attack>,
 }
 
+// Should be dynamic like how attacks are (at some point but i don't care)
 #[derive(Component, Default, Copy, Clone)]
 pub struct DoesVore;
 
@@ -186,3 +206,7 @@ pub struct DoesVore;
 pub struct Digesting {
     pub turns_to_digest: u8,
 }
+
+// Should be dynamic like how attacks are (at some point but i dont care)
+#[derive(Component, Default, Copy, Clone)]
+pub struct CanHeal;

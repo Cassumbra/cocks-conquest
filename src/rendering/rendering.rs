@@ -163,6 +163,12 @@ pub fn render_stats (
     }
 }
 
+pub fn render_log (
+
+) {
+    
+}
+
 /// Blends two color components using their alpha values and a new alpha value.
 /// "1" overlaps "2".
 fn blend_color_component(a1: f32, a2: f32, a3: f32, c1: f32, c2: f32) -> f32 {

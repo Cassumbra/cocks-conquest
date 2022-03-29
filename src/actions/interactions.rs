@@ -95,6 +95,12 @@ pub fn melee_attack (
     }
 }
 
+pub fn ranged_attack (
+
+) {
+    
+}
+
 pub fn vore_attack(
     mut commands: Commands,
 

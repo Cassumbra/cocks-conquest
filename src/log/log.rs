@@ -20,4 +20,6 @@ pub struct LogFragment {
 
 // Resources
 #[derive(Default)]
-pub struct Log(Vec<Vec<LogFragment>>);
+pub struct Log{
+    lines: Vec<Vec<LogFragment>>
+}

@@ -1,6 +1,9 @@
+use std::collections::BTreeMap;
+
 use bevy::prelude::*;
 use bevy_ascii_terminal::{Tile, Terminal};
 use inflector::Inflector;
+use sark_grids::Grid;
 use crate::actors::{player::Player, vision::{Vision, MindMap}};
 use crate::actors::stats::Stats;
 
@@ -20,35 +23,9 @@ impl Plugin for RenderingPlugin {
     }
 }
 
-//Components
-#[derive(Component, Default, Copy, Clone)]
-pub struct Renderable {
-    pub tile: Tile,
-    pub order: u8,
-}
 
-//Resources
-#[derive(Default)]
-pub struct RenderOrder(pub Vec<Entity>);
 
-// We need to make a more sophisticated way for doing this the next time we do this.
-// This should work for now, though.
 
-// TODO: When remaking this, create display entities with width and height. Have a ScreenSize resource.
-// Display entities are parents of entities with a renderable component.
-// ScreenSize determines the max size of display entities.
-// Display entities can be made with a rectangle component and a display tag component.
-// Future me: Take these plans at your own discretion. Also, don't bother working on any of this shit if you're not even future me.
-pub struct BottomSize {
-    pub height: u32,
-}
-impl Default for BottomSize {
-    fn default() -> BottomSize {
-        BottomSize {
-            height: 10,
-        }
-    }
-}
 
 //Systems
 /// Updates the order in which entities are drawn.
@@ -70,7 +47,7 @@ pub fn update_render_order(
 
 /// Rendering system.
 /// Renders all entities with render and position components.
-pub fn render (
+pub fn update_player_view (
     query: Query<(&Renderable, &Position)>,
     player_query: Query<(&Vision, &MindMap), With<Player>>,
     mut term_query: Query<&mut Terminal>,
@@ -166,7 +143,46 @@ pub fn render_stats (
 pub fn render_log (
 
 ) {
-    
+
+}
+
+pub fn render_all (
+    display_query: Query<(&Position, &Display)>,
+    mut terminal_query: Query<&mut Terminal>,
+) {
+    let mut terminal = terminal_query.single_mut();
+    terminal.clear();
+
+    for (display_pos, display) in display_query.iter() {
+        for (pos, tiles) in display.tiles.iter_2d() {
+            let true_pos = display_pos.0 + pos;
+
+            for tile in tiles.iter() {
+                let current_tile = terminal.get_tile([true_pos.x, true_pos.y]);
+
+                if tile.bg_color.a() == 1.0 {
+                    terminal.put_tile([true_pos.x, true_pos.y], *tile);
+                }
+                else if tile.bg_color.a() == 0.0 {
+                    let new_tile = Tile {
+                        glyph: tile.glyph,
+                        fg_color: tile.fg_color,
+                        bg_color: current_tile.bg_color,
+                    };
+        
+                    terminal.put_tile([true_pos.x, true_pos.y], new_tile);
+                }
+                else {
+                    let new_tile = Tile {
+                        glyph: tile.glyph,
+                        fg_color: tile.fg_color,
+                        bg_color: blend_colors(tile.bg_color, current_tile.bg_color),
+                    };
+                    terminal.put_tile([true_pos.x, true_pos.y], new_tile);
+                }
+            }
+        }
+    }
 }
 
 /// Blends two color components using their alpha values and a new alpha value.
@@ -202,4 +218,58 @@ fn change_brightness(color: Color, amount: f32) -> Color {
         .clamp(0.0, 1.0);
 
     Color::rgba(new_red, new_green, new_blue, color.a())
+}
+
+// Data
+#[derive(Component, Default, Clone)]
+pub struct Layer {
+    pub tiles: Grid<Vec<Tile>>,
+    pub position: IVec2,
+    // Not important atm.
+    //pub order: u8,
+    //pub active: bool,
+}
+
+pub enum LayerType {
+    LevelView,
+    Stats,
+    Log,
+}
+
+// Components
+#[derive(Component, Default, Copy, Clone)]
+pub struct Renderable {
+    pub tile: Tile,
+    pub order: u8,
+}
+
+
+
+// Resources
+#[derive(Default)]
+pub struct RenderingData {
+    pub layers: BTreeMap<>
+}
+
+// Goofy shit below
+#[derive(Default)]
+pub struct RenderOrder(pub Vec<Entity>);
+
+// We need to make a more sophisticated way for doing this the next time we do this.
+// This should work for now, though.
+
+// TODO: When remaking this, create display entities with width and height. Have a ScreenSize resource.
+// Display entities are parents of entities with a renderable component.
+// ScreenSize determines the max size of display entities.
+// Display entities can be made with a rectangle component and a display tag component.
+// Future me: Take these plans at your own discretion. Also, don't bother working on any of this shit if you're not even future me.
+pub struct BottomSize {
+    pub height: u32,
+}
+impl Default for BottomSize {
+    fn default() -> BottomSize {
+        BottomSize {
+            height: 10,
+        }
+    }
 }

@@ -168,6 +168,10 @@ pub fn render_stats_and_log (
         terminal.0.put_string([current_length as i32, bottom_size.height as i32], &print_string);
         current_length += print_string.len();
     }
+
+
+    // TODO: add actual log rendering here
+    
 }
 
 /// Blends two color components using their alpha values and a new alpha value.

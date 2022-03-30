@@ -7,13 +7,11 @@ use crate::actions::movement::Collidables;
 
 use super::*;
 
-
-
-
 pub fn setup (
     mut commands: Commands,
+
     map_size: Res<MapSize>,
-    mut bottom_size: Res<BottomSize>,
+    bottom_size: Res<BottomSize>,
 ) {
     let size = [map_size.width, map_size.height + bottom_size.height];
 
@@ -27,4 +25,6 @@ pub fn setup (
 
     let collidables: Grid<Option<Entity>> = Grid::default([map_size.width, map_size.height]);
     commands.insert_resource(Collidables(collidables));
+
+    commands.insert_resource(TemporaryTerminal(Terminal::with_size(size)));
 }

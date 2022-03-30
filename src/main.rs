@@ -67,12 +67,20 @@ fn main () {
     .add_startup_system_to_stage("setup_vision", vision::setup_vision)
 
     .add_system(rendering::update_render_order)
-    .add_system(rendering::render.label("render"))
-    .add_system(rendering::render_stats.label("render_stats").after("render"))
     .add_system(window::change_size)
 
+    .add_system_set(
+        SystemSet::new()
+            .label("rendering")
+            .with_system(rendering::render_level_view)
+            .with_system(rendering::render_stats_and_log)
+    )
+    .add_system(rendering::finish_render.after("rendering"))
+
+    // Perhaps these should be part of the PostUpdate stage.
     .add_system(turn::update_turn_order.label("update_turn_order"))
     .add_system(turn::update_turn.label("update_turn").after("update_turn_order"))
+
     .add_system_set(
         SystemSet::new()
             .label("actor_turn")

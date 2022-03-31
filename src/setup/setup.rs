@@ -3,7 +3,8 @@ use bevy::prelude::*;
 use bevy_ascii_terminal::*;
 use bevy_tiled_camera::*;
 use sark_grids::Grid;
-use crate::{actions::movement::Collidables, rendering::window::WindowChangeEvent};
+use crate::actions::movement::Collidables;
+use crate::rendering::window::WindowChangeEvent;
 
 use super::*;
 
@@ -29,6 +30,15 @@ pub fn setup (
     commands.insert_resource(Collidables(collidables));
 
     commands.insert_resource(TemporaryTerminal(Terminal::with_size(size)));
+
+    commands.insert_resource(Log{
+        lines: vec![
+        vec![LogFragment{text: "Welcome ".to_string(), color: Color::WHITE},
+        LogFragment{text: "to ".to_string(), color: Color::WHITE},
+        LogFragment{text: "Cock's ".to_string(), color: Color::WHITE},
+        LogFragment{text: "Conquest! ".to_string(), color: Color::WHITE}],
+        vec![LogFragment{text: "Testing lol ".to_string(), color: Color::WHITE}]]
+    });
 
     ev_window_change.send(WindowChangeEvent(1))
 }

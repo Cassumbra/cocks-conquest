@@ -21,5 +21,5 @@ pub struct LogFragment {
 // Resources
 #[derive(Default)]
 pub struct Log{
-    lines: Vec<Vec<LogFragment>>
+    pub lines: Vec<Vec<LogFragment>>
 }

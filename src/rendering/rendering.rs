@@ -166,8 +166,16 @@ pub fn render_stats_and_log (
     }
     let [mut current_length, mut current_line] = put_string_vec([0, bottom_size.height as i32], &print_strings, &mut terminal.0);
 
-    // TODO: add actual log rendering here
-    for line in &log.lines {
+    // Log rendering
+    let lines: &[Vec<LogFragment>];
+
+    if log.lines.len() < bottom_size.height as usize {
+        lines = &log.lines[..];
+    } else {
+        lines = &log.lines[log.lines.len()-bottom_size.height as usize..log.lines.len()]
+    }
+
+    for line in lines.iter().rev() {
         current_line -= 1;
         [current_length, current_line] = put_string_vec_formatted([0, current_line], line, &mut terminal.0);
     }
@@ -186,7 +194,7 @@ fn put_string_vec (
             current_length = position[0];
             current_line -= 1;
             if !terminal.is_in_bounds([current_length + string.len() as i32, current_line]) {
-                eprintln!("ERROR: Cannot fit strings in terminal!");
+                //eprintln!("ERROR: Cannot fit strings in terminal!");
                 break;
             }
         }
@@ -209,7 +217,7 @@ fn put_string_vec_formatted (
             current_length = position[0];
             current_line -= 1;
             if !terminal.is_in_bounds([current_length + string.len() as i32, current_line]) {
-                eprintln!("ERROR: Cannot fit strings in terminal!");
+                //eprintln!("ERROR: Cannot fit strings in terminal!");
                 break;
             }
         }

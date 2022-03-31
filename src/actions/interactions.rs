@@ -1,4 +1,4 @@
-use crate::{actors::{stats::{Stats, StatChangeEvent, Tranced}, TakesTurns}, components::{Position, Collides}, rendering::Renderable, turn::Turns};
+use crate::{actors::{stats::{Stats, StatChangeEvent, Tranced}, TakesTurns}, components::{Position, Collides}, rendering::Renderable, turn::Turns, log::Log};
 use bevy::prelude::*;
 use rand::Rng;
 
@@ -26,6 +26,8 @@ pub fn melee_attack (
     name_query: Query<&Name>,
     attacker_query: Query<&MeleeAttacker>,
     mut stats_query: Query<&mut Stats>,
+
+    mut log: ResMut<Log>,
 ) {
     for ev in ev_bump_event.iter() {
         if let Ok(attacker_comp) = attacker_query.get(ev.bumping_entity) {
@@ -79,7 +81,8 @@ pub fn melee_attack (
                                 ]);
 
                                 let text_index = rng.gen_range(0..attack.interact_text.len());
-                                println!("{}", strfmt(&attack.interact_text[text_index], &vars).unwrap());
+                                log.log_string(format![" {}", strfmt(&attack.interact_text[text_index], &vars).unwrap()]);
+                                //println!("{}", strfmt(&attack.interact_text[text_index], &vars).unwrap());
                             }
 
                             if has_cost {

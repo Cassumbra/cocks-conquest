@@ -33,11 +33,8 @@ pub fn setup (
 
     commands.insert_resource(Log{
         lines: vec![
-        vec![LogFragment{text: "Welcome ".to_string(), color: Color::WHITE},
-        LogFragment{text: "to ".to_string(), color: Color::WHITE},
-        LogFragment{text: "Cock's ".to_string(), color: Color::WHITE},
-        LogFragment{text: "Conquest! ".to_string(), color: Color::WHITE}],
-        vec![LogFragment{text: "Testing lol ".to_string(), color: Color::WHITE}]]
+        Log::fragment_string(" Welcome to Cock's Conquest!".to_string(), Color::WHITE),
+        ]
     });
 
     ev_window_change.send(WindowChangeEvent(1))

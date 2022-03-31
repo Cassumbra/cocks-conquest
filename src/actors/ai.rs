@@ -64,7 +64,7 @@ impl Default for AI {
     }
 }
 impl AI {
-    pub fn bfs (&self, start: IVec2, goal: IVec2, collidables: &Grid<Option<Entity>>) -> VecDeque<IVec2> {
+    fn bfs (&self, start: IVec2, goal: IVec2, collidables: &Grid<Option<Entity>>) -> VecDeque<IVec2> {
         // Set our start to the frontier zone, with no origin point.
         let mut frontier = VecDeque::<IVec2>::new();
         frontier.push_back(start);
@@ -109,7 +109,7 @@ impl AI {
         path
     }
 
-    pub fn dijkstra (&self, start: IVec2, goal: IVec2, collidables: &Grid<Option<Entity>>, obstacles: &Grid<u32>) -> (VecDeque<IVec2>, u32) {
+    fn dijkstra (&self, start: IVec2, goal: IVec2, collidables: &Grid<Option<Entity>>, obstacles: &Grid<u32>) -> (VecDeque<IVec2>, u32) {
         //IVec2s do not support Ord. Sad!
         let mut frontier = BinaryHeap::<Reverse<WeightedPosition>>::new();
         frontier.push(Reverse(WeightedPosition{position: start, weight: 0}));

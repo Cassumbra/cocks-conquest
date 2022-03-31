@@ -23,3 +23,19 @@ pub struct LogFragment {
 pub struct Log{
     pub lines: Vec<Vec<LogFragment>>
 }
+impl Log {
+    pub fn fragment_string ( string: String, color: Color) -> Vec<LogFragment> {
+        let strings: Vec<LogFragment> = string
+            .split_inclusive(' ')
+            .map(|s| LogFragment{text: s.to_string(), color: color} )
+            .collect();
+        strings
+    }
+    pub fn log_fragments ( &mut self, fragments: Vec<LogFragment> ) {
+        self.lines.push(fragments);
+    }
+
+    pub fn log_string ( &mut self, string: String ) {
+        self.lines.push(Log::fragment_string(string, Color::WHITE));
+    }
+}

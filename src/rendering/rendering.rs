@@ -148,6 +148,7 @@ pub fn render_stats_and_log (
     player_query: Query<(Entity, &Stats, Option<&Name>), With<Player>>,
 
     bottom_size: Res<BottomSize>,
+    log: Res<Log>,
     mut terminal: ResMut<TemporaryTerminal>,
 ) {
     let (player, stats, opt_name) = player_query.single();
@@ -158,20 +159,39 @@ pub fn render_stats_and_log (
         name = temp_name.to_string();
     }
     
-    let print_string = format![" {}    ", &name];
-    terminal.0.put_string([1, bottom_size.height as i32], &print_string);
-
-    let mut current_length = print_string.len();
+    let mut print_strings = vec![format![" {}    ", &name]];
 
     for stat in stats.0.iter() {
-        let print_string = format!["{}: {}  ", stat.0.to_title_case(), stat.1];
-        terminal.0.put_string([current_length as i32, bottom_size.height as i32], &print_string);
-        current_length += print_string.len();
+        print_strings.push(format!["{}: {}  ", stat.0.to_title_case(), stat.1]);
     }
-
+    let [mut current_length, mut current_line] = put_string_vec([0, bottom_size.height as i32], &print_strings, &mut terminal.0);
 
     // TODO: add actual log rendering here
     
+}
+
+
+// Helper Systems
+fn put_string_vec (
+    position: [i32; 2],
+    strings: &Vec<String>,
+    terminal: &mut Terminal,
+) -> [i32; 2] {
+    let [mut current_length, mut current_line] = position;
+    for string in strings.iter() {
+        if !terminal.is_in_bounds([current_length + string.len() as i32, current_line]) {
+            current_length = position[0];
+            current_line -= 1;
+            if !terminal.is_in_bounds([current_length + string.len() as i32, current_line]) {
+                eprintln!("ERROR: Cannot fit strings in terminal!");
+                break;
+            }
+        }
+        
+        terminal.put_string([current_length, current_line], string);
+        current_length += string.len() as i32;
+    }
+    [current_length, current_line]
 }
 
 /// Blends two color components using their alpha values and a new alpha value.

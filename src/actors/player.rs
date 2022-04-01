@@ -49,10 +49,12 @@ impl Default for PlayerBundle {
             takes_turns: TakesTurns,
             vision: Vision{..Default::default()},
             mind_map: MindMap{..Default::default()},
-            stats: Stats(BTreeMap::from([
-                ("health".to_string(), 3),
-                ("cum points".to_string(), 20),
-            ])),
+            stats: Stats(
+                BTreeMap::from([
+                    ("health".to_string(), Stat{value: 3, min: 0, max: 3}),
+                    ("cum points".to_string(), Stat{value: 15, min: 0, max: 60}),
+                ])
+            ),
             fatal_stats: FatalStats{..Default::default()},
             melee_attacker: MeleeAttacker{attacks: vec![
                 Attack{

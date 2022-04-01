@@ -104,10 +104,12 @@ impl Default for SoldierBundle {
             collides: Collides,
             takes_turns: TakesTurns,
             vision: Vision{..Default::default()},
-            stats: Stats(BTreeMap::from([
-                ("health".to_string(), 3),
-                ("resistance".to_string(), 3),
-            ])),
+            stats: Stats(
+                BTreeMap::from([
+                    ("health".to_string(), Stat{value: 3, min: 0, max: 3}),
+                    ("resistance".to_string(), Stat{value: 3, min: 0, max: 3}),
+                ])
+            ),
             fatal_stats: FatalStats(
                 BTreeMap::from([
                     ("health".to_string(), (0, FatalEffect::Corpse)),

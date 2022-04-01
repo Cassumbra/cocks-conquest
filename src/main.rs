@@ -103,7 +103,7 @@ fn main () {
             .label("action_effects")
             .after("actor_actions")
             // Melee attacks are curently an effect of bumping (see point move)
-            .with_system(interactions::vore_attack.label("vore_attack").before("melee_attack"))
+            .with_system(interactions::vore_attack.label("vore_attack").after("melee_attack"))
             .with_system(interactions::melee_attack.label("melee_attack"))
             
     )

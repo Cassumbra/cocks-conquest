@@ -33,7 +33,7 @@ pub fn setup (
 
     commands.insert_resource(Log{
         lines: vec![
-        Log::fragment_string(" Welcome to Cock's Conquest!".to_string(), Color::WHITE),
+        Log::fragment_string(" Welcome to Cock's Conquest!".to_string(), Color::CYAN),
         ]
     });
 

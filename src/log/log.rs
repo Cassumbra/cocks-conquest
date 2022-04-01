@@ -36,6 +36,10 @@ impl Log {
     }
 
     pub fn log_string ( &mut self, string: String ) {
-        self.lines.push(Log::fragment_string(string, Color::WHITE));
+        self.lines.push(Log::fragment_string(string, Color::rgb(0.8, 0.8, 0.8)));
+    }
+
+    pub fn log_string_formatted ( &mut self, string: String, color: Color ) {
+        self.lines.push(Log::fragment_string(string, color));
     }
 }

@@ -162,7 +162,7 @@ pub fn render_stats_and_log (
     let mut print_strings = vec![format![" {}    ", &name]];
 
     for stat in stats.0.iter() {
-        print_strings.push(format!["{}: {}  ", stat.0.to_title_case(), stat.1]);
+        print_strings.push(format!["{}: {}  ", stat.0.to_title_case(), stat.1.value]);
     }
     let [mut current_length, mut current_line] = put_string_vec([0, bottom_size.height as i32], &print_strings, &mut terminal.0);
 
@@ -177,7 +177,7 @@ pub fn render_stats_and_log (
 
     for line in lines.iter().rev() {
         current_line -= 1;
-        [current_length, current_line] = put_string_vec_formatted([0, current_line], line, &mut terminal.0);
+        [current_length, current_line] = put_string_vec_formatted([1, current_line], line, &mut terminal.0);
     }
 }
 

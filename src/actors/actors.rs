@@ -56,7 +56,7 @@ pub fn setup_actors (
         .insert(Name::new("Cass Cock"));
 
     
-
+    
     for (i, room) in other_rooms.iter().enumerate() {
         commands.spawn()
             .insert_bundle(actors::SoldierBundle{
@@ -71,6 +71,7 @@ pub fn setup_actors (
             .insert(Name::new(format!("Soldier {}", i)))
             .insert(AI{..Default::default()});
     }
+    
 }
 
 #[derive(Component, Default, Copy, Clone)]

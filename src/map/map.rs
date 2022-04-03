@@ -86,8 +86,9 @@ impl Default for FloorBundle {
 
 //Systems
 pub fn entity_map_rooms_passages (
-    mut has_run: Local<bool>,
     mut commands: Commands,
+
+    mut res_rooms: ResMut<Rooms>,
     map_size: Res<MapSize>,
 ) {
     
@@ -140,12 +141,12 @@ pub fn entity_map_rooms_passages (
         }
     }
 
-    commands.insert_resource(Rooms(rooms));
-    *has_run = true;    
+    res_rooms.0 = rooms;
 }
 
 fn simple_entity_map(
     mut commands: Commands,
+
     map_size: Res<MapSize>,
     collidables: Res<Collidables>,
 ) {

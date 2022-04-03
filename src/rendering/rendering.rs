@@ -213,6 +213,14 @@ fn put_string_vec_formatted (
     let [mut current_length, mut current_line] = position;
     for fragment in fragments.iter() {
         let string = &fragment.text;
+
+        if string == "\n " {
+            
+            current_length = position[0];
+            current_line -= 1;
+            continue;
+        }
+
         if !terminal.is_in_bounds([current_length + string.len() as i32, current_line]) {
             current_length = position[0];
             current_line -= 1;

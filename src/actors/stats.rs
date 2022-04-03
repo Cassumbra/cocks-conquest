@@ -44,7 +44,7 @@ pub fn update_fatal (
                                 commands.entity(ent)
                                     .remove::<TakesTurns>()
                                     .remove::<Collides>();
-                                ev_actor_remove_event.send(ActorRemovedEvent);
+                                ev_actor_remove_event.send(ActorRemovedEvent{removed_actor: ent});
         
                                 if let Ok(mut renderable) = renderable_query.get_mut(ev.entity) {
                                     renderable.tile.bg_color = Color::ORANGE_RED;

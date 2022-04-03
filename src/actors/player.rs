@@ -4,9 +4,10 @@ use bevy::input::ElementState;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::app::AppExit;
 
-use crate::actions::interactions::{MeleeAttacker, Attack, DoesVore, HealActionEvent, CanHeal};
+use crate::actions::interactions::{MeleeAttacker, Attack, DoesVore, HealActionEvent, CanHeal, ActorRemovedEvent};
 use crate::actions::movement::PointMoveEvent;
 use crate::rendering::window::WindowChangeEvent;
+use crate::setup::RestartEvent;
 
 use super::*;
 
@@ -149,9 +150,12 @@ pub fn player_input_game (
 }
 
 pub fn player_input_meta (
+    keys: Res<Input<KeyCode>>,
+
     mut ev_key: EventReader<KeyboardInput>,
     mut ev_exit: EventWriter<AppExit>,
     mut ev_window_change: EventWriter<WindowChangeEvent>,
+    //mut ev_restart: EventWriter<RestartEvent>,
 ) {
     for ev in ev_key.iter() {
         if ev.state == ElementState::Pressed {
@@ -165,8 +169,42 @@ pub fn player_input_meta (
                 Some(KeyCode::NumpadSubtract) | Some(KeyCode::Minus) => {
                     ev_window_change.send(WindowChangeEvent(-1));
                 }
+                Some(KeyCode::R) => {
+                    if keys.pressed(KeyCode::LShift) || keys.pressed(KeyCode::RShift) {
+                        //ev_restart.send(RestartEvent);
+                    }
+                }
+
                 _ => {}
             }
+        }
+    }
+}
+
+pub fn player_victory (
+    enemy_query: Query<&TakesTurns, Without<Player>>,
+
+    mut ev_actor_remove_event: EventReader<ActorRemovedEvent>,
+
+    mut log: ResMut<Log>,
+) {
+    for ev in ev_actor_remove_event.iter() {
+        if enemy_query.is_empty() {
+            log.log_string_formatted(" You win! Press shift+r to start over.".to_string(), Color::YELLOW)
+        }
+    }
+}
+
+pub fn player_death (
+    player_query: Query<&Player>,
+
+    mut ev_actor_remove_event: EventReader<ActorRemovedEvent>,
+
+    mut log: ResMut<Log>,
+) {
+    for ev in ev_actor_remove_event.iter() {
+        if player_query.get(ev.removed_actor).is_ok() {
+            log.log_string_formatted(" You have died! Press shift+r to try again.".to_string(), Color::YELLOW)
         }
     }
 }

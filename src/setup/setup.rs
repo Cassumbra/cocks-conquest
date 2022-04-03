@@ -8,6 +8,10 @@ use crate::rendering::window::WindowChangeEvent;
 
 use super::*;
 
+// Events
+pub struct RestartEvent;
+
+// Systems
 pub fn setup (
     mut commands: Commands,
 
@@ -19,7 +23,6 @@ pub fn setup (
     let size = [map_size.width, map_size.height + bottom_size.height];
 
     let mut term_bundle = TerminalBundle::new().with_size(size);
-    let terminal = &mut term_bundle.terminal;
 
     commands.spawn_bundle(term_bundle);
 
@@ -33,9 +36,16 @@ pub fn setup (
 
     commands.insert_resource(Log{
         lines: vec![
-        Log::fragment_string(" Welcome to Cock's Conquest!".to_string(), Color::CYAN),
+        Log::fragment_string(" Welcome to Cock's Conquest!  \n Play with your index finger on j or numpad 4. You can move cardinally, diagonally, or wait.  \n Press c to heal.  \n You can restart with shift+r at any time.".to_string(), Color::CYAN),
         ]
     });
 
     ev_window_change.send(WindowChangeEvent(1))
 }
+
+pub fn finish_setup (
+    mut game_state: ResMut<State<GameState>>,
+) {
+    game_state.set(GameState::Playing).unwrap()
+}
+    

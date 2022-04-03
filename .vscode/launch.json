@@ -1,0 +1,45 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'cock-roguelike-rework-1'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=cock-roguelike-rework-1",
+                    "--package=cock-roguelike-rework-1"
+                ],
+                "filter": {
+                    "name": "cock-roguelike-rework-1",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'cock-roguelike-rework-1'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=cock-roguelike-rework-1",
+                    "--package=cock-roguelike-rework-1"
+                ],
+                "filter": {
+                    "name": "cock-roguelike-rework-1",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

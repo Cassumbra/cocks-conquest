@@ -938,6 +938,7 @@ dependencies = [
  "bevy",
  "bevy_ascii_terminal",
  "bevy_tiled_camera",
+ "iyes_loopless",
  "rand",
  "sark_grids",
  "strfmt",
@@ -1721,6 +1722,17 @@ name = "itoa"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
+
+[[package]]
+name = "iyes_loopless"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e28a07b2326a741cfe778b968af99cc3ca6306bb4a6f428a6f1ad3efdfd5fbfc"
+dependencies = [
+ "bevy_core",
+ "bevy_ecs",
+ "bevy_utils",
+]
 
 [[package]]
 name = "jni"

@@ -72,6 +72,8 @@ pub fn setup_actors (
             .insert(AI{..Default::default()});
     }
     
+
+    commands.insert_resource(NextState(GameState::FinishSetup));
 }
 
 #[derive(Component, Default, Copy, Clone)]

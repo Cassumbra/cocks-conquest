@@ -4,6 +4,8 @@ use crate::actions::movement::{PointMoveEvent, Collidables};
 use super::*;
 
 pub fn setup_vision (
+    mut commands: Commands,
+
     mut ev_movement_event: EventWriter<PointMoveEvent>,
 
     vision_query: Query<Entity, With<Vision>>,
@@ -11,6 +13,8 @@ pub fn setup_vision (
     for ent in vision_query.iter() {
         ev_movement_event.send(PointMoveEvent{entity: ent, movement: IVec2::new(0, 0)});
     }
+    
+    commands.insert_resource(NextState(GameState::Playing));
 }
 
 // This and the mindmap will need to store more than just an entity or a tile later when we get to allowing players to look around and examine stuff

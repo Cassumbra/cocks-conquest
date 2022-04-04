@@ -7,7 +7,6 @@ use bevy::app::AppExit;
 use crate::actions::interactions::{MeleeAttacker, Attack, DoesVore, HealActionEvent, CanHeal, ActorRemovedEvent};
 use crate::actions::movement::PointMoveEvent;
 use crate::rendering::window::WindowChangeEvent;
-use crate::setup::RestartEvent;
 
 use super::*;
 
@@ -150,6 +149,8 @@ pub fn player_input_game (
 }
 
 pub fn player_input_meta (
+    mut commands: Commands,
+
     keys: Res<Input<KeyCode>>,
 
     mut ev_key: EventReader<KeyboardInput>,
@@ -171,7 +172,7 @@ pub fn player_input_meta (
                 }
                 Some(KeyCode::R) => {
                     if keys.pressed(KeyCode::LShift) || keys.pressed(KeyCode::RShift) {
-                        //ev_restart.send(RestartEvent);
+                        commands.insert_resource(NextState(GameState::Restart));
                     }
                 }
 

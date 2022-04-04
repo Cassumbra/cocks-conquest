@@ -91,8 +91,6 @@ pub fn entity_map_rooms_passages (
     mut res_rooms: ResMut<Rooms>,
     map_size: Res<MapSize>,
 ) {
-    
-
     let mut map_objects: Grid<Option<Entity>> = Grid::default([map_size.width, map_size.height]);
 
     let mut rng = rand::thread_rng();
@@ -142,6 +140,9 @@ pub fn entity_map_rooms_passages (
     }
 
     res_rooms.0 = rooms;
+
+
+    commands.insert_resource(NextState(GameState::SpawnActors));
 }
 
 fn simple_entity_map(

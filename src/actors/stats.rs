@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use bevy::prelude::*;
 
-use crate::{components::Collides, rendering::Renderable, actions::interactions::ActorRemovedEvent};
+use crate::{components::Collides, rendering::Renderable, actions::interactions::ActorRemovedEvent, log::Log};
 
 use super::TakesTurns;
 
@@ -26,21 +26,29 @@ pub fn update_fatal (
     mut ev_stat_change: EventReader<StatChangeEvent>,
     mut ev_actor_remove_event: EventWriter<ActorRemovedEvent>,
 
-    stats_query: Query<(Entity, &Stats, &FatalStats)>,
+    stats_query: Query<(Entity, &Stats, &FatalStats, Option<&Name>)>,
     mut renderable_query: Query<(&mut Renderable)>,
+
+    mut log: ResMut<Log>,
 ) {
     // TODO: logging
 
     for ev in ev_stat_change.iter() {
-        if let Ok((ent, stats, fatal_stats)) = stats_query.get(ev.entity) {
+        if let Ok((ent, stats, fatal_stats, opt_name)) = stats_query.get(ev.entity) {
             if let Some(stat) = stats.0.get(&ev.stat) {
                 if let Some(fatal_stat_val) = fatal_stats.0.get(&ev.stat) {
                     if stat.value == fatal_stat_val.0 {
+                        let name = if opt_name.is_some() {opt_name.unwrap().to_string()} else {ev.entity.id().to_string()};
+
                         match &fatal_stats.0.get(&ev.stat).unwrap().1 {
                             FatalEffect::Disintegrate => {
+                                log.log_string_formatted(format!(" {} has died!", name), Color::ORANGE_RED);
+
                                 commands.entity(ent).despawn();
                             }
                             FatalEffect::Corpse => {
+                                log.log_string_formatted(format!(" {} has died!", name), Color::ORANGE_RED);
+
                                 commands.entity(ent)
                                     .remove::<TakesTurns>()
                                     .remove::<Collides>();
@@ -51,8 +59,12 @@ pub fn update_fatal (
                                 }
                             }
                             FatalEffect::Trance => {
-                                // We should add a visual effect too.
+                                log.log_string_formatted(format!(" {} has fallen under a trance!", name), Color::PINK);
+
                                 commands.entity(ent).insert(Tranced);
+                                if let Ok(mut renderable) = renderable_query.get_mut(ev.entity) {
+                                    renderable.tile.bg_color = Color::PINK;
+                                }
                             }
                         }
                     }

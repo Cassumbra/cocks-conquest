@@ -157,8 +157,6 @@ pub fn update_vore (
     turns: Res<Turns>,
     mut log: ResMut<Log>,
 ) {
-    // TODO: print stuff to log (once we make one)
-
     for (pred, mut stats, opt_pred_name, meals) in pred_query.iter_mut() {
         
         if turns.was_turn(&pred) {

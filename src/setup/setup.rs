@@ -8,21 +8,33 @@ use crate::rendering::window::WindowChangeEvent;
 
 use super::*;
 
-// Events
-pub struct RestartEvent;
-
 // Systems
 pub fn setup (
+    mut commands: Commands,
+
+    mut ev_window_change: EventWriter<WindowChangeEvent>,
+) {
+    ev_window_change.send(WindowChangeEvent(1));
+
+
+    commands.insert_resource(NextState(GameState::Restart));
+}
+
+pub fn restart (
     mut commands: Commands,
 
     map_size: Res<MapSize>,
     bottom_size: Res<BottomSize>,
 
-    mut ev_window_change: EventWriter<WindowChangeEvent>,
+    query: Query<Entity>,
 ) {
+    for ent in query.iter() {
+        commands.entity(ent).despawn();
+    }
+
     let size = [map_size.width, map_size.height + bottom_size.height];
 
-    let mut term_bundle = TerminalBundle::new().with_size(size);
+    let term_bundle = TerminalBundle::new().with_size(size);
 
     commands.spawn_bundle(term_bundle);
 
@@ -40,12 +52,6 @@ pub fn setup (
         ]
     });
 
-    ev_window_change.send(WindowChangeEvent(1))
-}
 
-pub fn finish_setup (
-    mut game_state: ResMut<State<GameState>>,
-) {
-    game_state.set(GameState::Playing).unwrap()
+    commands.insert_resource(NextState(GameState::MapGen));
 }
-    

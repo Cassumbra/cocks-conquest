@@ -1,5 +1,7 @@
 // Working title: Cock's Conquest (Cocklike)
 
+#![windows_subsystem = "windows"]
+
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
 use bevy_ascii_terminal::*;
@@ -65,6 +67,13 @@ fn main () {
     
 
     App::new()
+
+    .insert_resource(WindowDescriptor{
+        title: "Cock's Conquest".to_string(),
+        vsync: true,
+        resizable: false,
+        ..Default::default()}
+    )
 
     .add_plugins(DefaultPlugins)
     .add_plugin(TerminalPlugin)

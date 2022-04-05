@@ -921,7 +921,7 @@ dependencies = [
 
 [[package]]
 name = "cock-roguelike-rework-1"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "Inflector",
  "adam_fov_rs",

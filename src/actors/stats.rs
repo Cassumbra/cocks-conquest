@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use bevy::prelude::*;
 
-use crate::{components::Collides, rendering::Renderable, actions::interactions::ActorRemovedEvent, log::Log};
+use crate::{data::Collides, rendering::Renderable, actions::interactions::ActorRemovedEvent, log::Log};
 
 use super::TakesTurns;
 

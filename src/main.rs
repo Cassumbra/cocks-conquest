@@ -8,8 +8,8 @@ use bevy_ascii_terminal::*;
 use bevy_tiled_camera::*;
 //use bevy_inspector_egui::WorldInspectorPlugin;
 
-mod components;
-use components::*;
+mod data;
+use data::*;
 
 // The pluginification!
 #[path = "actors/actors.rs"]
@@ -70,7 +70,6 @@ fn main () {
 
     .insert_resource(WindowDescriptor{
         title: "Cock's Conquest".to_string(),
-        vsync: true,
         resizable: false,
         ..Default::default()}
     )

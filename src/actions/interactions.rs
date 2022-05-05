@@ -1,4 +1,4 @@
-use crate::{actors::{stats::{Stats, StatChangeEvent, Tranced}, TakesTurns}, components::{Position, Collides}, rendering::Renderable, turn::Turns, log::Log};
+use crate::{actors::{stats::{Stats, StatChangeEvent, Tranced}, TakesTurns}, data::{Position, Collides}, rendering::Renderable, turn::Turns, log::Log};
 use bevy::prelude::*;
 use rand::Rng;
 

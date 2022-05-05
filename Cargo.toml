@@ -9,8 +9,8 @@ readme = "README.md"
 
 [dependencies]
 # Remove "dynamic" after any releases or include libbevy_dylib
-#bevy = { version = "0.6.0", features = ["dynamic"] }
-bevy = { version = "0.6.0" }
+bevy = { version = "0.6.0", features = ["dynamic"] }
+#bevy = { version = "0.6.0" }
 iyes_loopless = "0.1.1"
 bevy_ascii_terminal = { version = "0.9.0" }
 bevy_tiled_camera = { version = "0.3.0" }
@@ -19,6 +19,7 @@ rand = { version = "0.8.5" }
 adam_fov_rs = "0.1.3"
 strfmt = "0.1.6"
 Inflector = "0.11.4"
+caith = "4.2.2"
 
 #bevy-inspector-egui = "0.8.2"
 #bevy_ecs_tilemap = { version = "0.5.0"}

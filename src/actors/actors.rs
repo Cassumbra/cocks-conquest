@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use bevy::prelude::*;
 use sark_grids::Grid;
 
-use crate::actions::interactions::{MeleeAttacker, Attack};
+use crate::actions::interactions::{MeleeAttacker, Attack, Dice};
 
 use super::*;
 
@@ -109,8 +109,8 @@ impl Default for SoldierBundle {
             vision: Vision{..Default::default()},
             stats: Stats(
                 BTreeMap::from([
-                    ("health".to_string(), Stat{value: 3, min: 0, max: 3}),
-                    ("resistance".to_string(), Stat{value: 3, min: 0, max: 3}),
+                    ("health".to_string(), Stat{value: 5, min: 0, max: 5}),
+                    ("resistance".to_string(), Stat{value: 5, min: 0, max: 5}),
                 ])
             ),
             fatal_stats: FatalStats(
@@ -123,9 +123,9 @@ impl Default for SoldierBundle {
                 Attack{
                     interact_text: vec!["{attacker} stabs {attacked} for {amount} damage!".to_string(),
                                         "{attacker} slashes {attacked} for {amount} damage!".to_string(),],
-                    damage: -1,
+                    damage: Dice::new("1d4 * -1"),
                     damage_type: "health".to_string(),
-                    cost: 0,
+                    cost: Dice::new("0"),
                     cost_type: "health".to_string(),
                 }
             ]}

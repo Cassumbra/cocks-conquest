@@ -4,7 +4,7 @@ use bevy::input::ElementState;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::app::AppExit;
 
-use crate::actions::interactions::{MeleeAttacker, Attack, DoesVore, HealActionEvent, CanHeal, ActorRemovedEvent};
+use crate::actions::interactions::{MeleeAttacker, Attack, DoesVore, HealActionEvent, CanHeal, ActorRemovedEvent, Dice};
 use crate::actions::movement::PointMoveEvent;
 use crate::rendering::window::WindowChangeEvent;
 
@@ -51,7 +51,7 @@ impl Default for PlayerBundle {
             mind_map: MindMap{..Default::default()},
             stats: Stats(
                 BTreeMap::from([
-                    ("health".to_string(), Stat{value: 3, min: 0, max: 3}),
+                    ("health".to_string(), Stat{value: 5, min: 0, max: 5}),
                     ("cum points".to_string(), Stat{value: 15, min: 0, max: 60}),
                 ])
             ),
@@ -60,9 +60,9 @@ impl Default for PlayerBundle {
                 Attack{
                     interact_text: vec!["{attacker} breathes their stink into {attacked}'s head, lowering their resistance by {amount}!".to_string(),
                                         "{attacker} gives {attacked} a big smelly kiss with their cockmaw, lowering their resistance by {amount}!".to_string(),],
-                    damage: -1,
+                    damage: Dice::new("1d4 * -1"),
                     damage_type: "resistance".to_string(),
-                    cost: 0,
+                    cost: Dice::new("0"),
                     cost_type: "health".to_string(),
                 }
             ]},

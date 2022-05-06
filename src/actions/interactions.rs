@@ -1,6 +1,7 @@
 use crate::{actors::{stats::{Stats, StatChangeEvent, Tranced}, TakesTurns}, data::{Position, Collides}, rendering::Renderable, turn::Turns, log::Log};
 use bevy::prelude::*;
 use rand::Rng;
+use caith::{Roller, RollResult, RollResultType, RepeatedRollResult, SingleRollResult};
 
 extern crate strfmt;
 use strfmt::strfmt;
@@ -59,36 +60,43 @@ pub fn melee_attack (
                     attack_index = rng.gen_range(0..remaining_attacks.len());
                     attack = remaining_attacks.swap_remove(attack_index);
 
-                    has_cost = attack.cost != 0;
+                    attack.damage.roll();
+                    attack.cost.roll();
+
+                    has_cost = attack.cost.total != 0;
 
                     if has_cost {
                         if let Ok(stats_attacker) = stats_query.get(ev.bumping_entity) {
                             can_pay = stats_attacker.0.contains_key(&attack.cost_type) && 
-                                      stats_attacker.0[&attack.cost_type].value + attack.cost > 0;
+                                      stats_attacker.0[&attack.cost_type].value + attack.cost.total > 0;
                         }
                     }
                     
                     if let Ok(stats_attacked) = stats_query.get_mut(ev.bumped_entity) {
-                        let value_to_be = stats_attacked.get_value(&attack.damage_type) + attack.damage;
+                        let value_to_be = stats_attacked.get_value(&attack.damage_type) + attack.damage.total;
 
                         if stats_attacked.0.contains_key(&attack.damage_type) {
-                            attack_valid = stats_attacked.in_range(&attack.damage_type, value_to_be)
+                            attack_valid = attack.damage.total < 0 && stats_attacked.get_value(&attack.damage_type) > stats_attacked.get_min(&attack.damage_type) ||
+                                           attack.damage.total > 0 && stats_attacked.get_value(&attack.damage_type) < stats_attacked.get_max(&attack.damage_type);
+                            println!("attack valid: {}", attack_valid);
                         }
 
                         if attack_valid && (has_cost == can_pay) {
-                            
+                            println!("doing attack!");
 
-                            ev_stat_change.send(StatChangeEvent{stat: attack.damage_type, amount: attack.damage, entity: ev.bumped_entity});
+                            ev_stat_change.send(StatChangeEvent{stat: attack.damage_type, amount: attack.damage.total, entity: ev.bumped_entity});
                             //*stats_attacked.0.get_mut(&attack.damage_type).unwrap() += attack.damage;
 
                             let vars = HashMap::from([
                                 ("attacker".to_string(), attacker_name),
                                 ("attacked".to_string(), attacked_name),
-                                ("amount".to_string(), attack.damage.to_string()),
+                                ("amount".to_string(), attack.damage.total.to_string()),
                             ]);
 
                             let text_index = rng.gen_range(0..attack.interact_text.len());
                             log.log_string_formatted(format![" {}", strfmt(&attack.interact_text[text_index], &vars).unwrap()], Color::RED);
+                            // 0.2.0 TODO: Add verbose dice rolls resource (bool)
+                            //             Log verbose dice rolls if resource is true
                             
 
                             if has_cost {
@@ -194,7 +202,7 @@ pub fn heal_action (
             let name = if opt_name.is_some() {opt_name.unwrap().to_string()} else {ev.healing_entity.id().to_string()};
 
             // Both of these should be retrieved dynamically from the CanHeal component and/or a MaxStats component in the future.
-            if stats.0.get("cum points").unwrap().value >= 5 && stats.0.get("health").unwrap().value < 3 {
+            if stats.0.get("cum points").unwrap().value >= 5 && stats.0.get("health").unwrap().value < stats.get_max("health") {
                 log.log_string_formatted(format!(" {} uses 5 cum points to heal for 1 health.", name), Color::GREEN);
                 stats.0.get_mut("cum points").unwrap().value -= 5;
                 stats.0.get_mut("health").unwrap().value += 1;
@@ -206,20 +214,59 @@ pub fn heal_action (
 
 // Misc Data
 #[derive(Clone)]
+pub struct Dice {
+    expression: String,
+    reason: String,
+    total: i32,
+}
+impl Dice {
+    pub fn new(expression: &str) -> Dice {
+        let (reason, total) = Dice::parse_string(&expression);
+        Dice { expression: String::from(expression), reason, total }
+    }
+
+    pub fn roll(&mut self) -> (String, i32) {
+        let (reason, total) = Dice::parse_string(&self.expression);
+        self.reason = reason.clone();
+        self.total = total;
+
+        println!("rolling the dice: {}", total);
+
+        (reason, total)
+    }
+
+    // This is where the magic happens.
+    // If we get pissed about the code here, we can change it without it negatively effecting the rest of the program.
+    /// Returns a reason for a result and the result itself.
+    fn parse_string(string: &str) -> (String, i32) {
+        let roll = Roller::new(string).unwrap().roll().unwrap();
+
+        match roll.get_result() {
+            RollResultType::Single(result) => {
+                (format!("{}", roll), (result.get_total()).try_into().unwrap())
+            }
+            RollResultType::Repeated(result) => {
+                (format!("{}", roll), result.get_total().unwrap().try_into().unwrap())
+            }
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct Attack {
     pub interact_text: Vec<String>,
-    pub damage: i32,
+    pub damage: Dice,
     pub damage_type: String,
-    pub cost: i32,
+    pub cost: Dice,
     pub cost_type: String,
 }
 impl Default for Attack {
     fn default() -> Attack {
         Attack {
             interact_text: vec!["{attacker} hits {attacked} for {amount} damage!".to_string()],
-            damage: 1,
+            damage: Dice::new("1d4 * -1"),
             damage_type: "health".to_string(),
-            cost: 0,
+            cost: Dice::new("0"),
             cost_type: "health".to_string(),
         }
     }

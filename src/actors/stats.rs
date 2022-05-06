@@ -16,6 +16,8 @@ pub fn do_stat_change (
     for ev in ev_stat_change.iter() {
         if let Ok(mut stats) = stats_query.get_mut(ev.entity) {
             stats.0.get_mut(&ev.stat).unwrap().value += ev.amount;
+            
+            stats.0.get_mut(&ev.stat).unwrap().value = stats.get_value(&ev.stat).clamp(stats.get_min(&ev.stat), stats.get_max(&ev.stat));
         }
     }
 }
@@ -109,19 +111,25 @@ impl Default for Stats {
     }
 }
 impl Stats {
-    pub fn get_value (&self, stat: &String) -> i32 {
+    pub fn get_value (&self, stat: &str) -> i32 {
         self.0[stat].value
     }
 
-    pub fn get_min (&self, stat: &String) -> i32 {
+    /*
+    pub fn get_mut_value (&mut self, stat: &String) -> &mut i32 {
+        &mut self.0.get_mut(stat).unwrap().value
+    }
+     */
+
+    pub fn get_min (&self, stat: &str) -> i32 {
         self.0[stat].min
     }
 
-    pub fn get_max (&self, stat: &String) -> i32 {
+    pub fn get_max (&self, stat: &str) -> i32 {
         self.0[stat].max
     }
 
-    pub fn in_range (&self, stat: &String, value: i32) -> bool {
+    pub fn in_range (&self, stat: &str, value: i32) -> bool {
         value <= self.0[stat].max && value >= self.0[stat].min
     }
 }

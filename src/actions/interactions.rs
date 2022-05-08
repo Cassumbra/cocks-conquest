@@ -259,20 +259,28 @@ pub struct Attack {
     pub damage_type: String,
     pub cost: Dice,
     pub cost_type: String,
+    pub save: i32,
+    pub save_type: String,
 }
 impl Default for Attack {
     fn default() -> Attack {
         Attack {
-            interact_text: vec!["{attacker} hits {attacked} for {amount} damage!".to_string()],
+            interact_text: vec![String::from("{attacker} hits {attacked} for {amount} damage!")],
             damage: Dice::new("1d4 * -1"),
-            damage_type: "health".to_string(),
+            damage_type: String::from("health"),
             cost: Dice::new("0"),
-            cost_type: "health".to_string(),
+            cost_type: String::from("health"),
+            save: 16,
+            save_type: String::from("dexterity"),
         }
     }
 }
 
-
+//#[derive(Clone)]
+//pub struct RangedAttack {
+//    pub attack: Attack,
+//    pub range: 
+//}
 
 // Components
 #[derive(Component, Default, Clone)]

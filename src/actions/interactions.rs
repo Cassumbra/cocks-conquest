@@ -1,4 +1,4 @@
-use crate::{actors::{stats::{Stats, StatChangeEvent, Tranced}, TakesTurns}, data::{Position, Collides}, rendering::Renderable, turn::Turns, log::Log};
+use crate::{actors::{stats::{Stats, StatChangeEvent, Tranced, StatType}, TakesTurns}, data::{Position, Collides}, rendering::Renderable, turn::Turns, log::Log};
 use bevy::prelude::*;
 use rand::Rng;
 use caith::{Roller, RollResult, RollResultType, RepeatedRollResult, SingleRollResult};
@@ -106,69 +106,70 @@ pub fn ranged_attack (
 
 
                     
-                    if let Ok(stats_attacked) = stats_query.get_mut(ev.target_entity) {
-                        let value_to_be = stats_attacked.get_value(&projectile.attack.damage_type) + projectile.attack.damage.total;
+                    if let Ok(stats_attacked) = stats_query.get(ev.target_entity) {
+                        if let Ok(stats_attacker) = stats_query.get(ev.targetting_entity) {
+                            let value_to_be = stats_attacked.get_value(&projectile.attack.damage_type) + projectile.attack.damage.total;
 
-                        if stats_attacked.0.contains_key(&projectile.attack.damage_type) {
-                            projectile_valid = projectile.attack.damage.total < 0 && stats_attacked.get_value(&projectile.attack.damage_type) > stats_attacked.get_min(&projectile.attack.damage_type) ||
-                                           projectile.attack.damage.total > 0 && stats_attacked.get_value(&projectile.attack.damage_type) < stats_attacked.get_max(&projectile.attack.damage_type);
-                            println!("attack valid: {}", projectile_valid);
-                        }
+                            if stats_attacked.0.contains_key(&projectile.attack.damage_type) {
+                                projectile_valid = projectile.attack.damage.total < 0 && stats_attacked.get_value(&projectile.attack.damage_type) > stats_attacked.get_min(&projectile.attack.damage_type) ||
+                                            projectile.attack.damage.total > 0 && stats_attacked.get_value(&projectile.attack.damage_type) < stats_attacked.get_max(&projectile.attack.damage_type);
+                                println!("attack valid: {}", projectile_valid);
+                            }
 
-                        if projectile_valid && (has_cost == can_pay) {
-                            println!("firing projectile(s)!");
+                            if projectile_valid && (has_cost == can_pay) {
+                                println!("firing projectile(s)!");
 
-                            if has_cost {
-                                // TODO: IMPLEMENT THIS
-                                if let Ok(stats_attacker) = stats_query.get_mut(ev.targetting_entity) {
+                                if has_cost {
+                                    // TODO: Deduct cost using stat change event
 
                                 }
 
-                            }
+                                for _ in 0..projectile.count {
+                                    let d20 = Dice::new("1d20");
+                                    let save = d20.total + stats_attacker.get_value(&projectile.spread_save_type);
+                                    //let penalty = 
 
-                            for _ in 0..projectile.count {
-                                let d20 = Dice::new("1d20");
-                                let save = d20.total + stats_attacker.get_value(&projectile.spread_save_type);
-                                let penalty = 
+                                    // TODO: Calculate spread from d20+stat
+                                    let spread = projectile.optimal_spread;
+                                    // TODO: generate angle sexer
+                                    let angle = rng.gen_range(-spread as i32..= spread as i32) as f32;
+                                    // TODO: spread this out, make it sexer
+                                    let target_position = rotate_point((**position_query.get(ev.targetting_entity).unwrap()).as_vec2(), (**position_query.get(ev.target_entity).unwrap()).as_vec2(), angle);
+                                    let mut line_points = get_line_points((**position_query.get(ev.targetting_entity).unwrap()).as_vec2(), target_position);
 
-                                // TODO: Calculate spread from d20+stat
-                                let spread = projectile.optimal_spread;
-                                // TODO: generate angle sexer
-                                let angle = rng.gen_range(-spread as i32..= spread as i32) as f32;
-                                // TODO: spread this out, make it sexer
-                                let target_position = rotate_point((**position_query.get(ev.targetting_entity).unwrap()).as_vec2(), (**position_query.get(ev.target_entity).unwrap()).as_vec2(), angle);
-                                let mut line_points = get_line_points((**position_query.get(ev.targetting_entity).unwrap()).as_vec2(), target_position);
+                                    // Remove first point. Later, we are also going to want to ignore the first few points that contain friends. (But still hit enemies)
+                                    // TODO: we need to ignore ALL allies within the first 3 or so tiles, not just the attacker themself.
+                                    line_points.pop_front();
 
-                                // Remove first point. Later, we are also going to want to ignore the first few points that contain friends. (But still hit enemies)
-                                // TODO: we need to ignore ALL allies within the first 3 or so tiles, not just the attacker themself.
-                                line_points.pop_front();
+                                    for point in line_points {
+                                        if let Some(collided_entity) = collidables[point] {
 
-                                for point in line_points {
-                                    if let Some(collided_entity) = collidables[point] {
+                                            // Do this if our projectile hits.
+                                            /*
+                                            ev_stat_change.send(StatChangeEvent{stat: attack.damage_type, amount: attack.damage.total, entity: ev.bumped_entity});
 
-                                        // Do this if our projectile hits.
-                                        /*
-                                        ev_stat_change.send(StatChangeEvent{stat: attack.damage_type, amount: attack.damage.total, entity: ev.bumped_entity});
+                                            let vars = HashMap::from([
+                                                ("attacker".to_string(), attacker_name),
+                                                ("attacked".to_string(), attacked_name),
+                                                ("amount".to_string(), attack.damage.total.to_string()),
+                                            ]);
 
-                                        let vars = HashMap::from([
-                                            ("attacker".to_string(), attacker_name),
-                                            ("attacked".to_string(), attacked_name),
-                                            ("amount".to_string(), attack.damage.total.to_string()),
-                                        ]);
+                                            let text_index = rng.gen_range(0..attack.interact_text.len());
+                                            log.log_string_formatted(format![" {}", strfmt(&attack.interact_text[text_index], &vars).unwrap()], Color::RED);
+                                            // 0.2.0 TODO: Add verbose dice rolls resource (bool)
+                                            //             Log verbose dice rolls if resource is true
+                                            */
 
-                                        let text_index = rng.gen_range(0..attack.interact_text.len());
-                                        log.log_string_formatted(format![" {}", strfmt(&attack.interact_text[text_index], &vars).unwrap()], Color::RED);
-                                        // 0.2.0 TODO: Add verbose dice rolls resource (bool)
-                                        //             Log verbose dice rolls if resource is true
-                                        */
+                                            // TODO: Log something special if we miss our target or if we hit something besides our intended target.
 
-                                        // TODO: Log something special if we miss our target or if we hit something besides our intended target.
-
-                                        break 'projectiles;
+                                            break 'projectiles;
+                                        }
                                     }
                                 }
                             }
-                        } 
+                        }
+
+                         
                     }
                 }
             }
@@ -337,7 +338,7 @@ pub fn update_vore (
                         log.log_string_formatted(format!(" {} has been melted into 15 cum points worth of stinky smelly goo.", prey_name), Color::GREEN);
                         commands.entity(*prey).despawn();
                         ev_actor_remove_event.send(ActorRemovedEvent{removed_actor: *prey});
-                        stats.0.get_mut("cum points").unwrap().value += 15;
+                        stats.0.get_mut(&StatType::CumPoints).unwrap().value += 15;
                     } else {
                         log.log_string_formatted(format!(" {} turns until {} is digested by {}.", digestion.turns_to_digest, prey_name, pred_name), Color::WHITE);
                     }
@@ -360,10 +361,10 @@ pub fn heal_action (
             let name = if opt_name.is_some() {opt_name.unwrap().to_string()} else {ev.healing_entity.id().to_string()};
 
             // Both of these should be retrieved dynamically from the CanHeal component and/or a MaxStats component in the future.
-            if stats.0.get("cum points").unwrap().value >= 5 && stats.0.get("health").unwrap().value < stats.get_max("health") {
+            if stats.get_value(&StatType::Health) >= 5 && stats.get_value(&StatType::Health) < stats.get_max(&StatType::Health) {
                 log.log_string_formatted(format!(" {} uses 5 cum points to heal for 1 health.", name), Color::GREEN);
-                stats.0.get_mut("cum points").unwrap().value -= 5;
-                stats.0.get_mut("health").unwrap().value += 1;
+                stats.0.get_mut(&StatType::CumPoints).unwrap().value -= 5;
+                stats.0.get_mut(&StatType::Health).unwrap().value += 1;
             }
         }
     }
@@ -434,24 +435,24 @@ impl Dice {
 pub struct Attack {
     pub interact_text: Vec<String>,
     pub damage: Dice,
-    pub damage_type: String,
+    pub damage_type: StatType,
     pub cost: Dice,
-    pub cost_type: String,
+    pub cost_type: StatType,
     pub save_text: Vec<String>,
     pub save: i32,
-    pub save_type: String,
+    pub save_type: StatType,
 }
 impl Default for Attack {
     fn default() -> Attack {
         Attack {
             interact_text: vec![String::from("{attacker} hits {attacked} for {amount} damage!")],
             damage: Dice::new("1d4 * -1"),
-            damage_type: String::from("health"),
+            damage_type: StatType::Health,
             cost: Dice::new("0"),
-            cost_type: String::from("health"),
+            cost_type: StatType::Health,
             save_text: vec![String::from("{attacked} dodges {attacker}'s attack!")],
             save: 16,
-            save_type: String::from("dexterity"),
+            save_type: StatType::Dexterity,
         }
     }
 }
@@ -468,12 +469,12 @@ pub struct Projectile {
     pub blast: bool,
 
     pub spread_save: i32,
-    pub spread_save_type: String,
+    pub spread_save_type: StatType,
     pub optimal_spread: f32,
     pub spread_penalty: f32,
 
     pub range_save: i32,
-    pub range_save_type: String,
+    pub range_save_type: StatType,
     pub optimal_range: i32,
     pub range_penalty: i32,         
 
@@ -486,12 +487,12 @@ impl Default for Projectile {
             blast: false,
 
             spread_save: 10,
-            spread_save_type: String::from("dexterity"),
+            spread_save_type: StatType::Dexterity,
             optimal_spread: 0.0_f32.to_radians(),
             spread_penalty: 4.0_f32.to_radians(),
 
             range_save: 10,
-            range_save_type: String::from("dexterity"),
+            range_save_type: StatType::Dexterity,
             optimal_range: 10,
             range_penalty: 1,         
         }

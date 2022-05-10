@@ -51,8 +51,8 @@ impl Default for PlayerBundle {
             mind_map: MindMap{..Default::default()},
             stats: Stats(
                 BTreeMap::from([
-                    ("health".to_string(), Stat::new(0, 7)),
-                    ("cum points".to_string(), Stat::with_value(15, 0, 60)),
+                    (StatType::Health, Stat::new(0, 7)),
+                    (StatType::CumPoints, Stat::with_value(15, 0, 60)),
                 ])
             ),
             fatal_stats: FatalStats{..Default::default()},
@@ -61,9 +61,9 @@ impl Default for PlayerBundle {
                     interact_text: vec!["{attacker} breathes their stink into {attacked}'s head, lowering their resistance by {amount}!".to_string(),
                                         "{attacker} gives {attacked} a big smelly kiss with their cockmaw, lowering their resistance by {amount}!".to_string(),],
                     damage: Dice::new("1d4 * -1"),
-                    damage_type: "resistance".to_string(),
+                    damage_type: StatType::Resistance,
                     cost: Dice::new("0"),
-                    cost_type: "health".to_string(),
+                    cost_type: StatType::Health,
 
                     // Temporary for now
                     ..default()

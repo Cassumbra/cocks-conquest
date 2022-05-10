@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::fmt::Display;
 
 use bevy::prelude::*;
 
@@ -78,7 +79,7 @@ pub fn update_fatal (
 
 // Events
 pub struct StatChangeEvent {
-    pub stat: String,
+    pub stat: StatType,
     pub amount: i32,
     pub entity: Entity,
 }
@@ -107,21 +108,49 @@ impl Stat {
     }
 }
 
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum StatType {
+    Health,
+    Resistance,
+
+    CumPoints,
+
+    Dexterity,
+    Perception,
+    Strength,
+}
+impl Display for StatType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            StatType::Health => write!(f, "health"),
+            StatType::Resistance => write!(f, "resistance"),
+
+            StatType::CumPoints => write!(f, "cum points"),
+
+            StatType::Dexterity => write!(f, "dexterity"),
+            StatType::Perception => write!(f, "perception"),
+            StatType::Strength => write!(f, "strength"),
+            
+        }
+    }
+}
+
 // Components
 #[derive(Component, Clone)]
-pub struct Stats(pub BTreeMap<String, Stat>);
+pub struct Stats(pub BTreeMap<StatType, Stat>);
 impl Default for Stats {
     fn default() -> Stats {
         Stats(
             BTreeMap::from([
-                ("health".to_string(), Stat{value: 3, min: 0, max: 3}),
+                (StatType::Health, Stat{value: 3, min: 0, max: 3}),
             ])
         )
     }
 }
 impl Stats {
-    pub fn get_value (&self, stat: &str) -> i32 {
-        self.0[stat].value
+    pub fn get_value (&self, stat: &StatType) -> i32 {
+        // TODO: Check if we have the requested value. Otherwise, give 0 and print an error or something.
+        self.0[&stat].value
     }
 
     /*
@@ -130,26 +159,26 @@ impl Stats {
     }
      */
 
-    pub fn get_min (&self, stat: &str) -> i32 {
-        self.0[stat].min
+    pub fn get_min (&self, stat: &StatType) -> i32 {
+        self.0[&stat].min
     }
 
-    pub fn get_max (&self, stat: &str) -> i32 {
-        self.0[stat].max
+    pub fn get_max (&self, stat: &StatType) -> i32 {
+        self.0[&stat].max
     }
 
-    pub fn in_range (&self, stat: &str, value: i32) -> bool {
-        value <= self.0[stat].max && value >= self.0[stat].min
+    pub fn in_range (&self, stat: &StatType, value: i32) -> bool {
+        value <= self.0[&stat].max && value >= self.0[&stat].min
     }
 }
 
 #[derive(Component, Clone)]
-pub struct FatalStats(pub BTreeMap<String, (i32, FatalEffect)>);
+pub struct FatalStats(pub BTreeMap<StatType, (i32, FatalEffect)>);
 impl Default for FatalStats {
     fn default() -> FatalStats {
         FatalStats(
             BTreeMap::from([
-                ("health".to_string(), (0, FatalEffect::Corpse)),
+                (StatType::Health, (0, FatalEffect::Corpse)),
             ])
         )
     }

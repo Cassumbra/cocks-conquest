@@ -3,17 +3,18 @@ use bevy::prelude::*;
 pub mod movement;
 pub mod interactions;
 
+
+// Plugin
 #[derive(Default)]
 pub struct ActionPlugin;
-
 impl Plugin for ActionPlugin {
     fn build(&self, app: &mut App) {
         app
-        .add_event::<interactions::BumpEvent>()
-        .add_event::<interactions::ActorRemovedEvent>()
-        .add_event::<interactions::HealActionEvent>()
-        .add_event::<movement::CollidableChangeEvent>()
-        .add_event::<movement::PointMoveEvent>();
+         .add_event::<interactions::BumpEvent>()
+         .add_event::<interactions::ActorRemovedEvent>()
+         .add_event::<interactions::HealActionEvent>()
+         .add_event::<movement::CollidableChangeEvent>()
+         .add_event::<movement::PointMoveEvent>();
 
     }
 }

@@ -109,8 +109,8 @@ impl Default for SoldierBundle {
             vision: Vision{..Default::default()},
             stats: Stats(
                 BTreeMap::from([
-                    ("health".to_string(), Stat{value: 5, min: 0, max: 5}),
-                    ("resistance".to_string(), Stat{value: 5, min: 0, max: 5}),
+                    ("health".to_string(), Stat::new(0, 7)),
+                    ("resistance".to_string(), Stat::new(0, 7)),
                 ])
             ),
             fatal_stats: FatalStats(
@@ -120,13 +120,16 @@ impl Default for SoldierBundle {
                 ])
             ),
             melee_attacker: MeleeAttacker{attacks: vec![
-                Attack{
+                Attack {
                     interact_text: vec!["{attacker} stabs {attacked} for {amount} damage!".to_string(),
                                         "{attacker} slashes {attacked} for {amount} damage!".to_string(),],
                     damage: Dice::new("1d4 * -1"),
                     damage_type: "health".to_string(),
                     cost: Dice::new("0"),
                     cost_type: "health".to_string(),
+                    save_text: vec![String::from("{attacked} maneuvers out of {attacker's} stab!")],
+                    save: 16,
+                    save_type: String::from("dexterity"),
                 }
             ]}
         }

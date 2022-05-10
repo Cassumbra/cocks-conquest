@@ -10,7 +10,8 @@ pub struct TurnPlugin;
 impl Plugin for TurnPlugin {
     fn build(&self, app: &mut App) {
         app
-        .init_resource::<Turns>();
+         .add_event::<HaltTurnEvent>()
+         .init_resource::<Turns>();
     }
 }
 
@@ -34,6 +35,11 @@ impl Turns {
     }
 
 }
+
+// Events
+/// We use this in case an action may take more than one frame and we want to prevent turns from progressing.
+/// WARNING: WE SHOULD AVOID USING THIS AND INSTEAD USE MORE EFFICIENT MEANS.
+pub struct HaltTurnEvent;
 
 // Systems
 /// Updates the order in which entities take turns.
@@ -59,7 +65,12 @@ pub fn update_turn_order(
 
 pub fn update_turn(
     mut turns: ResMut<Turns>,
+    mut ev_halt_turn: EventReader<HaltTurnEvent>,
 ) {
+    if !ev_halt_turn.is_empty() {
+        return
+    }
+
     if turns.progress {
 
         let mut next_turn = turns.current + 1;

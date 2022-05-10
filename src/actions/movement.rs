@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 // Unglob later
 use bevy::prelude::*;
 use sark_grids::grid::Grid;
@@ -20,7 +22,13 @@ pub struct CollidableChangeEvent {
 // Resources
 #[derive(Default, Clone)]
 pub struct Collidables(pub Grid<Option<Entity>>);
+impl Index<IVec2> for Collidables {
+    type Output = Option<Entity>;
 
+    fn index(&self, index: IVec2) -> &Self::Output {
+        &self.0[[index.x as u32, index.y as u32]]
+    }
+}
 
 // Systems
 pub fn do_point_move(

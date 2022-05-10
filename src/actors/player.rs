@@ -51,8 +51,8 @@ impl Default for PlayerBundle {
             mind_map: MindMap{..Default::default()},
             stats: Stats(
                 BTreeMap::from([
-                    ("health".to_string(), Stat{value: 5, min: 0, max: 5}),
-                    ("cum points".to_string(), Stat{value: 15, min: 0, max: 60}),
+                    ("health".to_string(), Stat::new(0, 7)),
+                    ("cum points".to_string(), Stat::with_value(15, 0, 60)),
                 ])
             ),
             fatal_stats: FatalStats{..Default::default()},
@@ -64,6 +64,9 @@ impl Default for PlayerBundle {
                     damage_type: "resistance".to_string(),
                     cost: Dice::new("0"),
                     cost_type: "health".to_string(),
+
+                    // Temporary for now
+                    ..default()
                 }
             ]},
             does_vore: DoesVore,

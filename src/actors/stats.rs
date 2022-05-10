@@ -97,6 +97,15 @@ pub struct Stat {
     pub min: i32,
     pub max: i32,
 }
+impl Stat {
+    pub fn new(min: i32, max: i32) -> Stat {
+        Stat {value: max, min, max}
+    }
+
+    pub fn with_value(value: i32, min: i32, max: i32) -> Stat {
+        Stat {value, min, max}
+    }
+}
 
 // Components
 #[derive(Component, Clone)]

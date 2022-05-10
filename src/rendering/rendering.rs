@@ -270,3 +270,5 @@ fn change_brightness(color: Color, amount: f32) -> Color {
 
     Color::rgba(new_red, new_green, new_blue, color.a())
 }
+
+// TODO: Create helper for inverting color. This will be good for highlighting text as "selected" (probably?)

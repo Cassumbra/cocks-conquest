@@ -10,7 +10,7 @@ pub struct Collides;
 // Shapes.
 
 // A point.
-#[derive(Component, Default, Copy, Clone)]
+#[derive(Component, Default, Deref, DerefMut, Copy, Clone)]
 pub struct Position(pub IVec2);
 
 #[derive(Component, Default, Copy, Clone, PartialEq)]

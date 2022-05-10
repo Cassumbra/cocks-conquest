@@ -134,7 +134,7 @@ fn main () {
             .label("actor_actions")
             .after("actor_turn")
             .with_system(movement::do_point_move.run_in_state(GameState::Playing))
-            .with_system(interactions::heal_action.run_in_state(GameState::Playing))
+            .with_system(healing::heal_action.run_in_state(GameState::Playing))
             
     )
     .add_system_set(
@@ -143,14 +143,14 @@ fn main () {
             .after("actor_actions")
             // Melee attacks are curently an effect of bumping (see point move)
             .with_system(interactions::melee_attack.run_in_state(GameState::Playing).label("melee_attack"))
-            .with_system(interactions::vore_attack.run_in_state(GameState::Playing).label("vore_attack").after("melee_attack"))
+            .with_system(vore::vore_attack.run_in_state(GameState::Playing).label("vore_attack").after("melee_attack"))
             
     )
     
     .add_system_set_to_stage(
         CoreStage::PostUpdate,
         SystemSet::new()
-            .with_system(interactions::update_vore.run_in_state(GameState::Playing).label("update_vore").before("do_stat_change"))
+            .with_system(vore::update_vore.run_in_state(GameState::Playing).label("update_vore").before("do_stat_change"))
             .with_system(stats::do_stat_change.run_in_state(GameState::Playing).label("do_stat_change"))
             .with_system(stats::update_fatal.run_in_state(GameState::Playing).label("update_fatal").after("do_stat_change"))
             .with_system(player::player_victory.run_in_state(GameState::Playing).label("player_victory").after("update_fatal"))

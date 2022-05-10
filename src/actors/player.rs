@@ -4,8 +4,10 @@ use bevy::input::ElementState;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::app::AppExit;
 
-use crate::actions::interactions::{MeleeAttacker, Attack, DoesVore, HealActionEvent, CanHeal, ActorRemovedEvent, Dice};
+use crate::actions::healing::{CanHeal, HealActionEvent};
+use crate::actions::interactions::{MeleeAttacker, Attack, ActorRemovedEvent, Dice};
 use crate::actions::movement::PointMoveEvent;
+use crate::actions::vore::DoesVore;
 use crate::rendering::window::WindowChangeEvent;
 
 use super::*;

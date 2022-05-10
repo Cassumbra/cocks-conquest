@@ -18,6 +18,8 @@ use vision::*;
 pub mod stats;
 use stats::*;
 
+pub mod status_effects;
+
 
 // Plugins
 #[derive(Default)]

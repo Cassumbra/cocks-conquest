@@ -1,4 +1,4 @@
-use crate::{actors::{stats::{Stats, StatChangeEvent, Tranced, StatType}, TakesTurns}, data::{Position, Collides}, rendering::Renderable, turn::Turns, log::Log};
+use crate::{actors::{stats::{Stats, StatChangeEvent, StatType}, TakesTurns}, data::{Position, Collides}, rendering::Renderable, turn::Turns, log::Log};
 use bevy::prelude::*;
 use rand::Rng;
 use caith::{Roller, RollResult, RollResultType, RepeatedRollResult, SingleRollResult};
@@ -24,9 +24,7 @@ pub struct ActorRemovedEvent {
     pub removed_actor: Entity,
 }
 
-pub struct HealActionEvent{
-    pub healing_entity: Entity,
-}
+
 
 // Systems
 pub fn check_attack_cost (
@@ -272,104 +270,9 @@ pub fn melee_attack (
     }
 }
 
-// TODO: Add digestion attack (?)
-pub fn digestion_attack (
 
-) {
 
-}
 
-// TODO: Move this and other vore stuff to another file.
-pub fn vore_attack (
-    mut commands: Commands,
-
-    mut ev_bump_event: EventReader<BumpEvent>,
-
-    prey_query: Query<(&Tranced, Option<&Name>)>,
-    pred_query: Query<(&DoesVore, Option<&Name>)>,
-
-    mut log: ResMut<Log>,
-) {
-    // TODO: print stuff to log (once we make one)
-
-    for ev in ev_bump_event.iter() {
-        if let Ok((_tranced, opt_prey_name)) = prey_query.get(ev.bumped_entity) {
-            if let Ok((_doesvore, opt_pred_name)) = pred_query.get(ev.bumping_entity) {
-                let prey_name = if opt_prey_name.is_some() {opt_prey_name.unwrap().to_string()} else {ev.bumped_entity.id().to_string()};
-                let pred_name = if opt_pred_name.is_some() {opt_pred_name.unwrap().to_string()} else {ev.bumping_entity.id().to_string()};
-    
-                log.log_string_formatted(format!(" {} devours {}!", pred_name, prey_name), Color::RED);
-                commands.entity(ev.bumped_entity)
-                    .remove::<Collides>()
-                    .remove::<Renderable>()
-                    .remove::<TakesTurns>()
-                    .insert(Digesting{
-                        turns_to_digest: 4,
-                    });
-                commands.entity(ev.bumping_entity)
-                    .push_children(&[ev.bumped_entity]);
-            }
-        }
-    }
-}
-
-pub fn update_vore (
-    mut commands: Commands,
-
-    mut prey_query: Query<(&mut Digesting, Option<&Name>)>,
-    mut pred_query: Query<(Entity, &mut Stats, Option<&Name>, &Children), With<TakesTurns>>,
-
-    mut ev_actor_remove_event: EventWriter<ActorRemovedEvent>,
-
-    turns: Res<Turns>,
-    mut log: ResMut<Log>,
-) {
-    for (pred, mut stats, opt_pred_name, meals) in pred_query.iter_mut() {
-        
-        if turns.was_turn(&pred) {
-            for prey in meals.iter() {
-                if let Ok((mut digestion, opt_prey_name)) = prey_query.get_mut(*prey) {
-                    let prey_name = if opt_prey_name.is_some() {opt_prey_name.unwrap().to_string()} else {prey.id().to_string()};
-                    let pred_name = if opt_pred_name.is_some() {opt_pred_name.unwrap().to_string()} else {pred.id().to_string()};
-
-                    digestion.turns_to_digest -= 1;
-                    if digestion.turns_to_digest == 0 {
-                        // TODO: Add a check to make sure we don't go over the limit
-                        log.log_string_formatted(format!(" {} has been melted into 15 cum points worth of stinky smelly goo.", prey_name), Color::GREEN);
-                        commands.entity(*prey).despawn();
-                        ev_actor_remove_event.send(ActorRemovedEvent{removed_actor: *prey});
-                        stats.0.get_mut(&StatType::CumPoints).unwrap().value += 15;
-                    } else {
-                        log.log_string_formatted(format!(" {} turns until {} is digested by {}.", digestion.turns_to_digest, prey_name, pred_name), Color::WHITE);
-                    }
-                } 
-
-            }
-        }
-    }
-}
-
-pub fn heal_action (
-    mut heal_query: Query<(&mut Stats, Option<&Name>), With<CanHeal>>,
-
-    mut ev_heal_event: EventReader<HealActionEvent>,
-
-    mut log: ResMut<Log>,
-) {
-    for ev in ev_heal_event.iter() {
-        if let Ok((mut stats, opt_name)) = heal_query.get_mut(ev.healing_entity) {
-            let name = if opt_name.is_some() {opt_name.unwrap().to_string()} else {ev.healing_entity.id().to_string()};
-
-            // Both of these should be retrieved dynamically from the CanHeal component and/or a MaxStats component in the future.
-            if stats.get_value(&StatType::Health) >= 5 && stats.get_value(&StatType::Health) < stats.get_max(&StatType::Health) {
-                log.log_string_formatted(format!(" {} uses 5 cum points to heal for 1 health.", name), Color::GREEN);
-                stats.0.get_mut(&StatType::CumPoints).unwrap().value -= 5;
-                stats.0.get_mut(&StatType::Health).unwrap().value += 1;
-            }
-        }
-    }
-
-}
 
 // Helper functions
 fn rotate_point(pivot: Vec2, point: Vec2, rotation: f32) -> Vec2 {
@@ -511,15 +414,5 @@ pub struct RangedAttacker {
     pub projectiles: Vec<Projectile>,
 }
 
-// Should be dynamic like how attacks are (at some point but i don't care)
-#[derive(Component, Default, Copy, Clone)]
-pub struct DoesVore;
 
-#[derive(Component, Default, Copy, Clone)]
-pub struct Digesting {
-    pub turns_to_digest: u8,
-}
 
-// Should be dynamic like how attacks are (at some point but i dont care)
-#[derive(Component, Default, Copy, Clone)]
-pub struct CanHeal;

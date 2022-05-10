@@ -5,7 +5,7 @@ use bevy::prelude::*;
 
 use crate::{data::Collides, rendering::Renderable, actions::interactions::ActorRemovedEvent, log::Log};
 
-use super::TakesTurns;
+use super::{TakesTurns, status_effects::Tranced};
 
 
 // Systems
@@ -184,5 +184,3 @@ impl Default for FatalStats {
     }
 }
 
-#[derive(Component, Clone)]
-pub struct Tranced;

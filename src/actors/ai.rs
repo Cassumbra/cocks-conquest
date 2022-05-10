@@ -7,6 +7,7 @@ use crate::actions::movement::{PointMoveEvent, Collidables};
 
 use super::*;
 use super::player::Player;
+use super::status_effects::Tranced;
 
 // Data
 #[derive(Copy, Clone, PartialEq)]

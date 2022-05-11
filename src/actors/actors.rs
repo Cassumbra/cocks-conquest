@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use bevy::prelude::*;
 use sark_grids::Grid;
 
-use crate::actions::interactions::{MeleeAttacker, Attack, Dice};
+use crate::actions::interactions::{MeleeAttacker, Attack, Dice, RangedAttacker, Projectile};
 
 use super::*;
 
@@ -93,6 +93,7 @@ pub struct SoldierBundle {
     pub stats: Stats,
     pub fatal_stats: FatalStats,
     pub melee_attacker: MeleeAttacker,
+    pub ranged_attacker: RangedAttacker,
 }
 impl Default for SoldierBundle {
     fn default() -> SoldierBundle {
@@ -133,7 +134,10 @@ impl Default for SoldierBundle {
                     save: 16,
                     save_type: StatType::Dexterity,
                 }
-            ]}
+            ]},
+            ranged_attacker: RangedAttacker{projectiles: vec![
+                Projectile::default()
+            ]},
         }
     }
 }

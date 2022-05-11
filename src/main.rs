@@ -143,6 +143,7 @@ fn main () {
             .after("actor_actions")
             // Melee attacks are curently an effect of bumping (see point move)
             .with_system(interactions::melee_attack.run_in_state(GameState::Playing).label("melee_attack"))
+            .with_system(interactions::ranged_attack.run_in_state(GameState::Playing))
             .with_system(vore::vore_attack.run_in_state(GameState::Playing).label("vore_attack").after("melee_attack"))
             
     )

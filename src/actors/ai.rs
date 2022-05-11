@@ -3,6 +3,7 @@ use std::collections::{VecDeque, BinaryHeap};
 use bevy::utils::{HashMap, HashSet};
 use sark_grids::Grid;
 use rand::Rng;
+use crate::actions::interactions::TargetEvent;
 use crate::actions::movement::{PointMoveEvent, Collidables};
 
 use super::*;
@@ -173,7 +174,9 @@ impl AI {
 // We should probably split this up into three different systems later. Or more.
 // State change handling, Pathing, Actions
 pub fn generic_brain (
+    mut ev_target_event: EventWriter<TargetEvent>,
     mut ev_movement_event: EventWriter<PointMoveEvent>,
+
     mut ai_query: Query<(&Position, &mut AI, &Vision), Without<Tranced>>,
     actors_query: Query<&Position, With<TakesTurns>>,
     player_query: Query<(Entity, &Position), With<Player>>,
@@ -201,7 +204,8 @@ pub fn generic_brain (
         if let Some((player_ent, player_pos)) = player_query.iter().next() {
             // Path to the player if we see them.
             if !matches!(ai.state, AIState::Engage(..)) && vis.0.visible[player_pos.0] {
-                ai.state = AIState::Engage(Engagement{distance: 1.5, entity: player_ent })
+                // TODO: Maybe this should be defined somewhere in the ai itself?
+                ai.state = AIState::Engage(Engagement{distance: 3.5, entity: player_ent })
             }
             // Wander around if there's nothing better for us to do.
             else if matches!(ai.state, AIState::None) {
@@ -303,6 +307,12 @@ pub fn generic_brain (
                                 entity: ai_ent,
                                 movement: delta,
                             });
+                        } else if ai_pos.0.as_vec2().distance(target_pos.0.as_vec2()) <= engagement.distance {
+                            println!("AI DO A SHOOTY");
+                            ev_target_event.send(TargetEvent{
+                                targetting_entity: ai_ent,
+                                target: target_pos.0,
+                            })
                         }
                     }
                 }

@@ -150,7 +150,13 @@ impl Default for Stats {
 impl Stats {
     pub fn get_value (&self, stat: &StatType) -> i32 {
         // TODO: Check if we have the requested value. Otherwise, give 0 and print an error or something.
-        self.0[&stat].value
+        if self.0.contains_key(stat) {
+            self.0[&stat].value
+        } else {
+            eprintln!("ERROR: Stat not found! Returning zero.");
+            0
+        }
+        
     }
 
     /*

@@ -20,6 +20,8 @@ use stats::*;
 
 pub mod status_effects;
 
+pub mod alignments;
+
 
 // Plugins
 #[derive(Default)]

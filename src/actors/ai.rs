@@ -200,7 +200,11 @@ pub fn generic_brain (
 
         let mut rng = rand::thread_rng();
 
-        // Later we'll make this work for nonplayers that are aligned against this ai.
+        // TODO: We can either check all visible tiles for our enemies, OR
+        //       we can check for all enemies to see if any are visible.
+        //       For the moment, we should do the latter.
+        //       If we ever get to having a very large amount of actors, it might be good to switch to the former.
+        //       But then we'll be fucked anyways so,
         if let Some((player_ent, player_pos)) = player_query.iter().next() {
             // Path to the player if we see them.
             if !matches!(ai.state, AIState::Engage(..)) && vis.0.visible[player_pos.0] {

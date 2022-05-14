@@ -5,16 +5,24 @@ use sark_grids::Grid;
 use rand::Rng;
 use crate::actions::interactions::TargetEvent;
 use crate::actions::movement::{PointMoveEvent, Collidables};
+use crate::actors::vision::Vision;
 
 use super::*;
 use super::player::Player;
 use super::status_effects::Tranced;
+
+pub mod wander_behaviour;
 
 // Data
 #[derive(Copy, Clone, PartialEq)]
 struct Engagement {
     distance: f32,
     entity: Entity,
+}
+
+pub struct Path {
+    pub positions: VecDeque<IVec2>,
+    pub cost: u32,
 }
 
 #[derive(Copy, Clone, PartialEq)]
@@ -40,6 +48,64 @@ impl PartialOrd for WeightedPosition {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.weight.cmp(&other.weight))
     }
+}
+
+// Helper functions
+fn dijkstra (start: &IVec2, goal: &IVec2, allowed_movements: &Vec<IVec2>, collidables: &Grid<Option<Entity>>, obstacles: &Grid<u32>) -> Path {
+    //IVec2s do not support Ord. Sad!
+    let mut frontier = BinaryHeap::<Reverse<WeightedPosition>>::new();
+    frontier.push(Reverse(WeightedPosition{position: *start, weight: 0}));
+
+    let mut came_from: HashMap<IVec2, Option<IVec2>> = HashMap::default();
+    came_from.insert(*start, None);
+
+    let mut cost_so_far: HashMap<IVec2, u32> = HashMap::default();
+    cost_so_far.insert(*start, 0);
+
+    let mut true_collidables = collidables.clone();
+    true_collidables[*start] = None;
+    true_collidables[*goal] = None;
+    
+    'full: while !frontier.is_empty() {
+        let current = frontier.pop().expect("Frontier unexpectedly empty!").0.position;
+
+        for direction in allowed_movements.iter() {
+            let next = current + *direction;
+            let new_cost = cost_so_far[&current] + obstacles[next] + 1;
+            if !true_collidables[next].is_some() && (!cost_so_far.contains_key(&next) || new_cost < cost_so_far[&next]) {
+                cost_so_far.insert(next, new_cost);
+                let priority = new_cost;
+                frontier.push(Reverse(WeightedPosition{position: next, weight: priority}));
+                came_from.insert(next, Some(current));
+            }
+            // Early exit
+            if next == *goal {
+                break 'full;
+            }
+        }
+    }
+
+    let mut current = *goal;
+    let mut path = VecDeque::<IVec2>::new();
+
+    while current != *start {
+        path.push_front(current);
+        if came_from.contains_key(&current) {
+            current = came_from[&current].expect("Path unexpectedly empty!");
+        } else {
+            println!("No path found from {:?} to {:?}.", start, goal);
+            path.clear();
+            break
+        }
+    }
+    path.push_front(*start);
+    
+    if cost_so_far.contains_key(&goal) {
+        Path {positions: path, cost: cost_so_far[&goal]}
+    } else {
+        Path {positions: path, cost: u32::MAX}
+    }
+    
 }
 
 // Components
@@ -169,6 +235,14 @@ impl AI {
     }
 }
 
+
+
+pub fn attack_behaviour (
+
+) {
+
+}
+
 // Systems
 // We should probably make this pathfind to any entity OK, even if it isnt the player. Soon.
 // We should probably split this up into three different systems later. Or more.
@@ -180,6 +254,7 @@ pub fn generic_brain (
     mut ai_query: Query<(&Position, &mut AI, &Vision), Without<Tranced>>,
     actors_query: Query<&Position, With<TakesTurns>>,
     player_query: Query<(Entity, &Position), With<Player>>,
+
     mut turns: ResMut<Turns>,
     collidables: Res<Collidables>,
     rooms: Res<Rooms>,

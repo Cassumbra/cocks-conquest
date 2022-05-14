@@ -25,8 +25,6 @@ pub fn vore_attack (
 
     mut log: ResMut<Log>,
 ) {
-    // TODO: print stuff to log (once we make one)
-
     for ev in ev_bump_event.iter() {
         if let Ok((_tranced, opt_prey_name)) = prey_query.get(ev.bumped_entity) {
             if let Ok((_doesvore, opt_pred_name)) = pred_query.get(ev.bumping_entity) {
@@ -37,7 +35,7 @@ pub fn vore_attack (
                 commands.entity(ev.bumped_entity)
                     .remove::<Collides>()
                     .remove::<Renderable>()
-                    .remove::<TakesTurns>()
+                    //.remove::<TakesTurns>()
                     .insert(Digesting{
                         turns_to_digest: 4,
                     });

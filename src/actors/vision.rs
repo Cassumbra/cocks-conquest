@@ -1,5 +1,5 @@
 use adam_fov_rs::{fov, VisibilityMap};
-use crate::actions::movement::{PointMoveEvent, Collidables};
+use crate::{actions::movement::{PointMoveEvent, Collidables}, rendering::RenderOrder};
 
 use super::*;
 

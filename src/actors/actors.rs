@@ -1,13 +1,11 @@
 use std::collections::BTreeMap;
 use bevy::prelude::*;
+use bevy_ascii_terminal::Tile;
+use iyes_loopless::state::NextState;
 use sark_grids::Grid;
 
-use crate::actions::interactions::{MeleeAttacker, Attack, Dice, RangedAttacker, Projectile};
+use crate::{actions::interactions::{MeleeAttacker, Attack, Dice, RangedAttacker, Projectile}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{AI, wander_behaviour::Wanderer}, GameState, rendering::Renderable};
 
-use super::*;
-
-pub mod ai;
-use ai::*;
 
 pub mod player;
 use player::*;
@@ -63,7 +61,7 @@ pub fn setup_actors (
     
     for (i, room) in other_rooms.iter().enumerate() {
         commands.spawn()
-            .insert_bundle(actors::SoldierBundle{
+            .insert_bundle(SoldierBundle{
                 vision: Vision( Map {
                     visible: Grid::default([map_size.width, map_size.height]),
                     ..Default::default()
@@ -73,6 +71,7 @@ pub fn setup_actors (
             })
             .insert(Position(room.center()))
             .insert(Name::new(format!("Soldier {}", i)))
+            .insert(Wanderer::new(rooms.0.clone()))
             .insert(AI{..Default::default()});
     }
     
@@ -80,9 +79,22 @@ pub fn setup_actors (
     commands.insert_resource(NextState(GameState::FinishSetup));
 }
 
+// Components
 #[derive(Component, Default, Copy, Clone)]
 pub struct TakesTurns;
 
+#[derive(Component, Deref, DerefMut, Clone)]
+pub struct Moves(pub Vec<IVec2>);
+impl Default for Moves {
+    fn default() -> Self {
+        Moves(vec![
+            // Cardinals first. We should only look at diagonals if they're faster.
+            // We're going around the way we would go around a circle in radians too. Idk why, just feels right.
+            IVec2::new(1, 0), IVec2::new(0, 1), IVec2::new(-1, 0), IVec2::new(0, -1),
+            IVec2::new(1, 1), IVec2::new(-1, 1), IVec2::new(-1, -1), IVec2::new(1, -1),
+        ])
+    }
+}
 
 // Bundles
 #[derive(Bundle, Clone)]
@@ -91,6 +103,7 @@ pub struct SoldierBundle {
     pub renderable: Renderable,
     pub collides: Collides,
     pub takes_turns: TakesTurns,
+    pub moves: Moves,
     pub vision: Vision,
     pub stats: Stats,
     pub fatal_stats: FatalStats,
@@ -111,7 +124,8 @@ impl Default for SoldierBundle {
             },
             collides: Collides,
             takes_turns: TakesTurns,
-            vision: Vision{..Default::default()},
+            moves: Moves::default(),
+            vision: Vision{..default()},
             stats: Stats(
                 BTreeMap::from([
                     (StatType::Health, Stat::new(0, 7)),

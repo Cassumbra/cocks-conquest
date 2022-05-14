@@ -20,13 +20,13 @@ pub fn tranced_behaviour (
 ) {
     // TODO: Maybe we should turn this into a system condition?
     if turns.progress == true {
-        println!("FUUUCK");
-        return
+        println!("no trancing for me!");
+        return;
     }
 
     let entity = turns.order[turns.current];
     if let Ok(_tranced) = tranced_query.get(entity) {
-        println!("WAWAW");
+        println!("wuhh im tranced woah");
         turns.progress_turn();
     }
 }

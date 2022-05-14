@@ -34,8 +34,6 @@ pub fn update_fatal (
 
     mut log: ResMut<Log>,
 ) {
-    // TODO: logging
-
     for ev in ev_stat_change.iter() {
         if let Ok((ent, stats, fatal_stats, opt_name)) = stats_query.get(ev.entity) {
             if let Some(stat) = stats.0.get(&ev.stat) {

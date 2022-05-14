@@ -72,7 +72,8 @@ fn dijkstra (start: &IVec2, goal: &IVec2, allowed_movements: &Vec<IVec2>, collid
         for direction in allowed_movements.iter() {
             let next = current + *direction;
             let new_cost = cost_so_far[&current] + obstacles[next] + 1;
-            if !true_collidables[next].is_some() && (!cost_so_far.contains_key(&next) || new_cost < cost_so_far[&next]) {
+            if (!true_collidables[next].is_some() && (!cost_so_far.contains_key(&next) || new_cost < cost_so_far[&next])) &&
+                (next.x >= 0 && next.x <= collidables.width() as i32 && next.y >= 0 && next.y < collidables.height() as i32) {
                 cost_so_far.insert(next, new_cost);
                 let priority = new_cost;
                 frontier.push(Reverse(WeightedPosition{position: next, weight: priority}));
@@ -98,7 +99,6 @@ fn dijkstra (start: &IVec2, goal: &IVec2, allowed_movements: &Vec<IVec2>, collid
             break
         }
     }
-    path.push_front(*start);
     
     if cost_so_far.contains_key(&goal) {
         Path {positions: path, cost: cost_so_far[&goal]}

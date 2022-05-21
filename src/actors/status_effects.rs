@@ -11,9 +11,9 @@ use super::TakesTurns;
 pub struct Tranced;
 
 // Systems
-// I don't know if I want to move this to be with the rest of the behaviours or not.
+// I don't know if I want to move this to be with the rest of the behaviors or not.
 // It may not only affect AI.
-pub fn tranced_behaviour (
+pub fn tranced_behavior (
     mut turns: ResMut<Turns>,
 
     tranced_query: Query<&Tranced, With<TakesTurns>>,

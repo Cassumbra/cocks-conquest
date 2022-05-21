@@ -4,7 +4,7 @@ use bevy_ascii_terminal::Tile;
 use iyes_loopless::state::NextState;
 use sark_grids::Grid;
 
-use crate::{actions::interactions::{MeleeAttacker, Attack, Dice, RangedAttacker, Projectile}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{AI, wander_behaviour::Wanderer}, GameState, rendering::Renderable};
+use crate::{actions::interactions::{MeleeAttacker, Attack, Dice, RangedAttacker, Projectile}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{AI, wander_behavior::Wanderer, targetting_behavior::Target}, GameState, rendering::Renderable};
 
 
 pub mod player;
@@ -15,6 +15,8 @@ use vision::*;
 
 pub mod stats;
 use stats::*;
+
+use self::alignments::{Relations, Alignment};
 
 pub mod status_effects;
 
@@ -107,6 +109,8 @@ pub struct SoldierBundle {
     pub vision: Vision,
     pub stats: Stats,
     pub fatal_stats: FatalStats,
+    pub relations: Relations,
+    pub target: Target,
     pub melee_attacker: MeleeAttacker,
     pub ranged_attacker: RangedAttacker,
 }
@@ -138,6 +142,8 @@ impl Default for SoldierBundle {
                     (StatType::Resistance, (0, FatalEffect::Trance))
                 ])
             ),
+            relations: Relations::new(vec![Alignment::AntiCock], vec![Alignment::AntiCock], vec![Alignment::Cock]),
+            target: Target::default(),
             melee_attacker: MeleeAttacker{attacks: vec![
                 Attack {
                     interact_text: vec!["{attacker} stabs {attacked} for {amount} damage!".to_string(),

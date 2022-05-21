@@ -34,6 +34,7 @@ pub struct PlayerBundle {
     pub mind_map: MindMap,
     pub stats: Stats,
     pub fatal_stats: FatalStats,
+    pub relations: Relations,
     pub melee_attacker: MeleeAttacker,
     pub does_vore: DoesVore,
     pub can_heal: CanHeal,
@@ -62,6 +63,7 @@ impl Default for PlayerBundle {
                 ])
             ),
             fatal_stats: FatalStats{..Default::default()},
+            relations: Relations::new(vec![Alignment::Cock], vec![Alignment::Cock], vec![Alignment::AntiCock]),
             melee_attacker: MeleeAttacker{attacks: vec![
                 Attack{
                     interact_text: vec!["{attacker} breathes their stink into {attacked}'s head, lowering their resistance by {amount}!".to_string(),

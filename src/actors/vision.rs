@@ -97,8 +97,13 @@ impl VisibilityMap for Map {
 }
 
 // Components
-#[derive(Component, Default, Debug, Clone)]
+#[derive(Component, Default, Debug, Clone, Deref, DerefMut)]
 pub struct Vision (pub Map);
+impl Vision {
+    pub fn visible(&self, index: IVec2) -> bool {
+        self.0.visible[[index.x as u32, index.y as u32]]
+    }
+}
 
 #[derive(Component, Default, Clone)]
 pub struct MindMap {

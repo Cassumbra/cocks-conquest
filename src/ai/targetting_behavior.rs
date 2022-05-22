@@ -2,34 +2,45 @@ use bevy::prelude::*;
 
 use crate::{data::Position, actors::{vision::Vision, TakesTurns, alignments::Relations, stats::Stats}, turn::Turns, actions::interactions::ActorRemovedEvent};
 
+use super::Path;
+
 // Components
-#[derive(Component, Default, Deref, DerefMut, Clone)]
-pub struct Target(Option<Entity>);
+// Warning: Engagements with distances higher than 1.5 will behave strangely if there is no capacity to perform ranged attacks.
+#[derive(Component, Default, Clone)]
+pub struct Engages{
+    pub target: Option<Entity>,
+    pub distance: f32,
+    pub path: Path,
+}
 
 pub fn targetting_behavior (
     mut turns: ResMut<Turns>,
 
-    mut ai_query: Query<(&Position, &mut Target, &Relations, &Vision), With<TakesTurns>>,
+    mut ai_query: Query<(&Position, &mut Engages, &Relations, &Vision), With<TakesTurns>>,
     actor_query: Query<(Entity, &Position, &Relations), (With<TakesTurns>)>,
 
     mut ev_actor_removed: EventReader<ActorRemovedEvent>,
 ) {
     let ai_ent = turns.order[turns.current];
-    if let Ok((pos, mut target, relations, vision)) = ai_query.get_mut(ai_ent) {
+    if let Ok((pos, mut engagement, relations, vision)) = ai_query.get_mut(ai_ent) {
         let mut rng = rand::thread_rng();
 
         // Remove target if it is no longer an actor
-        if target.is_some() {
+        // TODO: THIS DOES NOT WORK!!!
+        //       The event passes before it gets a chance to be useful.
+        //       We need to create a special event type which persists for a turn and the turn afterwards.
+        if engagement.target.is_some() {
             for ev in ev_actor_removed.iter() {
-                if target.unwrap() == ev.removed_actor {
-                    **target = None;
+                println!("woah!");
+                if engagement.target.unwrap() == ev.removed_actor {
+                    engagement.target = None;
                     break;
                 }
             }
         }
 
         // Stop if we already have a target
-        if target.0.is_some() {
+        if engagement.target.is_some() {
             return;
         }
 
@@ -58,7 +69,7 @@ pub fn targetting_behavior (
         }
 
         // Set our target. (Or None)
-        target.0 = closest_visible_enemy.0;
+        engagement.target = closest_visible_enemy.0;
 
         // TODO: We can either check all visible tiles for our enemies, OR
         //       we can check for all enemies to see if any are visible.

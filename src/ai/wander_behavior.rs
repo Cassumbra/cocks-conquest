@@ -23,7 +23,6 @@ pub fn wander_behavior (
 ) {
     // TODO: Maybe we should turn this into a system condition?
     if turns.progress == true {
-        println!("im outta here!");
         return;
     }
 
@@ -52,7 +51,7 @@ pub fn wander_behavior (
         }
 
         //println!("destination: {:?}", wanderer.path.positions[0]);
-        if !collidables.0[wanderer.path.positions[0]].is_some() {
+        if collidables.0[wanderer.path.positions[0]].is_none() {
             let to_move = wanderer.path.positions[0];
             let delta = to_move - **pos;
             ev_movement_event.send(PointMoveEvent{

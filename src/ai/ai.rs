@@ -11,6 +11,7 @@ use super::*;
 use super::player::Player;
 use super::status_effects::Tranced;
 
+pub mod engage_behavior;
 pub mod wander_behavior;
 pub mod targetting_behavior;
 pub mod melee_behavior;
@@ -23,6 +24,7 @@ struct Engagement {
     entity: Entity,
 }
 
+#[derive(Clone, Default)]
 pub struct Path {
     pub positions: VecDeque<IVec2>,
     pub cost: u32,

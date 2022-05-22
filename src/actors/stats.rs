@@ -45,6 +45,8 @@ pub fn update_fatal (
                             FatalEffect::Disintegrate => {
                                 log.log_string_formatted(format!(" {} has died!", name), Color::ORANGE_RED);
 
+                                ev_actor_remove_event.send(ActorRemovedEvent{removed_actor: ent});
+
                                 commands.entity(ent).despawn();
                             }
                             FatalEffect::Corpse => {

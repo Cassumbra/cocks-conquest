@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use sark_grids::Grid;
 
-use crate::{turn::Turns, data::Position, actors::{TakesTurns, Moves}, actions::{movement::{PointMoveEvent, Collidables}}};
+use crate::{turn::Turns, data::Position, actors::{TakesTurns, Moves, vision::Vision}, actions::{movement::{PointMoveEvent, Collidables}}};
 
 use super::{targetting_behavior::Engages, dijkstra};
 
@@ -11,7 +11,7 @@ pub fn engage_behavior (
     
     mut ev_movement_event: EventWriter<PointMoveEvent>,
 
-    mut ai_query: Query<(&Position, &mut Engages, &Moves), With<TakesTurns>>,
+    mut ai_query: Query<(&Position, &mut Engages, &Moves, &Vision), With<TakesTurns>>,
     target_query: Query<(&Position)>,
     actor_query: Query<(&Position), With<TakesTurns>>,
 ) {
@@ -21,16 +21,17 @@ pub fn engage_behavior (
     }
 
     let ai_ent = turns.order[turns.current];
-    if let Ok((pos, mut engagement, moves)) = ai_query.get_mut(ai_ent) {
+    if let Ok((pos, mut engagement, moves, vision)) = ai_query.get_mut(ai_ent) {
 
         if engagement.target.is_none() {
             return;
         }
 
         if let Ok(target_pos) = target_query.get(engagement.target.unwrap()) {
-            let distance = Vec2::new(target_pos.x as f32, target_pos.y as f32).distance(Vec2::new(pos.x as f32, pos.y as f32));
+            let distance = target_pos.as_vec2().distance(pos.as_vec2());
 
-            if distance <= engagement.distance {
+            // Do nothing if we are already in range and can see our target.
+            if distance <= engagement.distance && vision.visible(**target_pos) {
                 return;
             }
 
@@ -38,12 +39,20 @@ pub fn engage_behavior (
             //    engagement.path.positions.clear();
             //}
 
+            // Reset pathing if it will not bring us closer to our target
+            // TODO: This does not work properly currently. Fix this.
+            //       It may technically be "working" but not how we want it to.
+            /*
             if let Some(last_path_pos) = engagement.path.positions.back() {
-                let path_distance = Vec2::new(last_path_pos.x as f32, last_path_pos.y as f32).distance(Vec2::new(pos.x as f32, pos.y as f32));
+                let path_distance = last_path_pos.as_vec2().distance(pos.as_vec2());
                 if path_distance > engagement.distance {
                     engagement.path.positions.clear();
                 }
             }
+             */
+
+            // TODO: This is temporary.
+            engagement.path.positions.clear();
 
             if engagement.path.positions.is_empty() {
                 let mut non_actor_collidables = collidables.0.clone();

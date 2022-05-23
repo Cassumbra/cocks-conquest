@@ -60,7 +60,7 @@ pub fn targetting_behavior (
             }
 
             // Get distance between the enemy and us.
-            let distance = Vec2::new(actor_pos.x as f32, actor_pos.y as f32).distance_squared(Vec2::new(pos.x as f32, pos.y as f32));
+            let distance = actor_pos.as_vec2().distance(pos.as_vec2());
 
             // Replace the currently closest enemy with this enemy if its closer to us.
             if distance < closest_visible_enemy.1 {

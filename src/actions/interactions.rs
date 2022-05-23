@@ -15,7 +15,7 @@ pub struct BumpEvent {
     pub bumped_entity: Entity,
 }
 
-pub struct TargetEvent {
+pub struct RandRangedAttackEvent {
     pub targetting_entity: Entity,
     pub target: IVec2,
 }
@@ -41,7 +41,7 @@ pub fn do_attack (
 
 pub fn ranged_attack (
     // This may become something else later but it will do for now.
-    mut ev_target_event: EventReader<TargetEvent>,
+    mut ev_ranged_attack_event: EventReader<RandRangedAttackEvent>,
     mut ev_stat_change: EventWriter<StatChangeEvent>,
 
     name_query: Query<&Name>,
@@ -57,7 +57,7 @@ pub fn ranged_attack (
 
     // TODO: generalize similarities between melee and ranged and place into different system(s)
     // TODO: add dodge roll after generalization
-    for ev in ev_target_event.iter() {
+    for ev in ev_ranged_attack_event.iter() {
         if let Ok(attacker_comp) = attacker_query.get(ev.targetting_entity) {
             println!("hngghh i have the capacity to attack!!!");
             let mut rng = rand::thread_rng();

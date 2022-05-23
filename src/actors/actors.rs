@@ -144,7 +144,7 @@ impl Default for SoldierBundle {
             ),
             relations: Relations::new(vec![Alignment::AntiCock], vec![Alignment::AntiCock], vec![Alignment::Cock]),
             engages: Engages {
-                distance: 1.5,
+                distance: 3.5,
                 ..default()
             },
             melee_attacker: MeleeAttacker{attacks: vec![

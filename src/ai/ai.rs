@@ -3,7 +3,7 @@ use std::collections::{VecDeque, BinaryHeap};
 use bevy::utils::{HashMap, HashSet};
 use sark_grids::Grid;
 use rand::Rng;
-use crate::actions::interactions::TargetEvent;
+use crate::actions::interactions::RandRangedAttackEvent;
 use crate::actions::movement::{PointMoveEvent, Collidables};
 use crate::actors::vision::Vision;
 
@@ -245,7 +245,7 @@ impl AI {
 // We should probably split this up into three different systems later. Or more.
 // State change handling, Pathing, Actions
 pub fn generic_brain (
-    mut ev_target_event: EventWriter<TargetEvent>,
+    mut ev_target_event: EventWriter<RandRangedAttackEvent>,
     mut ev_movement_event: EventWriter<PointMoveEvent>,
 
     mut ai_query: Query<(&Position, &mut AI, &Vision), Without<Tranced>>,
@@ -381,7 +381,7 @@ pub fn generic_brain (
                             });
                         } else if ai_pos.0.as_vec2().distance(target_pos.0.as_vec2()) <= engagement.distance {
                             println!("AI DO A SHOOTY");
-                            ev_target_event.send(TargetEvent{
+                            ev_target_event.send(RandRangedAttackEvent{
                                 targetting_entity: ai_ent,
                                 target: target_pos.0,
                             })

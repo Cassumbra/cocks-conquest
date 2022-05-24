@@ -4,7 +4,7 @@ use bevy_ascii_terminal::Tile;
 use iyes_loopless::state::NextState;
 use sark_grids::Grid;
 
-use crate::{actions::interactions::{MeleeAttacker, Attack, Dice, RangedAttacker, Projectile}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{AI, wander_behavior::Wanderer, targetting_behavior::Engages}, GameState, rendering::Renderable};
+use crate::{actions::interactions::{MeleeAttacker, Attack, Dice, RangedAttacker, Projectile}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{wander_behavior::Wanderer, targetting_behavior::Engages}, GameState, rendering::Renderable};
 
 
 pub mod player;
@@ -73,8 +73,7 @@ pub fn setup_actors (
             })
             .insert(Position(room.center()))
             .insert(Name::new(format!("Soldier {}", i)))
-            .insert(Wanderer::new(rooms.0.clone()))
-            .insert(AI{..Default::default()});
+            .insert(Wanderer::new(rooms.0.clone()));
     }
     
 

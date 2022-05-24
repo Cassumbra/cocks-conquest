@@ -148,7 +148,7 @@ pub fn ranged_attack (
                             for point in line_points {
 
                                 println!("projectile at point {}", point);
-                                effect.fragments.push(EffectFragment{duration: Duration::from_secs_f32(1.0), tiles: vec![EffectTile{position: point, tile: Tile { glyph: '-', fg_color: Color::YELLOW, bg_color: Color::BLACK }}]});
+                                effect.fragments.push(EffectFragment{duration: Duration::from_secs_f32(0.25), tiles: vec![EffectTile{position: point, tile: Tile { glyph: '-', fg_color: Color::YELLOW, bg_color: Color::BLACK }}]});
 
                                 if let Some(collided_entity) = collidables[point] {
                                     let mut attacked_name = collided_entity.id().to_string();
@@ -292,13 +292,12 @@ fn rotate_point(pivot: Vec2, point: Vec2, rotation: f32) -> Vec2 {
     let cos = rotation.cos();
 
     Vec2::new(cos * (point.x - pivot.x) - sin * (point.y - pivot.y) + point.x,
-              sin * (point.x - pivot.x) - cos * (point.y - pivot.y) + point.y)
+              sin * (point.x - pivot.x) + cos * (point.y - pivot.y) + point.y)
 }
 
-// TOOD: UH OH! This is broken and doesnt focking work!!!! You gotta fix it!!!!!
 fn get_line_points(point_a: Vec2, point_b: Vec2, distance: f32) -> VecDeque<IVec2> {
     let mut points = VecDeque::new();
-    let distance = point_a.distance(point_b);
+    //let distance = point_a.distance(point_b);
     for step in 0..=distance as i32 {
         let s = if distance == 0.0 {0.0} else {step as f32 / distance};
 

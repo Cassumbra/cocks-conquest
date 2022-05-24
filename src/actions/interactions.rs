@@ -1,5 +1,7 @@
-use crate::{actors::{stats::{Stats, StatChangeEvent, StatType}}, data::{Position}, log::Log};
+use crate::{actors::{stats::{Stats, StatChangeEvent, StatType}}, data::{Position}, log::Log, rendering::effects::{Effect, EffectFragment, EffectTile}};
+use bevy::utils::Duration;
 use bevy::prelude::*;
+use bevy_ascii_terminal::Tile;
 use rand::Rng;
 use caith::{Roller, RollResultType};
 
@@ -8,6 +10,7 @@ use strfmt::strfmt;
 use std::collections::{HashMap, VecDeque};
 
 use super::movement::Collidables;
+
 
 // Events
 pub struct BumpEvent {
@@ -48,6 +51,8 @@ pub fn ranged_attack (
     attacker_query: Query<&RangedAttacker>,
     position_query: Query<&Position>,
     mut stats_query: Query<&mut Stats>,
+
+    mut commands: Commands,
 
     mut log: ResMut<Log>,
     collidables: Res<Collidables>,
@@ -101,7 +106,7 @@ pub fn ranged_attack (
                 // TODO: automatically select an attack that will be effective. have some fallback if none apply
                 // TODO: pay cost here if needed
 
-
+                let mut effect = Effect::default();
 
 
                 
@@ -134,12 +139,17 @@ pub fn ranged_attack (
                             let mut line_points = get_line_points(targetting_position, target_position, length);
                             // Remove first point. Later, we are also going to want to ignore the first few points that contain friends. (But still hit enemies)
                             // TODO: we need to ignore ALL allies within the first 3 or so tiles, not just the attacker themself. We cannot do this through removing points, however.
+                            
                             line_points.pop_front();
 
-                            
+                            println!("points in line: {:?}", line_points);
                             
 
                             for point in line_points {
+
+                                println!("projectile at point {}", point);
+                                effect.fragments.push(EffectFragment{duration: Duration::from_secs_f32(1.0), tiles: vec![EffectTile{position: point, tile: Tile { glyph: '-', fg_color: Color::YELLOW, bg_color: Color::BLACK }}]});
+
                                 if let Some(collided_entity) = collidables[point] {
                                     let mut attacked_name = collided_entity.id().to_string();
                                     if let Ok(name) = name_query.get(collided_entity) {
@@ -164,6 +174,8 @@ pub fn ranged_attack (
 
                                     // TODO: Log something special if we miss our target or if we hit something besides our intended target.
 
+                                    commands.spawn().insert(effect);
+                                    // TODO: breaking from projectiles means we dont actually get to fire off more than one projectile. Fix this.
                                     break 'projectiles;
                                 }
                             }
@@ -283,12 +295,23 @@ fn rotate_point(pivot: Vec2, point: Vec2, rotation: f32) -> Vec2 {
               sin * (point.x - pivot.x) - cos * (point.y - pivot.y) + point.y)
 }
 
+// TOOD: UH OH! This is broken and doesnt focking work!!!! You gotta fix it!!!!!
 fn get_line_points(point_a: Vec2, point_b: Vec2, distance: f32) -> VecDeque<IVec2> {
     let mut points = VecDeque::new();
-    //let distance = point_a.distance(point_b);
+    let distance = point_a.distance(point_b);
     for step in 0..=distance as i32 {
         let s = if distance == 0.0 {0.0} else {step as f32 / distance};
-        points.push_back(point_a.lerp(point_b, s).round().as_ivec2());
+
+        let point = point_a.lerp(point_b, s).round().as_ivec2();
+
+        if let Some(last_point) = points.back() {
+            if last_point != &point {
+                points.push_back(point);
+            }
+        }
+        else {
+            points.push_back(point);
+        }
     }
 
     points
@@ -381,6 +404,7 @@ pub struct Projectile {
     pub optimal_range: f32,
     pub range_penalty: f32,         
 
+    // TODO: Add field for projectile tile
 }
 impl Default for Projectile {
     fn default() -> Self {

@@ -7,6 +7,7 @@ use crate::actors::stats::Stats;
 use super::*;
 
 pub mod window;
+pub mod effects;
 
 //Plugin
 #[derive(Default)]

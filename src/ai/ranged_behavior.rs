@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{turn::Turns, data::Position, actors::{TakesTurns, Moves, vision::Vision}, actions::{movement::PointMoveEvent, interactions::{MeleeAttacker, RangedAttacker, RandRangedAttackEvent}}};
+use crate::{turn::Turns, data::Position, actors::{TakesTurns, Moves, vision::Vision}, actions::ranged::{RandRangedAttackEvent, RangedAttacker}};
 
 use super::targetting_behavior::Engages;
+
 
 pub fn ranged_behavior (
     mut turns: ResMut<Turns>,

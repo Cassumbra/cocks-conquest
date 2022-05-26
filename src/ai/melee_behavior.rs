@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{turn::Turns, data::Position, actors::{TakesTurns, Moves}, actions::{movement::PointMoveEvent, interactions::MeleeAttacker}};
+use crate::{turn::Turns, data::Position, actors::{TakesTurns, Moves}, actions::{movement::PointMoveEvent, melee::MeleeAttacker}};
 
 use super::targetting_behavior::Engages;
 

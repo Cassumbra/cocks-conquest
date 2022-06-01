@@ -3,9 +3,9 @@ use std::fmt::Display;
 
 use bevy::prelude::*;
 
-use crate::{data::Collides, rendering::Renderable, actions::interactions::ActorRemovedEvent, log::Log};
+use crate::{data::Collides, rendering::Renderable, log::Log};
 
-use super::{TakesTurns, status_effects::Tranced};
+use super::{TakesTurns, status_effects::Tranced, ActorRemovedEvent};
 
 
 // Systems

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{turn::Turns, data::Position, actors::{TakesTurns, Moves, vision::Vision}, actions::ranged::{RandRangedAttackEvent, RangedAttacker}};
+use crate::{turn::Turns, data::Position, actors::{TakesTurns, Moves, vision::Vision}, actions::ranged::{RandRangedAttackEvent, RangedAttacker, RangedAttackEvent}};
 
 use super::targetting_behavior::Engages;
 
@@ -8,7 +8,7 @@ use super::targetting_behavior::Engages;
 pub fn ranged_behavior (
     mut turns: ResMut<Turns>,
     
-    mut ev_attack_event: EventWriter<RandRangedAttackEvent>,
+    mut ev_attack_event: EventWriter<RangedAttackEvent>,
 
     mut ai_query: Query<(&Position, &Engages, &RangedAttacker, &Moves, &Vision), With<TakesTurns>>,
     target_query: Query<(&Position)>,
@@ -34,7 +34,8 @@ pub fn ranged_behavior (
                 return;
             }
 
-            ev_attack_event.send(RandRangedAttackEvent{targetting_entity: ai_ent, target: **target_pos});
+            // TODO: Make more sophisticated attack selection.
+            ev_attack_event.send(RangedAttackEvent{targetting_entity: ai_ent, target: **target_pos, projectile: attacker.projectiles[0].clone() });
             turns.progress_turn();
         }
     }

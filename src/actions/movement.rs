@@ -3,7 +3,7 @@ use std::ops::Index;
 // Unglob later
 use bevy::prelude::*;
 use sark_grids::grid::Grid;
-use super::interactions::BumpEvent;
+use super::attack::BumpEvent;
 use super::super::*;
 
 // Events

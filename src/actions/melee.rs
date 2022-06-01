@@ -5,7 +5,7 @@ use rand::Rng;
 use strfmt::strfmt;
 
 use crate::{actors::stats::{StatChangeEvent, Stats}, log::Log};
-use super::interactions::{Attack, BumpEvent};
+use super::attack::{Attack, BumpEvent, AttackEvent};
 
 
 // Components 
@@ -17,7 +17,7 @@ pub struct MeleeAttacker {
 // Systems
 pub fn bump_melee_attack (
     mut ev_bump_event: EventReader<BumpEvent>,
-    mut ev_stat_change: EventWriter<StatChangeEvent>,
+    mut ev_attack_hit: EventWriter<AttackEvent>,
 
     name_query: Query<&Name>,
     attacker_query: Query<&MeleeAttacker>,
@@ -25,11 +25,11 @@ pub fn bump_melee_attack (
 
     mut log: ResMut<Log>,
 ) {
+    let mut rng = rand::thread_rng();
+
     for ev in ev_bump_event.iter() {
         if let Ok(attacker_comp) = attacker_query.get(ev.bumping_entity) {
             if stats_query.get(ev.bumped_entity).is_ok() {
-                let mut rng = rand::thread_rng();
-
                 let mut attacker_name = ev.bumping_entity.id().to_string();
                 if let Ok(name) = name_query.get(ev.bumping_entity) {
                     attacker_name = name.to_string();
@@ -75,8 +75,11 @@ pub fn bump_melee_attack (
                         }
 
                         if attack_valid && (has_cost == can_pay) {
-                            println!("doing attack!");
+                            println!("doing melee attack!");
 
+                            ev_attack_hit.send(AttackEvent { attacking_entity: ev.bumping_entity, attacked_entity: ev.bumped_entity, attack });
+
+                            /*
                             ev_stat_change.send(StatChangeEvent{stat: attack.damage_type, amount: attack.damage.total, entity: ev.bumped_entity});
                             //*stats_attacked.0.get_mut(&attack.damage_type).unwrap() += attack.damage;
 
@@ -99,6 +102,7 @@ pub fn bump_melee_attack (
                                 }
 
                             }
+                            */ */
                             break;
                         }       
                     }                    

@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{log::Log, actors::{status_effects::Tranced, TakesTurns, stats::{Stats, StatType}}, data::Collides, rendering::Renderable, turn::Turns};
+use crate::{log::Log, actors::{status_effects::Tranced, TakesTurns, stats::{Stats, StatType}, ActorRemovedEvent}, data::Collides, rendering::Renderable, turn::Turns};
 
-use super::interactions::{BumpEvent, ActorRemovedEvent};
+use super::attack::BumpEvent;
 
 
 

@@ -1,7 +1,6 @@
 use bevy::prelude::*;
-use crate::actions::interactions::ActorRemovedEvent;
 
-use super::*;
+use crate::actors::{TakesTurns, ActorRemovedEvent};
 
 // Plugin
 #[derive(Default)]

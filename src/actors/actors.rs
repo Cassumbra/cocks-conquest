@@ -4,7 +4,7 @@ use bevy_ascii_terminal::Tile;
 use iyes_loopless::state::NextState;
 use sark_grids::Grid;
 
-use crate::{actions::{interactions::{Attack, Dice}, melee::MeleeAttacker, ranged::{RangedAttacker, Projectile}}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{wander_behavior::Wanderer, targetting_behavior::Engages}, GameState, rendering::Renderable};
+use crate::{actions::{attack::{Attack, Dice}, melee::MeleeAttacker, ranged::{RangedAttacker, Projectile}}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{wander_behavior::Wanderer, targetting_behavior::Engages}, GameState, rendering::Renderable};
 
 
 pub mod player;
@@ -30,8 +30,14 @@ pub struct ActorPlugin;
 impl Plugin for ActorPlugin {
     fn build(&self, app: &mut App) {
         app
-        .add_event::<stats::StatChangeEvent>();
+        .add_event::<stats::StatChangeEvent>()
+        .add_event::<ActorRemovedEvent>();
     }
+}
+
+// Events
+pub struct ActorRemovedEvent {
+    pub removed_actor: Entity,
 }
 
 // Systems
@@ -97,6 +103,8 @@ impl Default for Moves {
     }
 }
 
+// TODO: Maybe we should make actors into an enum like how we have stats? Idk!
+
 // Bundles
 #[derive(Bundle, Clone)]
 pub struct SoldierBundle {
@@ -160,7 +168,15 @@ impl Default for SoldierBundle {
                 }
             ]},
             ranged_attacker: RangedAttacker{projectiles: vec![
-                Projectile::default()
+                Projectile {
+                    attack: Attack {
+                        damage: Dice::new("1d2 * -1"),
+
+                        ..default()
+                    },
+
+                    ..default()
+                }
             ]},
         }
     }

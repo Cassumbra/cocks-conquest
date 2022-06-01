@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 pub mod movement;
-pub mod interactions;
+pub mod attack;
 pub mod healing;
 pub mod vore;
 pub mod melee;
@@ -14,9 +14,11 @@ pub struct ActionPlugin;
 impl Plugin for ActionPlugin {
     fn build(&self, app: &mut App) {
         app
-         .add_event::<interactions::BumpEvent>()
-         .add_event::<interactions::ActorRemovedEvent>()
+         .add_event::<attack::BumpEvent>()
+         .add_event::<attack::AttackEvent>()
          .add_event::<ranged::RandRangedAttackEvent>()
+         .add_event::<ranged::RangedAttackEvent>()
+         .add_event::<ranged::ProjectileHitEvent>()
          .add_event::<healing::HealActionEvent>()
          .add_event::<movement::CollidableChangeEvent>()
          .add_event::<movement::PointMoveEvent>();

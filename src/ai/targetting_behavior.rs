@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{data::Position, actors::{vision::Vision, TakesTurns, alignments::Relations, stats::Stats}, turn::Turns, actions::interactions::ActorRemovedEvent};
+use crate::{data::Position, actors::{vision::Vision, TakesTurns, alignments::Relations, stats::Stats, ActorRemovedEvent}, turn::Turns};
 
 use super::Path;
 

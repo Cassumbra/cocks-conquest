@@ -5,7 +5,7 @@ use bevy::app::AppExit;
 use bevy::prelude::*;
 
 use crate::actions::healing::{CanHeal, HealActionEvent};
-use crate::actions::interactions::{Attack, ActorRemovedEvent, Dice};
+use crate::actions::attack::{Attack, Dice};
 use crate::actions::movement::PointMoveEvent;
 use crate::actions::vore::DoesVore;
 use crate::data::{Position, Collides};

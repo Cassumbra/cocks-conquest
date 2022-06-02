@@ -70,7 +70,7 @@ pub fn update_vore (
                         // TODO: Add a check to make sure we don't go over the limit
                         log.log_string_formatted(format!(" {} has been melted into 15 cum points worth of stinky smelly goo.", prey_name), Color::GREEN);
                         commands.entity(*prey).despawn();
-                        ev_actor_remove_event.send(ActorRemovedEvent{removed_actor: *prey});
+                        ev_actor_remove_event.send(ActorRemovedEvent{removed_actor: *prey, turn: turns.count });
                         stats.0.get_mut(&StatType::CumPoints).unwrap().value += 15;
                     } else {
                         log.log_string_formatted(format!(" {} turns until {} is digested by {}.", digestion.turns_to_digest, prey_name, pred_name), Color::WHITE);

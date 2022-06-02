@@ -1,10 +1,10 @@
 use std::collections::BTreeMap;
-use bevy::prelude::*;
+use bevy::{prelude::*, ecs::event::Events};
 use bevy_ascii_terminal::Tile;
 use iyes_loopless::state::NextState;
 use sark_grids::Grid;
 
-use crate::{actions::{attack::{Attack, Dice}, melee::MeleeAttacker, ranged::{RangedAttacker, Projectile}}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{wander_behavior::Wanderer, targetting_behavior::Engages}, GameState, rendering::Renderable};
+use crate::{actions::{attack::{Attack, Dice}, melee::MeleeAttacker, ranged::{RangedAttacker, Projectile}}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{wander_behavior::Wanderer, targetting_behavior::Engages}, GameState, rendering::Renderable, turn::TurnEvent};
 
 
 pub mod player;
@@ -31,13 +31,19 @@ impl Plugin for ActorPlugin {
     fn build(&self, app: &mut App) {
         app
         .add_event::<stats::StatChangeEvent>()
-        .add_event::<ActorRemovedEvent>();
+        .init_resource::<Events<ActorRemovedEvent>>();
     }
 }
 
 // Events
 pub struct ActorRemovedEvent {
     pub removed_actor: Entity,
+    pub turn: u32,
+}
+impl TurnEvent for ActorRemovedEvent {
+    fn get_turn(&self) -> u32 {
+        self.turn
+    }
 }
 
 // Systems

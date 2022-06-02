@@ -3,7 +3,7 @@ use std::fmt::Display;
 
 use bevy::prelude::*;
 
-use crate::{data::Collides, rendering::Renderable, log::Log};
+use crate::{data::Collides, rendering::Renderable, log::Log, turn::Turns};
 
 use super::{TakesTurns, status_effects::Tranced, ActorRemovedEvent};
 
@@ -33,6 +33,7 @@ pub fn update_fatal (
     mut renderable_query: Query<(&mut Renderable)>,
 
     mut log: ResMut<Log>,
+    turns: Res<Turns>,
 ) {
     for ev in ev_stat_change.iter() {
         if let Ok((ent, stats, fatal_stats, opt_name)) = stats_query.get(ev.entity) {
@@ -45,7 +46,7 @@ pub fn update_fatal (
                             FatalEffect::Disintegrate => {
                                 log.log_string_formatted(format!(" {} has died!", name), Color::ORANGE_RED);
 
-                                ev_actor_remove_event.send(ActorRemovedEvent{removed_actor: ent});
+                                ev_actor_remove_event.send(ActorRemovedEvent{removed_actor: ent, turn: turns.count });
 
                                 commands.entity(ent).despawn();
                             }
@@ -55,7 +56,7 @@ pub fn update_fatal (
                                 commands.entity(ent)
                                     .remove::<TakesTurns>()
                                     .remove::<Collides>();
-                                ev_actor_remove_event.send(ActorRemovedEvent{removed_actor: ent});
+                                ev_actor_remove_event.send(ActorRemovedEvent{removed_actor: ent, turn: turns.count });
         
                                 if let Ok(mut renderable) = renderable_query.get_mut(ev.entity) {
                                     renderable.tile.bg_color = Color::ORANGE_RED;

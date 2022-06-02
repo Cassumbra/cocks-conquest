@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, ecs::event::Events};
 
 use crate::actors::{TakesTurns, ActorRemovedEvent};
 
@@ -20,6 +20,7 @@ pub struct Turns {
     pub order: Vec<Entity>,
     pub current: usize,
     pub progress: bool,
+    pub count: u32,
 }
 impl Turns {
     pub fn is_turn(&self, entity: &Entity) -> bool {
@@ -62,7 +63,7 @@ pub fn update_turn_order(
     }
 }
 
-pub fn update_turn(
+pub fn update_turn (
     mut turns: ResMut<Turns>,
     mut ev_halt_turn: EventReader<HaltTurnEvent>,
 ) {
@@ -71,13 +72,37 @@ pub fn update_turn(
     }
 
     if turns.progress {
-
         let mut next_turn = turns.current + 1;
         if next_turn > turns.order.len() - 1 {
+            turns.count += 1;
             next_turn = 0;
         }
 
         turns.current = next_turn;
         turns.progress = false;
     }
+}
+
+pub fn turn_event_manager<T: 'static + Send + Sync + TurnEvent>(
+    mut events: ResMut<Events<T>>,
+    mut turns: ResMut<Turns>,
+) {
+    let mut new_events = Vec::<T>::new();
+
+    for event in events.drain() {
+        if event.get_turn() + 1 >= turns.count {
+            println!("Retaining event.");
+            new_events.push(event);
+        }
+        else {
+            println!("Event dropped.");
+        }
+    }
+
+    events.extend(new_events);
+}
+
+// Traits
+pub trait TurnEvent {
+    fn get_turn(&self) -> u32;
 }

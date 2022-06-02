@@ -64,6 +64,7 @@ fn main () {
     spawn_actors.add_system(movement::update_collidables.after("setup_actors"));
 
     let mut finish_setup = SystemStage::parallel();
+    finish_setup.add_system(turn::update_turn_order);
     finish_setup.add_system(vision::setup_vision);
 
     let mut restart = SystemStage::parallel();
@@ -120,9 +121,7 @@ fn main () {
     )
     
 
-    // TODO: Perhaps these should be part of the PostUpdate stage.
-    .add_system(turn::update_turn_order.run_in_state(GameState::Playing).label("update_turn_order"))
-    .add_system(turn::update_turn.run_in_state(GameState::Playing).label("update_turn").after("update_turn_order"))
+
 
     
     .add_system_set(
@@ -171,6 +170,14 @@ fn main () {
             .with_system(movement::update_collidables.run_in_state(GameState::Playing).label("update_collidables"))
             .with_system(vision::update_vision.run_in_state(GameState::Playing).label("update_vision").after("update_collidables"))
             .with_system(vision::update_mind_map.run_in_state(GameState::Playing).after("update_vision"))
+    )
+
+    .add_system_set_to_stage (
+        CoreStage::Last,
+        SystemSet::new()
+            .with_system(turn::update_turn_order.run_in_state(GameState::Playing).label("update_turn_order"))
+            .with_system(turn::update_turn.run_in_state(GameState::Playing).label("update_turn").after("update_turn_order"))
+            .with_system(turn::turn_event_manager::<ActorRemovedEvent>.after("update_turn"))
     )
 
     .run();

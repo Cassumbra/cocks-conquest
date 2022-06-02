@@ -39,10 +39,22 @@ impl Plugin for ActorPlugin {
 pub struct ActorRemovedEvent {
     pub removed_actor: Entity,
     pub turn: u32,
+    has_run: bool,
+}
+impl ActorRemovedEvent {
+    pub fn new(removed_actor: Entity, turn: u32) -> Self{
+        ActorRemovedEvent { removed_actor, turn, has_run: false }
+    }
 }
 impl TurnEvent for ActorRemovedEvent {
     fn get_turn(&self) -> u32 {
         self.turn
+    }
+    fn update(&mut self) {
+        self.has_run = true;
+    }
+    fn frame_valid(&self) -> bool {
+        !self.has_run
     }
 }
 

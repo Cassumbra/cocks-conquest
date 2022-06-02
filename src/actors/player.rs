@@ -213,10 +213,11 @@ pub fn player_death (
     mut ev_actor_remove_event: EventReader<ActorRemovedEvent>,
 
     mut log: ResMut<Log>,
+    mut turns: ResMut<Turns>,
 ) {
     for ev in ev_actor_remove_event.iter() {
-        if player_query.get(ev.removed_actor).is_ok() {
-            log.log_string_formatted(" You have died! Press shift+r to try again.".to_string(), Color::YELLOW)
+        if ev.frame_valid() && player_query.get(ev.removed_actor).is_ok() {
+            log.log_string_formatted(" You have died! Press shift+r to try again.".to_string(), Color::YELLOW);
         }
     }
 }

@@ -35,7 +35,9 @@ pub fn update_fatal (
     mut log: ResMut<Log>,
     turns: Res<Turns>,
 ) {
-    for ev in ev_stat_change.iter() {
+    let mut fatalities = Vec::<(Entity, FatalEffect)>::new();
+
+    'stat_changes: for ev in ev_stat_change.iter() {
         if let Ok((ent, stats, fatal_stats, opt_name)) = stats_query.get(ev.entity) {
             if let Some(stat) = stats.0.get(&ev.stat) {
                 if let Some(fatal_stat_val) = fatal_stats.0.get(&ev.stat) {
@@ -44,31 +46,56 @@ pub fn update_fatal (
 
                         match &fatal_stats.0.get(&ev.stat).unwrap().1 {
                             FatalEffect::Disintegrate => {
+                                // TODO: This is basically the same code in 3 different places. Can we do better than this?
+                                for (fatal_ent, fatality) in &fatalities {
+                                    if *fatal_ent == ent && *fatality == FatalEffect::Disintegrate {
+                                        continue 'stat_changes;
+                                    }
+                                }
+
                                 log.log_string_formatted(format!(" {} has died!", name), Color::ORANGE_RED);
 
-                                ev_actor_remove_event.send(ActorRemovedEvent{removed_actor: ent, turn: turns.count });
+                                ev_actor_remove_event.send(ActorRemovedEvent::new(ent, turns.count));
 
                                 commands.entity(ent).despawn();
+
+                                fatalities.push((ent, FatalEffect::Disintegrate));
                             }
                             FatalEffect::Corpse => {
+                                for (fatal_ent, fatality) in &fatalities {
+                                    if *fatal_ent == ent && *fatality == FatalEffect::Corpse {
+                                        continue 'stat_changes;
+                                    }
+                                }
+
                                 log.log_string_formatted(format!(" {} has died!", name), Color::ORANGE_RED);
 
                                 commands.entity(ent)
                                     .remove::<TakesTurns>()
                                     .remove::<Collides>();
-                                ev_actor_remove_event.send(ActorRemovedEvent{removed_actor: ent, turn: turns.count });
+                                ev_actor_remove_event.send(ActorRemovedEvent::new(ent, turns.count));
         
                                 if let Ok(mut renderable) = renderable_query.get_mut(ev.entity) {
                                     renderable.tile.bg_color = Color::ORANGE_RED;
                                 }
+
+                                fatalities.push((ent, FatalEffect::Corpse));
                             }
                             FatalEffect::Trance => {
+                                for (fatal_ent, fatality) in &fatalities {
+                                    if *fatal_ent == ent && *fatality == FatalEffect::Trance {
+                                        continue 'stat_changes;
+                                    }
+                                }
+
                                 log.log_string_formatted(format!(" {} has fallen under a trance!", name), Color::PINK);
 
                                 commands.entity(ent).insert(Tranced);
                                 if let Ok(mut renderable) = renderable_query.get_mut(ev.entity) {
                                     renderable.tile.bg_color = Color::PINK;
                                 }
+
+                                fatalities.push((ent, FatalEffect::Trance));
                             }
                         }
                     }
@@ -86,7 +113,7 @@ pub struct StatChangeEvent {
 }
 
 // Data
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum FatalEffect{
     Disintegrate,
     Corpse,

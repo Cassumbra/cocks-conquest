@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{data::Position, actors::{vision::Vision, TakesTurns, alignments::Relations, stats::Stats, ActorRemovedEvent}, turn::Turns};
+use crate::{data::Position, actors::{vision::Vision, TakesTurns, alignments::Relations, stats::Stats, ActorRemovedEvent}, turn::{Turns, TurnEvent}};
 
 use super::Path;
 
@@ -26,13 +26,9 @@ pub fn targetting_behavior (
         let mut rng = rand::thread_rng();
 
         // Remove target if it is no longer an actor
-        // TODO: THIS DOES NOT WORK!!!
-        //       The event passes before it gets a chance to be useful.
-        //       We need to create a special event type which persists for a turn and the turn afterwards.
         if engagement.target.is_some() {
             for ev in ev_actor_removed.iter() {
-                println!("woah!");
-                if engagement.target.unwrap() == ev.removed_actor {
+                if  engagement.target.unwrap() == ev.removed_actor {
                     engagement.target = None;
                     break;
                 }

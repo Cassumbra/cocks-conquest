@@ -87,22 +87,22 @@ pub fn turn_event_manager<T: 'static + Send + Sync + TurnEvent>(
     mut events: ResMut<Events<T>>,
     mut turns: ResMut<Turns>,
 ) {
-    let mut new_events = Vec::<T>::new();
+    let mut events_new = Vec::<T>::new();
 
-    for event in events.drain() {
+    // TODO: Could we just use .map()?
+    for mut event in events.drain() {
         if event.get_turn() + 1 >= turns.count {
-            println!("Retaining event.");
-            new_events.push(event);
-        }
-        else {
-            println!("Event dropped.");
+            event.update();
+            events_new.push(event);
         }
     }
 
-    events.extend(new_events);
+    events.extend(events_new);
 }
 
 // Traits
 pub trait TurnEvent {
     fn get_turn(&self) -> u32;
+    fn update(&mut self);
+    fn frame_valid(&self) -> bool;
 }

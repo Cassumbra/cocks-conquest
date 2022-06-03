@@ -159,6 +159,8 @@ impl Default for SoldierBundle {
                 BTreeMap::from([
                     (StatType::Health, Stat::new(0, 7)),
                     (StatType::Resistance, Stat::new(0, 7)),
+                    (StatType::Perception, Stat::new(0, 5)),
+                    (StatType::Dexterity, Stat::new(0, 5)),
                 ])
             ),
             fatal_stats: FatalStats(

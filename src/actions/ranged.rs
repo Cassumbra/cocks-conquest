@@ -100,7 +100,8 @@ pub fn ranged_attack (
                     let d20 = Dice::new("1d20");
                     let roll = d20.total + stats_attacker.get_value(&projectile.range_save_type);
                     let penalty = (roll - projectile.range_save) as f32 * projectile.range_penalty;
-                    let length = projectile.optimal_range - penalty;
+                    let length = if penalty < 0.0 {projectile.optimal_range + penalty} else {projectile.optimal_range};
+                    
 
                     // TODO: Make our projectile path directly to its target avoiding collidables if it can do so in a straight line
                     let mut line_points = get_line_points(targetting_position, target_position, length);

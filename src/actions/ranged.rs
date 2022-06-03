@@ -94,6 +94,8 @@ pub fn ranged_attack (
                     // TODO: generate angle sexer
                     let angle = rng.gen_range(-spread as i32..= spread as i32) as f32;
 
+                    let ignore_collidables = spread == projectile.optimal_spread;
+
                     let targetting_position = position_query.get(ev.targetting_entity).unwrap().as_vec2();
                     let target_position = rotate_point(targetting_position, ev.target.as_vec2(), angle);
                     
@@ -119,15 +121,19 @@ pub fn ranged_attack (
                         effect.fragments.push(EffectFragment{duration: Duration::from_secs_f32(0.25), tiles: vec![EffectTile{position: point, tile: Tile { glyph: '-', fg_color: Color::YELLOW, bg_color: Color::BLACK }}]});
 
                         if let Some(collided_entity) = collidables[point] {
-                            let mut attacked_name = collided_entity.id().to_string();
-                            if let Ok(name) = name_query.get(collided_entity) {
-                                attacked_name = name.to_string();
-                            }
-                            println!("shooty hit a {}", attacked_name);
+                            if ignore_collidables && point != ev.target {
 
-                            ev_attack_hit.send(AttackEvent{ attacking_entity: ev.targetting_entity, attacked_entity: collided_entity, attack: projectile.attack.clone() });
-                            
-                            continue 'burst_fire;
+                            } else {
+                                let mut attacked_name = collided_entity.id().to_string();
+                                if let Ok(name) = name_query.get(collided_entity) {
+                                    attacked_name = name.to_string();
+                                }
+                                println!("shooty hit a {}", attacked_name);
+
+                                ev_attack_hit.send(AttackEvent{ attacking_entity: ev.targetting_entity, attacked_entity: collided_entity, attack: projectile.attack.clone() });
+                                
+                                continue 'burst_fire;
+                            }
                         }
                     }
                 }

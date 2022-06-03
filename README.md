@@ -1,3 +1,15 @@
 # Cock's Conquest
 
-TODO: put friendly helper text here (also we should have this file be pushed into release archives alongside the "assets" folder)
+The player and its enemies can move in eight directions as well as wait.
+
+uio   789
+jkl = 456
+m,.   123
+
+The center key is used to wait.
+
+v is used to heal at the cost of 5 cum points and 1 turn.
+
+After resistance of an enemy is dropped to zero, it will become tranced, and can be consumed.
+
+Digestion of an enemy takes 3 turns and restores 15 cum points.

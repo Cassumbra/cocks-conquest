@@ -120,14 +120,9 @@ fn main () {
             .with_system(rendering::finish_render.run_in_state(GameState::Playing).label("finish_rendering"))
     )
     
-
-
-
-    
     .add_system_set(
         SystemSet::new()
             .label("actor_turn")
-            .after("update_turn")
             .with_system(targetting_behavior::targetting_behavior.run_in_state(GameState::Playing).label("targetting"))
             .with_system(status_effects::tranced_behavior.run_in_state(GameState::Playing).label("trance"))
             .with_system(engage_behavior::engage_behavior.run_in_state(GameState::Playing).label("engage").after("trance").after("targetting"))

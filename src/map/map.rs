@@ -141,7 +141,6 @@ pub fn entity_map_rooms_passages (
 
     res_rooms.0 = rooms;
 
-
     commands.insert_resource(NextState(GameState::SpawnActors));
 }
 

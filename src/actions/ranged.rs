@@ -348,7 +348,7 @@ fn rotate_point(pivot: Vec2, point: Vec2, rotation: f32) -> Vec2 {
               sin * (point.x - pivot.x) + cos * (point.y - pivot.y) + point.y)
 }
 
-fn get_line_points(point_a: Vec2, point_b: Vec2, distance: f32) -> VecDeque<IVec2> {
+pub fn get_line_points(point_a: Vec2, point_b: Vec2, distance: f32) -> VecDeque<IVec2> {
     let mut points = VecDeque::new();
     //let distance = point_a.distance(point_b);
     for step in 0..=distance as i32 {

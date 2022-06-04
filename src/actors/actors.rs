@@ -4,11 +4,8 @@ use bevy_ascii_terminal::Tile;
 use iyes_loopless::state::NextState;
 use sark_grids::Grid;
 
-use crate::{actions::{attack::{Attack, Dice}, melee::MeleeAttacker, ranged::{RangedAttacker, Projectile}}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{wander_behavior::Wanderer, targetting_behavior::Engages}, GameState, rendering::Renderable, turn::TurnEvent};
+use crate::{actions::{attack::{Attack, Dice}, melee::MeleeAttacker, ranged::{RangedAttacker, Projectile}, vore::DoesVore, healing::CanHeal}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{wander_behavior::Wanderer, targetting_behavior::Engages}, GameState, rendering::Renderable, turn::TurnEvent, player::Player};
 
-
-pub mod player;
-use player::*;
 
 pub mod vision;
 use vision::*;
@@ -23,10 +20,9 @@ pub mod status_effects;
 pub mod alignments;
 
 
-// Plugins
+// Plugin
 #[derive(Default)]
 pub struct ActorPlugin;
-
 impl Plugin for ActorPlugin {
     fn build(&self, app: &mut App) {
         app
@@ -124,6 +120,66 @@ impl Default for Moves {
 // TODO: Maybe we should make actors into an enum like how we have stats? Idk!
 
 // Bundles
+#[derive(Bundle, Clone)]
+pub struct PlayerBundle {
+    pub position: Position,
+    pub renderable: Renderable,
+    pub collides: Collides,
+    pub player: Player,
+    pub takes_turns: TakesTurns,
+    pub vision: Vision,
+    pub mind_map: MindMap,
+    pub stats: Stats,
+    pub fatal_stats: FatalStats,
+    pub relations: Relations,
+    pub melee_attacker: MeleeAttacker,
+    pub does_vore: DoesVore,
+    pub can_heal: CanHeal,
+}
+impl Default for PlayerBundle {
+    fn default() -> PlayerBundle {
+        PlayerBundle {
+            position: Position (IVec2::new(0, 0)),
+            renderable: Renderable {
+                tile: Tile {
+                    glyph: '@',
+                    fg_color: Color::RED,
+                    bg_color: Color::NONE,
+                },
+                order: 128
+            },
+            collides: Collides,
+            player: Player,
+            takes_turns: TakesTurns,
+            vision: Vision{..Default::default()},
+            mind_map: MindMap{..Default::default()},
+            stats: Stats(
+                BTreeMap::from([
+                    (StatType::Health, Stat::new(0, 7)),
+                    (StatType::CumPoints, Stat::with_value(15, 0, 60)),
+                ])
+            ),
+            fatal_stats: FatalStats{..Default::default()},
+            relations: Relations::new(vec![Alignment::Cock], vec![Alignment::Cock], vec![Alignment::AntiCock]),
+            melee_attacker: MeleeAttacker{attacks: vec![
+                Attack{
+                    interact_text: vec!["{attacker} breathes their stink into {attacked}'s head, lowering their resistance by {amount}!".to_string(),
+                                        "{attacker} gives {attacked} a big smelly kiss with their cockmaw, lowering their resistance by {amount}!".to_string(),],
+                    damage: Dice::new("1d4 * -1"),
+                    damage_type: StatType::Resistance,
+                    cost: Dice::new("0"),
+                    cost_type: StatType::Health,
+
+                    // Temporary for now
+                    ..default()
+                }
+            ]},
+            does_vore: DoesVore,
+            can_heal: CanHeal,
+        }
+    }
+}
+
 #[derive(Bundle, Clone)]
 pub struct SoldierBundle {
     pub position: Position,

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_ascii_terminal::{Tile, Terminal};
 use inflector::Inflector;
-use crate::actors::{player::Player, vision::{Vision, MindMap}};
+use crate::{actors::{vision::{Vision, MindMap}}, player::targetting::Targetting, actions::ranged::get_line_points};
 use crate::actors::stats::Stats;
 
 use super::*;
@@ -182,6 +182,32 @@ pub fn render_stats_and_log (
     }
 }
 
+pub fn render_targetting (
+    bottom_size: Res<BottomSize>,
+    targetting: Res<Targetting>,
+    mut terminal: ResMut<TemporaryTerminal>,
+) {
+    // TODO: draw line
+    let distance = targetting.position.as_vec2().distance(targetting.target.as_vec2());
+
+    let mut points = get_line_points(targetting.position.as_vec2(), targetting.target.as_vec2(), distance);
+
+    points.pop_front();
+
+    for (i, point) in points.iter().enumerate() {
+        let i_pos_x = point.x as i32;
+        let i_pos_y = point.y + bottom_size.height as i32;
+
+        let glyph = if i == points.len() - 1 {'X'} else {'-'};
+
+        let tile = Tile {
+            glyph,
+            fg_color: Color::WHITE,
+            bg_color: Color::BLACK,
+        };
+        terminal.0.put_tile([i_pos_x, i_pos_y], tile);
+    }
+}
 
 // Helper Systems
 fn put_string_vec (

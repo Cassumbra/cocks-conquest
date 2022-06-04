@@ -36,6 +36,10 @@ use turn::*;
 mod map;
 use map::*;
 
+#[path = "player/player.rs"]
+mod player;
+use player::*;
+
 #[path = "rendering/rendering.rs"]
 mod rendering;
 use rendering::*;
@@ -47,7 +51,7 @@ mod setup;
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
     Setup, MapGen, SpawnActors, FinishSetup,
-    Playing,
+    Playing, Targetting,
     Restart,
 }
 
@@ -89,6 +93,7 @@ fn main () {
     .add_plugin(actions::ActionPlugin)
     .add_plugin(log::LogPlugin)
     .add_plugin(window::WindowPlugin)
+    .add_plugin(player::PlayerPlugin)
     .add_plugin(rendering::RenderingPlugin)
     .add_plugin(turn::TurnPlugin)
     .add_plugin(map::MapPlugin)
@@ -113,11 +118,21 @@ fn main () {
     
     .add_system_set(
         SystemSet::new()
+            .label("targetting")
+            .with_system(targetting::start_targetting.run_in_state(GameState::Playing))
+            .with_system(targetting::targetting.run_in_state(GameState::Targetting))
+    )
+
+    .add_system_set(
+        SystemSet::new()
             .label("rendering")
             .with_system(rendering::render_level_view.run_in_state(GameState::Playing).label("render_level").before("finish_rendering"))
+            .with_system(rendering::render_level_view.run_in_state(GameState::Targetting).label("render_level").before("finish_rendering"))
             .with_system(effects::render_effects.run_in_state(GameState::Playing).after("render_level"))
             .with_system(rendering::render_stats_and_log.run_in_state(GameState::Playing).before("finish_rendering"))
+            .with_system(rendering::render_targetting.run_in_state(GameState::Targetting).before("finish_rendering"))
             .with_system(rendering::finish_render.run_in_state(GameState::Playing).label("finish_rendering"))
+            .with_system(rendering::finish_render.run_in_state(GameState::Targetting).label("finish_rendering"))
     )
     
     .add_system_set(
@@ -160,8 +175,8 @@ fn main () {
             .with_system(vore::update_vore.run_in_state(GameState::Playing).label("update_vore").before("do_stat_change"))
             .with_system(stats::do_stat_change.run_in_state(GameState::Playing).label("do_stat_change"))
             .with_system(stats::update_fatal.run_in_state(GameState::Playing).label("update_fatal").after("do_stat_change"))
-            .with_system(player::player_victory.run_in_state(GameState::Playing).label("player_victory").after("update_fatal"))
-            .with_system(player::player_death.run_in_state(GameState::Playing).label("player_death").after("update_fatal"))
+            .with_system(ending::player_victory.run_in_state(GameState::Playing).label("player_victory").after("update_fatal"))
+            .with_system(ending::player_death.run_in_state(GameState::Playing).label("player_death").after("update_fatal"))
             .with_system(movement::update_collidables.run_in_state(GameState::Playing).label("update_collidables"))
             .with_system(vision::update_vision.run_in_state(GameState::Playing).label("update_vision").after("update_collidables"))
             .with_system(vision::update_mind_map.run_in_state(GameState::Playing).after("update_vision"))

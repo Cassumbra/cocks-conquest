@@ -193,6 +193,7 @@ pub fn render_targetting (
     let mut points = get_line_points(targetting.position.as_vec2(), targetting.target.as_vec2(), distance);
 
     points.pop_front();
+    points.push_back(targetting.target);
 
     for (i, point) in points.iter().enumerate() {
         let i_pos_x = point.x as i32;

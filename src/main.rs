@@ -125,15 +125,24 @@ fn main () {
 
     .add_system_set(
         SystemSet::new()
+        .label("targetting_rendering")
+        .with_system(rendering::render_level_view.run_in_state(GameState::Targetting).label("targetting_render_level").before("targetting_finish_rendering"))
+        .with_system(rendering::render_targetting.run_in_state(GameState::Targetting).after("targetting_render_level").before("targetting_finish_rendering"))
+        // TODO: It would be cool if we has a special system here that would give information on the actor that is selected
+        .with_system(rendering::render_stats_and_log.run_in_state(GameState::Targetting).before("targetting_finish_rendering"))
+        .with_system(rendering::finish_render.run_in_state(GameState::Targetting).label("targetting_finish_rendering"))
+    )
+
+    .add_system_set(
+        SystemSet::new()
             .label("rendering")
             .with_system(rendering::render_level_view.run_in_state(GameState::Playing).label("render_level").before("finish_rendering"))
-            .with_system(rendering::render_level_view.run_in_state(GameState::Targetting).label("render_level").before("finish_rendering"))
             .with_system(effects::render_effects.run_in_state(GameState::Playing).after("render_level"))
             .with_system(rendering::render_stats_and_log.run_in_state(GameState::Playing).before("finish_rendering"))
-            .with_system(rendering::render_targetting.run_in_state(GameState::Targetting).before("finish_rendering"))
-            .with_system(rendering::finish_render.run_in_state(GameState::Playing).label("finish_rendering"))
-            .with_system(rendering::finish_render.run_in_state(GameState::Targetting).label("finish_rendering"))
+            .with_system(rendering::finish_render.run_in_state(GameState::Playing).label("finish_rendering"))       
     )
+
+
     
     .add_system_set(
         SystemSet::new()

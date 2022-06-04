@@ -102,6 +102,6 @@ pub fn targetting (
         }
     }
 
-    targetting.target.x.clamp(0, map_size.width as i32 - 1);
-    targetting.target.y.clamp(0, map_size.height as i32 - 1);
+    targetting.target.x = targetting.target.x.clamp(0, map_size.width as i32 - 1);
+    targetting.target.y = targetting.target.y.clamp(0, map_size.height as i32 - 1);
 }

@@ -11,7 +11,7 @@ use crate::actions::movement::PointMoveEvent;
 use crate::actions::ranged::{RangedAttackEvent, RangedAttacker};
 use crate::rendering::window::WindowChangeEvent;
 
-use self::targetting::{StartTargetEvent, TargetIntent};
+use self::targetting::{StartTargetEvent, TargetIntent, FinishTargetEvent};
 
 use super::*;
 
@@ -26,6 +26,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app
         .add_event::<targetting::StartTargetEvent>()
+        .add_event::<targetting::FinishTargetEvent>()
         .init_resource::<targetting::Targetting>();
     }
 }
@@ -111,6 +112,30 @@ pub fn player_input_game (
             }
         }
     }
+}
+
+pub fn player_receive_targetting (
+    mut ev_ranged_attack: EventWriter<RangedAttackEvent>,
+    mut ev_finish_target: EventReader<FinishTargetEvent>,
+
+    mut turns: ResMut<Turns>,
+) {
+    for ev in ev_finish_target.iter() {
+        match &ev.intent {
+            TargetIntent::RangedAttack(attack) => {
+
+                ev_ranged_attack.send(attack.clone());
+    
+                turns.progress_turn();
+            }
+    
+            _ => {
+    
+            }
+        }
+    }
+
+    
 }
 
 pub fn player_input_meta (

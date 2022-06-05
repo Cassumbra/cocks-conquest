@@ -22,6 +22,10 @@ impl StartTargetEvent {
     }
 }
 
+pub struct FinishTargetEvent {
+    pub intent: TargetIntent,
+}
+
 //pub struct FinishTargetEvent<T>(T);
 
 // Resources
@@ -59,7 +63,7 @@ pub fn targetting (
     mut commands: Commands,
 
     mut ev_key: EventReader<KeyboardInput>,
-    mut ev_ranged_attack: EventWriter<RangedAttackEvent>,
+    mut ev_finish_target: EventWriter<FinishTargetEvent>,
 
     map_size: Res<MapSize>,
     mut targetting: ResMut<Targetting>,
@@ -99,25 +103,25 @@ pub fn targetting (
 
                 // Select Target
                 Some(KeyCode::Return) | Some(KeyCode::Space) | Some(KeyCode::C) => {
-                    // TODO:
                     match &targetting.intent {
                         TargetIntent::RangedAttack(intent) => {
+
+
                             let attack = RangedAttackEvent {
                                 targetting_entity: intent.targetting_entity,
                                 target: targetting.target,
                                 projectile: intent.projectile.clone(),
                             };
 
-                            ev_ranged_attack.send(attack);
-
-                            turns.progress_turn();
+                            ev_finish_target.send(FinishTargetEvent { intent: TargetIntent::RangedAttack(attack) });
                         }
 
                         _ => {
 
                         }
                     }
-                        commands.insert_resource(NextState(GameState::Playing));
+                    
+                    commands.insert_resource(NextState(GameState::Playing));
                 }
 
                 // Cancel Targetting

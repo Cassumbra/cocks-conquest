@@ -156,6 +156,7 @@ fn main () {
             //.with_system(ai::generic_brain.run_in_state(GameState::Playing))
             //.with_system(ai::tranced_brain.run_in_state(GameState::Playing))
             .with_system(player::player_input_game.run_in_state(GameState::Playing))
+            .with_system(player::player_receive_targetting.run_in_state(GameState::Playing))
             .with_system(player::player_input_meta.run_in_state(GameState::Playing))
     )
     .add_system_set(

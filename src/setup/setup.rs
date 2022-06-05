@@ -13,13 +13,15 @@ pub fn setup (
     mut commands: Commands,
 
     map_size: Res<MapSize>,
+
     bottom_size: Res<BottomSize>,
+    left_size: Res<LeftSize>,
 
     mut ev_window_change: EventWriter<WindowChangeEvent>,
 ) {
     ev_window_change.send(WindowChangeEvent(1));
 
-    let size = [map_size.width, map_size.height + bottom_size.height];
+    let size = [map_size.width + left_size.width, map_size.height + bottom_size.height];
 
     let term_bundle = TerminalBundle::new().with_size(size);
 

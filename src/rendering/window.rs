@@ -29,14 +29,16 @@ impl Default for SpriteMagnification {
 //Systems
 pub fn change_size(
     mut ev_window_change: EventReader<WindowChangeEvent>,
+
     map_size: Res<MapSize>,
+    left_size: Res<LeftSize>,
     bottom_size: Res<BottomSize>,
     mut sprite_magnification: ResMut<SpriteMagnification>,
     mut windows:  ResMut<Windows>,
 ) {
     if let Some(window_change) = ev_window_change.iter().next() {
         // Unreadable garbage below lol
-        let screen_size_width = map_size.width;
+        let screen_size_width = map_size.width + left_size.width;
         let screen_size_height = map_size.height + bottom_size.height;
         let change = window_change.0;
     

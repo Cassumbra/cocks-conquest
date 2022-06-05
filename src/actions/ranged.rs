@@ -367,6 +367,8 @@ pub fn get_line_points(point_a: Vec2, point_b: Vec2, distance: f32) -> VecDeque<
         }
     }
 
+    points.push_back(point_b.as_ivec2());
+
     points
 }
 

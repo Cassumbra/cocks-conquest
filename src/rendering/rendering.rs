@@ -18,6 +18,7 @@ impl Plugin for RenderingPlugin {
         app
         .init_resource::<RenderOrder>()
         .init_resource::<BottomSize>()
+        .init_resource::<LeftSize>()
         .init_resource::<TemporaryTerminal>();
     }
 }
@@ -48,6 +49,17 @@ impl Default for BottomSize {
     fn default() -> BottomSize {
         BottomSize {
             height: 10,
+        }
+    }
+}
+
+pub struct LeftSize {
+    pub width: u32,
+}
+impl Default for LeftSize {
+    fn default() -> LeftSize {
+        LeftSize {
+            width: 20,
         }
     }
 }
@@ -90,6 +102,7 @@ pub fn render_level_view (
     player_query: Query<(&Vision, &MindMap), With<Player>>,
 
     order: Res<RenderOrder>,
+    left_size: Res<LeftSize>,
     bottom_size: Res<BottomSize>,
     mut terminal: ResMut<TemporaryTerminal>,
 ) {
@@ -97,7 +110,7 @@ pub fn render_level_view (
     
     for (index, position) in mind_map.seen.iter_2d() {
         for (entity, tile) in position {
-            let i_pos_x = index.x as i32;
+            let i_pos_x = index.x + left_size.width as i32;
             let i_pos_y = index.y + bottom_size.height as i32;
 
             let new_tile = Tile {
@@ -113,7 +126,7 @@ pub fn render_level_view (
     for e in order.0.iter() {
         if let Ok((rend, pos)) = query.get(*e) {
             if vis.0.visible[pos.0] {
-                let i_pos_x = pos.0.x as i32;
+                let i_pos_x = pos.0.x + left_size.width as i32;
                 let i_pos_y = pos.0.y + bottom_size.height as i32;
                 
                 let tile = rend.tile;
@@ -149,6 +162,7 @@ pub fn render_stats_and_log (
     player_query: Query<(Entity, &Stats, Option<&Name>), With<Player>>,
 
     bottom_size: Res<BottomSize>,
+    left_size: Res<LeftSize>,
     log: Res<Log>,
     mut terminal: ResMut<TemporaryTerminal>,
 ) {
@@ -165,7 +179,7 @@ pub fn render_stats_and_log (
     for stat in stats.0.iter() {
         print_strings.push(format!["{}: {}  ", stat.0.to_string().to_title_case(), stat.1.value]);
     }
-    let [mut current_length, mut current_line] = put_string_vec([0, (bottom_size.height-1) as i32], &print_strings, &mut terminal.0);
+    let [mut current_length, mut current_line] = put_string_vec([(left_size.width-1) as i32, (bottom_size.height-1) as i32], &print_strings, &mut terminal.0);
 
     // Log rendering
     let lines: &[Vec<LogFragment>];
@@ -178,7 +192,7 @@ pub fn render_stats_and_log (
 
     for line in lines.iter().rev() {
         current_line -= 1;
-        [current_length, current_line] = put_string_vec_formatted([1, current_line], line, &mut terminal.0);
+        [current_length, current_line] = put_string_vec_formatted([(left_size.width-1) as i32, current_line], line, &mut terminal.0);
     }
 }
 
@@ -193,7 +207,7 @@ pub fn render_targetting (
     let mut points = get_line_points(targetting.position.as_vec2(), targetting.target.as_vec2(), distance);
 
     points.pop_front();
-    points.push_back(targetting.target);
+    //points.push_back(targetting.target);
 
     for (i, point) in points.iter().enumerate() {
         let i_pos_x = point.x as i32;

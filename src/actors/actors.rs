@@ -133,6 +133,7 @@ pub struct PlayerBundle {
     pub fatal_stats: FatalStats,
     pub relations: Relations,
     pub melee_attacker: MeleeAttacker,
+    pub ranged_attacker: RangedAttacker,
     pub does_vore: DoesVore,
     pub can_heal: CanHeal,
 }
@@ -171,6 +172,21 @@ impl Default for PlayerBundle {
                     cost_type: StatType::Health,
 
                     // Temporary for now
+                    ..default()
+                }
+            ]},
+            ranged_attacker: RangedAttacker{projectiles: vec![
+                Projectile {
+                    count: 1,
+                    attack: Attack {
+                        damage: Dice::new("1d4 * -1"),
+                        damage_type: StatType::Resistance,
+                        cost: Dice::new("5"),
+                        cost_type: StatType::CumPoints,
+
+                        ..default()
+                    },
+
                     ..default()
                 }
             ]},

@@ -8,10 +8,10 @@ use bevy::prelude::*;
 
 use crate::actions::healing::HealActionEvent;
 use crate::actions::movement::PointMoveEvent;
-use crate::actions::ranged::RangedAttackEvent;
+use crate::actions::ranged::{RangedAttackEvent, RangedAttacker};
 use crate::rendering::window::WindowChangeEvent;
 
-use self::targetting::StartTargetEvent;
+use self::targetting::{StartTargetEvent, TargetIntent};
 
 use super::*;
 
@@ -39,17 +39,18 @@ pub struct Player;
 /// Player input.
 /// 
 pub fn player_input_game (
-    query: Query<(Entity, &Position), (With<Player>, With<TakesTurns>)>,
+    // Query will be fucky if the player is ever an actor without ranged attacks. Later, we may want to move the ranged attacker part to another system. Or just change how we do it here.
+    query: Query<(Entity, &Position, &RangedAttacker), (With<Player>, With<TakesTurns>)>,
 
     mut ev_key: EventReader<KeyboardInput>,
     mut ev_movement: EventWriter<PointMoveEvent>,
     mut ev_heal: EventWriter<HealActionEvent>,
-    mut ev_ranged_target: EventWriter<StartTargetEvent>,
+    mut ev_target: EventWriter<StartTargetEvent>,
 
     mut turns: ResMut<Turns>,
 ) {
     let ent = turns.order[turns.current];
-    if let Ok((player, player_pos)) = query.get(ent) {
+    if let Ok((player, player_pos, ranged)) = query.get(ent) {
         for ev in ev_key.iter() {
             if ev.state == ElementState::Pressed {
                 match ev.key_code {
@@ -101,7 +102,8 @@ pub fn player_input_game (
                     }
 
                     Some(KeyCode::C) => {
-                        ev_ranged_target.send(StartTargetEvent::new(TypeId::of::<RangedAttackEvent>(), **player_pos))
+                        // this is UGLY
+                        ev_target.send(StartTargetEvent::new(TargetIntent::RangedAttack(RangedAttackEvent{targetting_entity: player, target: **player_pos, projectile: ranged.projectiles[0].clone() }) , **player_pos))
                     }
 
                     _ => {}

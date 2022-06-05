@@ -1,17 +1,23 @@
 use bevy::{prelude::*, input::{keyboard::KeyboardInput, ElementState}};
 use iyes_loopless::state::NextState;
 
-use std::{any::TypeId};
+use crate::{GameState, map::MapSize, actions::ranged::RangedAttackEvent, turn::Turns};
 
-use crate::{GameState, map::MapSize, actions::ranged::RangedAttackEvent};
+
+// Data
+#[derive(Clone)]
+pub enum TargetIntent {
+    None,
+    RangedAttack (RangedAttackEvent),
+}
 
 // Events
 pub struct StartTargetEvent{
-    pub intent: TypeId,
+    pub intent: TargetIntent,
     pub position: IVec2,
 }
 impl StartTargetEvent {
-    pub fn new(intent: TypeId, position: IVec2) -> Self {
+    pub fn new(intent: TargetIntent, position: IVec2) -> Self {
         Self {intent, position }
     }
 }
@@ -20,13 +26,16 @@ impl StartTargetEvent {
 
 // Resources
 pub struct Targetting {
-    pub intent: TypeId,
+    // TODO: In the future, we should just pass in an event that has a Targettable trait.
+    //       Said trait would have functions for targetting to get information it needs.
+    //       It would also have functions for setting the values it needs to.
+    pub intent: TargetIntent,
     pub position: IVec2,
     pub target: IVec2,
 }
 impl Default for Targetting {
     fn default() -> Self {
-        Self { intent: TypeId::of::<RangedAttackEvent>(), position: Default::default(), target: Default::default() }
+        Self { intent: TargetIntent::None, position: Default::default(), target: Default::default() }
     }
 }
 
@@ -39,7 +48,7 @@ pub fn start_targetting (
     mut targetting: ResMut<Targetting>,
 ) {
     if let Some(ev) = ev_start_targetting.iter().next() {
-        targetting.intent = ev.intent;
+        targetting.intent = ev.intent.clone();
         targetting.position = ev.position;
         targetting.target = ev.position;
         commands.insert_resource(NextState(GameState::Targetting));
@@ -50,9 +59,11 @@ pub fn targetting (
     mut commands: Commands,
 
     mut ev_key: EventReader<KeyboardInput>,
+    mut ev_ranged_attack: EventWriter<RangedAttackEvent>,
 
     map_size: Res<MapSize>,
     mut targetting: ResMut<Targetting>,
+    mut turns: ResMut<Turns>,
     //bottom_size: Res<BottomSize>,
 ) {
     for ev in ev_key.iter() {
@@ -89,7 +100,24 @@ pub fn targetting (
                 // Select Target
                 Some(KeyCode::Return) | Some(KeyCode::Space) | Some(KeyCode::C) => {
                     // TODO:
-                    commands.insert_resource(NextState(GameState::Playing));
+                    match &targetting.intent {
+                        TargetIntent::RangedAttack(intent) => {
+                            let attack = RangedAttackEvent {
+                                targetting_entity: intent.targetting_entity,
+                                target: targetting.target,
+                                projectile: intent.projectile.clone(),
+                            };
+
+                            ev_ranged_attack.send(attack);
+
+                            turns.progress_turn();
+                        }
+
+                        _ => {
+
+                        }
+                    }
+                        commands.insert_resource(NextState(GameState::Playing));
                 }
 
                 // Cancel Targetting

@@ -14,6 +14,7 @@ pub struct RandRangedAttackEvent {
     pub target: IVec2,
 }
 
+#[derive(Clone)]
 pub struct RangedAttackEvent {
     pub targetting_entity: Entity,
     pub target: IVec2,

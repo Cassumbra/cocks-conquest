@@ -176,6 +176,20 @@ impl StatType {
             
         }
     }
+
+    pub fn abbreviate(&self) -> String {
+        match self {
+            StatType::Health => String::from("hth"),
+            StatType::Resistance => String::from("res"),
+
+            StatType::CumPoints => String::from("cum"),
+
+            StatType::Dexterity => String::from("dex"),
+            StatType::Perception => String::from("per"),
+            StatType::Strength => String::from("str"),
+            
+        }
+    }
 }
 
 // Components

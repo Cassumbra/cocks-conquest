@@ -14,8 +14,13 @@ impl Plugin for LogPlugin {
 // Data
 #[derive(Default)]
 pub struct LogFragment {
-    pub color: Color,
     pub text: String,
+    pub color: Color,
+}
+impl LogFragment {
+    pub fn new(text: String, color: Color) -> Self {
+        Self {text, color}
+    }
 }
 
 // Resources

@@ -179,7 +179,7 @@ pub fn render_stats_and_log (
     for (stat_type, stat) in stats.0.iter() {
         print_fragments.append(&mut Log::fragment_string(format!["{}: {}  ", stat_type.to_string().to_title_case(), stat.value], stat_type.color()));
     }
-    let [mut current_length, mut current_line] = put_string_vec_formatted([(left_size.width-1) as i32, (bottom_size.height-1) as i32], &print_fragments, &mut terminal.0);
+    let [mut current_length, mut current_line] = put_string_vec_formatted([(left_size.width-1) as i32, (bottom_size.height-1) as i32], &print_fragments, &mut terminal.0, EolAction::None);
 
     // Log rendering
     let lines: &[Vec<LogFragment>];
@@ -192,7 +192,7 @@ pub fn render_stats_and_log (
 
     for line in lines.iter().rev() {
         current_line -= 1;
-        [current_length, current_line] = put_string_vec_formatted([(left_size.width-1) as i32, current_line], line, &mut terminal.0);
+        [current_length, current_line] = put_string_vec_formatted([(left_size.width-1) as i32, current_line], line, &mut terminal.0, EolAction::None);
     }
 }
 
@@ -210,16 +210,35 @@ pub fn render_actor_info (
 
     let size = terminal.size();
 
-    let print_fragments: &[Vec<LogFragment>];
+    let mut print_fragments = Vec::<LogFragment>::new();
 
     'actor_check: for (actor, pos, opt_name, opt_stats) in actor_query.iter() {
         // Check if actor is visible
-        if !vision.visible(**pos) {
+        if !vision.visible(**pos) || player == actor {
             continue 'actor_check;
         }
 
+        let mut name = actor.id().to_string();
+
+        if let Some(temp_name) = opt_name {
+            name = temp_name.to_string();
+        }
+
+        print_fragments.append(&mut Log::fragment_string(format!["{} \n ", name], Color::WHITE));
+        
+        if let Some(stats) = opt_stats {
+            for (stat_type, stat) in stats.0.iter() {
+                print_fragments.push(LogFragment::new(format!["{}: {}  ", stat_type.abbreviate().to_ascii_uppercase(), stat.value], stat_type.color()));
+            }
+        }
+
+        print_fragments.append(&mut Log::fragment_string(format!["\n \n "], Color::WHITE));
+
+
         //terminal.0.put_string([0, (size.y - 1 - i as u32 ) as i32], &String::from("AU"));
     }
+
+    let [mut current_length, mut current_line] = put_string_vec_formatted([0, (size.y - 1) as i32], &print_fragments, &mut terminal.0, EolAction::Wrap(left_size.width as i32));
 }
 
 pub fn render_targetting (
@@ -289,6 +308,7 @@ fn put_string_vec_formatted (
     position: [i32; 2],
     fragments: &Vec<LogFragment>,
     terminal: &mut Terminal,
+    eol_action: EolAction,
 ) -> [i32; 2] {
     let [mut current_length, mut current_line] = position;
     for fragment in fragments.iter() {
@@ -299,6 +319,20 @@ fn put_string_vec_formatted (
             current_length = position[0];
             current_line -= 1;
             continue;
+        }
+
+        match eol_action {
+            EolAction::Wrap(width) => {
+                if current_length + string.len() as i32 > width {
+                    current_length = position[0];
+                    current_line -= 1;
+                    if !terminal.is_in_bounds([current_length + string.len() as i32, current_line]) {
+                        //eprintln!("ERROR: Cannot fit strings in terminal!");
+                        break;
+                    }
+                }
+            },
+            EolAction::None => {},
         }
 
         if !terminal.is_in_bounds([current_length + string.len() as i32, current_line]) {
@@ -352,3 +386,11 @@ fn change_brightness(color: Color, amount: f32) -> Color {
 }
 
 // TODO: Create helper for inverting color. This will be good for highlighting text as "selected" (probably?)
+
+// Data
+enum EolAction {
+    //Abbreviate,
+    //Truncate,
+    Wrap(i32),
+    None,
+}

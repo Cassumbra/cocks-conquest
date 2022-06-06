@@ -8,7 +8,7 @@ use bevy::prelude::*;
 use bevy::utils::Duration;
 use bevy_ascii_terminal::Tile;
 
-use super::{TemporaryTerminal, BottomSize};
+use super::{TemporaryTerminal, BottomSize, LeftSize};
 
 
 // Systems
@@ -18,6 +18,7 @@ pub fn render_effects (
     mut commands: Commands,
 
     time: Res<Time>,
+    left_size: Res<LeftSize>,
     bottom_size: Res<BottomSize>,
     mut terminal: ResMut<TemporaryTerminal>,
 ) {
@@ -26,7 +27,7 @@ pub fn render_effects (
 
         if let Some(fragment) = effect.fragment_from_time(effect.current_time) {
             for effect_tile in &fragment.tiles {
-                terminal.0.put_tile([effect_tile.position.x, effect_tile.position.y + bottom_size.height as i32], effect_tile.tile)
+                terminal.0.put_tile([effect_tile.position.x + left_size.width as i32, effect_tile.position.y + bottom_size.height as i32], effect_tile.tile)
             }
         }
         else {

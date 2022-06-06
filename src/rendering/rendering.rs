@@ -64,7 +64,7 @@ impl Default for LeftSize {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Deref, DerefMut)]
 pub struct TemporaryTerminal(pub Terminal);
 
 //Systems
@@ -196,7 +196,32 @@ pub fn render_stats_and_log (
     }
 }
 
+pub fn render_actor_info (
+    player_query: Query<(Entity, &Vision), With<Player>>,
+    actor_query: Query<(Entity, &Position), (With<TakesTurns>)>,
+
+    left_size: Res<LeftSize>,
+    log: Res<Log>,
+    mut terminal: ResMut<TemporaryTerminal>,
+) {
+    let (player, vision) = player_query.single();
+
+    let mut rng = rand::thread_rng();
+
+    let size = terminal.size();
+
+    'actor_check: for (i, (actor, actor_pos)) in actor_query.iter().enumerate() {
+        // Check if actor is visible
+        if !vision.visible(**actor_pos) {
+            continue 'actor_check;
+        }
+
+        terminal.0.put_string([0, (size.y - 1 - i as u32 ) as i32], &String::from("AU"));
+    }
+}
+
 pub fn render_targetting (
+    left_size: Res<LeftSize>,
     bottom_size: Res<BottomSize>,
     targetting: Res<Targetting>,
     mut terminal: ResMut<TemporaryTerminal>,
@@ -210,7 +235,7 @@ pub fn render_targetting (
     //points.push_back(targetting.target);
 
     for (i, point) in points.iter().enumerate() {
-        let i_pos_x = point.x as i32;
+        let i_pos_x = point.x + left_size.width as i32;
         let i_pos_y = point.y + bottom_size.height as i32;
 
         let glyph = if i == points.len() - 1 {'X'} else {'-'};

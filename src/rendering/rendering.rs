@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_ascii_terminal::{Tile, Terminal};
 use inflector::Inflector;
-use crate::{actors::{vision::{Vision, MindMap}, stats::{StatVisibility, DebugShowStats}}, player::targetting::Targetting, actions::ranged::get_line_points};
+use crate::{actors::{vision::{Vision, MindMap}, stats::{StatVisibility, DebugShowStats}}, player::targetting::Targetting, actions::ranged::get_line_points, ai::targetting_behavior::Engages};
 use crate::actors::stats::Stats;
 
 use super::*;
@@ -203,7 +203,8 @@ pub fn render_stats_and_log (
 
 pub fn render_actor_info (
     player_query: Query<(Entity, &Vision), With<Player>>,
-    actor_query: Query<(Entity, &Position, Option<&Name>, Option<&Stats>), (With<TakesTurns>)>,
+    actor_query: Query<(Entity, &Position, Option<&Name>, Option<&Stats>, Option<&Engages>), (With<TakesTurns>)>,
+    name_query: Query<&Name>,
 
     show_stats: Res<DebugShowStats>,
     left_size: Res<LeftSize>,
@@ -218,7 +219,7 @@ pub fn render_actor_info (
 
     let mut print_fragments = Vec::<LogFragment>::new();
 
-    'actor_check: for (actor, pos, opt_name, opt_stats) in actor_query.iter() {
+    'actor_check: for (actor, pos, opt_name, opt_stats, opt_engages) in actor_query.iter() {
         // Check if actor is visible
         if !vision.visible(**pos) || player == actor {
             continue 'actor_check;
@@ -239,6 +240,24 @@ pub fn render_actor_info (
                 }
                 
             }
+
+            print_fragments.append(&mut Log::fragment_string(format!["\n "], Color::WHITE));
+        }
+
+        if let Some(engages) = opt_engages {
+            if let Some(target) = engages.target {
+                let mut target_name = target.id().to_string();
+
+                if let Ok(temp_name) = name_query.get(target) {
+                    target_name = temp_name.to_string();
+                }
+
+                print_fragments.push(LogFragment::new(format!["Target: {}  ", target_name], Color::WHITE));
+            } else {
+                print_fragments.push(LogFragment::new(format!["No target  ", ], Color::WHITE));
+            }
+
+            
         }
 
         print_fragments.append(&mut Log::fragment_string(format!["\n \n "], Color::WHITE));

@@ -112,12 +112,29 @@ pub struct StatChangeEvent {
     pub entity: Entity,
 }
 
+// Resources
+/// If true, show hidden and private stats publicly.
+#[derive(Deref, DerefMut)]
+pub struct DebugShowStats (bool);
+impl Default for DebugShowStats {
+    fn default() -> Self {
+        Self(false)
+    }
+}
+
 // Data
 #[derive(Clone, PartialEq)]
-pub enum FatalEffect{
+pub enum FatalEffect {
     Disintegrate,
     Corpse,
     Trance,
+}
+
+#[derive(Clone, PartialEq)]
+pub enum StatVisibility {
+    Public,
+    Private,
+    Hidden,
 }
 
 #[derive(Clone)]
@@ -125,14 +142,15 @@ pub struct Stat {
     pub value: i32,
     pub min: i32,
     pub max: i32,
+    pub visibility: StatVisibility,
 }
 impl Stat {
-    pub fn new(min: i32, max: i32) -> Stat {
-        Stat {value: max, min, max}
+    pub fn new(min: i32, max: i32, visibility: StatVisibility) -> Stat {
+        Stat {value: max, min, max, visibility}
     }
 
-    pub fn with_value(value: i32, min: i32, max: i32) -> Stat {
-        Stat {value, min, max}
+    pub fn with_value(value: i32, min: i32, max: i32, visibility: StatVisibility) -> Stat {
+        Stat {value, min, max, visibility}
     }
 }
 
@@ -199,7 +217,7 @@ impl Default for Stats {
     fn default() -> Stats {
         Stats(
             BTreeMap::from([
-                (StatType::Health, Stat{value: 3, min: 0, max: 3}),
+                (StatType::Health, Stat{value: 3, min: 0, max: 3, visibility: StatVisibility::Public}),
             ])
         )
     }

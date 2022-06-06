@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_ascii_terminal::{Tile, Terminal};
 use inflector::Inflector;
-use crate::{actors::{vision::{Vision, MindMap}}, player::targetting::Targetting, actions::ranged::get_line_points};
+use crate::{actors::{vision::{Vision, MindMap}, stats::{StatVisibility, DebugShowStats}}, player::targetting::Targetting, actions::ranged::get_line_points};
 use crate::actors::stats::Stats;
 
 use super::*;
@@ -161,6 +161,7 @@ pub fn render_level_view (
 pub fn render_stats_and_log (
     player_query: Query<(Entity, &Stats, Option<&Name>), With<Player>>,
 
+    show_stats: Res<DebugShowStats>,
     bottom_size: Res<BottomSize>,
     left_size: Res<LeftSize>,
     log: Res<Log>,
@@ -177,7 +178,11 @@ pub fn render_stats_and_log (
     let mut print_fragments = Log::fragment_string(format![" {}    ", &name], Color::WHITE);
 
     for (stat_type, stat) in stats.0.iter() {
-        print_fragments.append(&mut Log::fragment_string(format!["{}: {}  ", stat_type.to_string().to_title_case(), stat.value], stat_type.color()));
+        if **show_stats || matches!(stat.visibility, StatVisibility::Public | StatVisibility::Private) {
+            print_fragments.append(&mut Log::fragment_string(format!["{}: {}  ", stat_type.to_string().to_title_case(), stat.value], stat_type.color()));
+        }
+
+        
     }
     let [mut current_length, mut current_line] = put_string_vec_formatted([(left_size.width-1) as i32, (bottom_size.height-1) as i32], &print_fragments, &mut terminal.0, EolAction::None);
 
@@ -200,6 +205,7 @@ pub fn render_actor_info (
     player_query: Query<(Entity, &Vision), With<Player>>,
     actor_query: Query<(Entity, &Position, Option<&Name>, Option<&Stats>), (With<TakesTurns>)>,
 
+    show_stats: Res<DebugShowStats>,
     left_size: Res<LeftSize>,
     log: Res<Log>,
     mut terminal: ResMut<TemporaryTerminal>,
@@ -228,7 +234,10 @@ pub fn render_actor_info (
         
         if let Some(stats) = opt_stats {
             for (stat_type, stat) in stats.0.iter() {
-                print_fragments.push(LogFragment::new(format!["{}: {}  ", stat_type.abbreviate().to_ascii_uppercase(), stat.value], stat_type.color()));
+                if **show_stats || matches!(stat.visibility, StatVisibility::Public) {
+                    print_fragments.push(LogFragment::new(format!["{}: {}  ", stat_type.abbreviate().to_ascii_uppercase(), stat.value], stat_type.color()));
+                }
+                
             }
         }
 

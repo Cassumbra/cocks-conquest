@@ -27,7 +27,8 @@ impl Plugin for ActorPlugin {
     fn build(&self, app: &mut App) {
         app
         .add_event::<stats::StatChangeEvent>()
-        .init_resource::<Events<ActorRemovedEvent>>();
+        .init_resource::<Events<ActorRemovedEvent>>()
+        .init_resource::<DebugShowStats>();
     }
 }
 
@@ -156,8 +157,8 @@ impl Default for PlayerBundle {
             mind_map: MindMap{..Default::default()},
             stats: Stats(
                 BTreeMap::from([
-                    (StatType::Health, Stat::new(0, 7)),
-                    (StatType::CumPoints, Stat::with_value(15, 0, 60)),
+                    (StatType::Health, Stat::new(0, 7, StatVisibility::Public)),
+                    (StatType::CumPoints, Stat::with_value(15, 0, 60, StatVisibility::Private)),
                 ])
             ),
             fatal_stats: FatalStats{..Default::default()},
@@ -229,10 +230,10 @@ impl Default for SoldierBundle {
             vision: Vision{..default()},
             stats: Stats(
                 BTreeMap::from([
-                    (StatType::Health, Stat::new(0, 7)),
-                    (StatType::Resistance, Stat::new(0, 7)),
-                    (StatType::Perception, Stat::new(0, 5)),
-                    (StatType::Dexterity, Stat::new(0, 5)),
+                    (StatType::Health, Stat::new(0, 7, StatVisibility::Public)),
+                    (StatType::Resistance, Stat::new(0, 7, StatVisibility::Public)),
+                    (StatType::Perception, Stat::new(0, 5, StatVisibility::Hidden)),
+                    (StatType::Dexterity, Stat::new(0, 5, StatVisibility::Hidden)),
                 ])
             ),
             fatal_stats: FatalStats(

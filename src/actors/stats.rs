@@ -162,6 +162,21 @@ impl Display for StatType {
         }
     }
 }
+impl StatType {
+    pub fn color(&self) -> Color {
+        match self {
+            StatType::Health => Color::RED,
+            StatType::Resistance => Color::BLUE,
+
+            StatType::CumPoints => Color::WHITE,
+
+            StatType::Dexterity => Color::GREEN,
+            StatType::Perception => Color::PINK,
+            StatType::Strength => Color::PINK,
+            
+        }
+    }
+}
 
 // Components
 #[derive(Component, Clone)]

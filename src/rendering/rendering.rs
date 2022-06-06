@@ -174,12 +174,12 @@ pub fn render_stats_and_log (
         name = temp_name.to_string();
     }
     
-    let mut print_strings = vec![format![" {}    ", &name]];
+    let mut print_fragments = Log::fragment_string(format![" {}    ", &name], Color::WHITE);
 
-    for stat in stats.0.iter() {
-        print_strings.push(format!["{}: {}  ", stat.0.to_string().to_title_case(), stat.1.value]);
+    for (stat_type, stat) in stats.0.iter() {
+        print_fragments.append(&mut Log::fragment_string(format!["{}: {}  ", stat_type.to_string().to_title_case(), stat.value], stat_type.color()));
     }
-    let [mut current_length, mut current_line] = put_string_vec([(left_size.width-1) as i32, (bottom_size.height-1) as i32], &print_strings, &mut terminal.0);
+    let [mut current_length, mut current_line] = put_string_vec_formatted([(left_size.width-1) as i32, (bottom_size.height-1) as i32], &print_fragments, &mut terminal.0);
 
     // Log rendering
     let lines: &[Vec<LogFragment>];
@@ -198,7 +198,7 @@ pub fn render_stats_and_log (
 
 pub fn render_actor_info (
     player_query: Query<(Entity, &Vision), With<Player>>,
-    actor_query: Query<(Entity, &Position), (With<TakesTurns>)>,
+    actor_query: Query<(Entity, &Position, Option<&Name>, Option<&Stats>), (With<TakesTurns>)>,
 
     left_size: Res<LeftSize>,
     log: Res<Log>,
@@ -210,13 +210,15 @@ pub fn render_actor_info (
 
     let size = terminal.size();
 
-    'actor_check: for (i, (actor, actor_pos)) in actor_query.iter().enumerate() {
+    let print_fragments: &[Vec<LogFragment>];
+
+    'actor_check: for (actor, pos, opt_name, opt_stats) in actor_query.iter() {
         // Check if actor is visible
-        if !vision.visible(**actor_pos) {
+        if !vision.visible(**pos) {
             continue 'actor_check;
         }
 
-        terminal.0.put_string([0, (size.y - 1 - i as u32 ) as i32], &String::from("AU"));
+        //terminal.0.put_string([0, (size.y - 1 - i as u32 ) as i32], &String::from("AU"));
     }
 }
 
@@ -257,6 +259,14 @@ fn put_string_vec (
 ) -> [i32; 2] {
     let [mut current_length, mut current_line] = position;
     for string in strings.iter() {
+
+        if string == "\n " {
+            
+            current_length = position[0];
+            current_line -= 1;
+            continue;
+        }
+
         if !terminal.is_in_bounds([current_length + string.len() as i32, current_line]) {
             current_length = position[0];
             current_line -= 1;
@@ -272,6 +282,9 @@ fn put_string_vec (
     [current_length, current_line]
 }
 
+// TODO: Add thing for limiting where text is placed (how far to the right it can go, also maybe how far down it can go?) other than terminal limits
+//       Could be an enum type thing. Could give option to abbreviate instead of wrap around (remove vowels until enough space. remove inner consonants if no more vowels to remove)
+//       Enum could also have option to remove last three characters and replace them with ...
 fn put_string_vec_formatted (
     position: [i32; 2],
     fragments: &Vec<LogFragment>,

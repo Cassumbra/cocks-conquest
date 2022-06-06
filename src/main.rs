@@ -130,6 +130,7 @@ fn main () {
         .with_system(rendering::render_targetting.run_in_state(GameState::Targetting).after("targetting_render_level").before("targetting_finish_rendering"))
         // TODO: It would be cool if we has a special system here that would give information on the actor that is selected
         .with_system(rendering::render_stats_and_log.run_in_state(GameState::Targetting).before("targetting_finish_rendering"))
+        .with_system(rendering::render_actor_info.run_in_state(GameState::Targetting).before("targetting_finish_rendering"))
         .with_system(rendering::finish_render.run_in_state(GameState::Targetting).label("targetting_finish_rendering"))
     )
 

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{data::Position, actors::{vision::Vision, TakesTurns, alignments::Relations, stats::Stats, ActorRemovedEvent}, turn::{Turns, TurnEvent}};
+use crate::{data::Position, actors::{vision::Vision, TakesTurns, alignments::Relations, stats::{Stats, StatType}, ActorRemovedEvent}, turn::{Turns, TurnEvent}, actions::attack::Dice};
 
 use super::Path;
 
@@ -17,7 +17,7 @@ pub fn targetting_behavior (
     mut turns: ResMut<Turns>,
 
     mut ai_query: Query<(&Position, &mut Engages, &Relations, &Vision), With<TakesTurns>>,
-    actor_query: Query<(Entity, &Position, &Relations), (With<TakesTurns>)>,
+    actor_query: Query<(Entity, &Position, &Relations, Option<&Stats>), (With<TakesTurns>)>,
 
     mut ev_actor_removed: EventReader<ActorRemovedEvent>,
 ) {
@@ -42,7 +42,7 @@ pub fn targetting_behavior (
 
         let mut closest_visible_enemy: (Option<Entity>, f32) = (None, f32::MAX);
 
-        'enemy_check: for (actor, actor_pos, actor_relations) in actor_query.iter() {
+        'enemy_check: for (actor, actor_pos, actor_relations, opt_actor_stats) in actor_query.iter() {
             // Check if actor is our enemy
             for alignment in &actor_relations.alignments {
                 if !relations.enemies.contains(alignment) {
@@ -60,6 +60,19 @@ pub fn targetting_behavior (
 
             // Replace the currently closest enemy with this enemy if its closer to us.
             if distance < closest_visible_enemy.1 {
+                if let Some(actor_stats) = opt_actor_stats {
+                    if actor_stats.contains_key(&StatType::StealthRange) {
+                        if distance <= actor_stats.get_value(&StatType::StealthRange) as f32 {
+                            let d20 = Dice::new("1d20");
+                            // TODO: Put perception here.
+                            //let roll = d20.total + ;
+                            if d20.total <= 15 {
+                                continue 'enemy_check;
+                            }
+                        }
+                    }
+                }
+
                 closest_visible_enemy = (Some(actor), distance);
             }
         }

@@ -159,6 +159,7 @@ impl Default for PlayerBundle {
                 BTreeMap::from([
                     (StatType::Health, Stat::new(0, 7, StatVisibility::Public)),
                     (StatType::CumPoints, Stat::with_value(15, 0, 60, StatVisibility::Private)),
+                    (StatType::StealthRange, Stat::with_value(7, 1, 128, StatVisibility::Private)),
                 ])
             ),
             fatal_stats: FatalStats{..Default::default()},

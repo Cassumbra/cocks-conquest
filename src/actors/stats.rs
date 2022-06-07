@@ -164,6 +164,8 @@ pub enum StatType {
     Dexterity,
     Perception,
     Strength,
+
+    StealthRange,
 }
 impl Display for StatType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -177,6 +179,7 @@ impl Display for StatType {
             StatType::Perception => write!(f, "perception"),
             StatType::Strength => write!(f, "strength"),
             
+            StatType::StealthRange => write!(f, "stealth range"),
         }
     }
 }
@@ -192,6 +195,7 @@ impl StatType {
             StatType::Perception => Color::PINK,
             StatType::Strength => Color::PINK,
             
+            StatType::StealthRange => Color::GRAY,
         }
     }
 
@@ -206,12 +210,13 @@ impl StatType {
             StatType::Perception => String::from("per"),
             StatType::Strength => String::from("str"),
             
+            StatType::StealthRange => String::from("sth"),
         }
     }
 }
 
 // Components
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Deref, DerefMut)]
 pub struct Stats(pub BTreeMap<StatType, Stat>);
 impl Default for Stats {
     fn default() -> Stats {

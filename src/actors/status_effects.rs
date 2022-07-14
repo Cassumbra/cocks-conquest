@@ -6,9 +6,7 @@ use super::TakesTurns;
 
 
 
-// Components
-#[derive(Component, Clone)]
-pub struct Tranced;
+
 
 // Systems
 // I don't know if I want to move this to be with the rest of the behaviors or not.
@@ -29,4 +27,25 @@ pub fn tranced_behavior (
         println!("wuhh im tranced woah");
         turns.progress_turn();
     }
+}
+
+// Components
+#[derive(Component, Clone)]
+pub struct Tranced;
+
+#[derive(Component, Clone, Deref, DerefMut)]
+pub struct StatusEffects (Vec<StatusEffect>);
+
+// Data
+#[derive(Clone)]
+pub enum StatusEffectType {
+    Tranced,
+    Sneaking,
+
+}
+
+#[derive(Clone)]
+pub struct StatusEffect {
+    pub status_type: StatusEffectType,
+    pub duration: u32,
 }

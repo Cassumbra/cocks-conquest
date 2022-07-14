@@ -13,12 +13,12 @@ use vision::*;
 pub mod stats;
 use stats::*;
 
-use self::alignments::{Relations, Alignment};
-
 pub mod status_effects;
 
-pub mod alignments;
+pub mod temp_stats;
 
+pub mod alignments;
+use self::alignments::{Relations, Alignment};
 
 // Plugin
 #[derive(Default)]

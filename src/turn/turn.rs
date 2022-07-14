@@ -102,6 +102,7 @@ pub fn turn_event_manager<T: 'static + Send + Sync + TurnEvent>(
 
 // Traits
 pub trait TurnEvent {
+    // TODO: Can't we just use a const for this??
     fn get_turn(&self) -> u32;
     fn update(&mut self);
     fn frame_valid(&self) -> bool;

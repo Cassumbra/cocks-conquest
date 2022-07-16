@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{log::Log, actors::{status_effects::Tranced, TakesTurns, stats::{Stats, StatType}, ActorRemovedEvent}, data::Collides, rendering::Renderable, turn::Turns};
+use crate::{log::Log, actors::{status_effects::Tranced, TakesTurns, stats::{Stats, StatType, StatChangeEvent}, ActorRemovedEvent}, data::Collides, rendering::Renderable, turn::Turns};
 
 use super::attack::BumpEvent;
 
@@ -53,6 +53,7 @@ pub fn update_vore (
     mut pred_query: Query<(Entity, &mut Stats, Option<&Name>, &Children), With<TakesTurns>>,
 
     mut ev_actor_remove_event: EventWriter<ActorRemovedEvent>,
+    mut ev_stat_change: EventWriter<StatChangeEvent>,
 
     turns: Res<Turns>,
     mut log: ResMut<Log>,
@@ -71,7 +72,7 @@ pub fn update_vore (
                         log.log_string_formatted(format!(" {} has been melted into 15 cum points worth of stinky smelly goo.", prey_name), Color::GREEN);
                         commands.entity(*prey).despawn();
                         ev_actor_remove_event.send(ActorRemovedEvent::new(*prey, turns.count));
-                        stats.0.get_mut(&StatType::CumPoints).unwrap().value += 15;
+                        ev_stat_change.send(StatChangeEvent::new(StatType::CumPoints, 15, *prey));
                     } else {
                         log.log_string_formatted(format!(" {} turns until {} is digested by {}.", digestion.turns_to_digest, prey_name, pred_name), Color::WHITE);
                     }

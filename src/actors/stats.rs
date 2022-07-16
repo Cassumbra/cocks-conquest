@@ -5,7 +5,7 @@ use bevy::prelude::*;
 
 use crate::{data::Collides, rendering::Renderable, log::Log, turn::Turns};
 
-use super::{TakesTurns, status_effects::Tranced, ActorRemovedEvent};
+use super::{TakesTurns, status_effects::{Tranced, StatusEffectEvent, RemoveStatusEffectEvent, StatusEffects}, ActorRemovedEvent};
 
 
 // Systems
@@ -16,9 +16,49 @@ pub fn do_stat_change (
 ) {
     for ev in ev_stat_change.iter() {
         if let Ok(mut stats) = stats_query.get_mut(ev.entity) {
-            stats.0.get_mut(&ev.stat).unwrap().value += ev.amount;
+            stats.get_mut(&ev.stat).unwrap().base += ev.amount;
             
-            stats.0.get_mut(&ev.stat).unwrap().value = stats.get_value(&ev.stat).clamp(stats.get_min(&ev.stat), stats.get_max(&ev.stat));
+            stats.get_mut(&ev.stat).unwrap().base = stats.get_base(&ev.stat).clamp(stats.get_min(&ev.stat), stats.get_max(&ev.stat));
+        }
+    }
+}
+
+pub fn update_effective_stats (
+    mut ev_stat_change: EventReader<StatChangeEvent>,
+    mut ev_status_effect: EventReader<StatusEffectEvent>,
+    mut ev_removed_status_effect: EventReader<RemoveStatusEffectEvent>,
+
+    mut stats_query: Query<(&mut Stats, Option<&StatusEffects>)>,
+) {
+    // TODO performance: THIS IS BAD. We are updating all stats on the actor instead of the changed stat. FIX THIS.
+    let mut entities = Vec::<Entity>::new();
+    
+    // TODO performance: for these first two, we only need to push if the status actually has an effect on stats
+    for ev in ev_removed_status_effect.iter() {
+        entities.push(ev.entity);
+    }
+    for ev in ev_status_effect.iter() {
+        entities.push(ev.entity);
+    }
+    for ev in ev_stat_change.iter() {
+        entities.push(ev.entity);
+    }
+
+    // TODO performance: We are looping through all of our things to record things that need changes and then looping through them again. This is 2x more costly than it needs to be.
+    for entity in entities {
+        if let Ok((mut stats, opt_statuses)) = stats_query.get_mut(entity) {
+            for (stattype, stat) in stats.iter_mut() {
+                stat.effective = stat.base;
+            }
+            if let Some(statuses) = opt_statuses {
+                for status in statuses.iter() {
+                    if let Some(modification) = status.stat_modification {
+                        modification.compute(&modification.stat_type, &mut stats)
+                    }
+                }
+            }
+
+            // TODO: We should clamp the effective value here.
         }
     }
 }
@@ -41,7 +81,7 @@ pub fn update_fatal (
         if let Ok((ent, stats, fatal_stats, opt_name)) = stats_query.get(ev.entity) {
             if let Some(stat) = stats.0.get(&ev.stat) {
                 if let Some(fatal_stat_val) = fatal_stats.0.get(&ev.stat) {
-                    if stat.value == fatal_stat_val.0 {
+                    if stat.effective == fatal_stat_val.0 {
                         let name = if opt_name.is_some() {opt_name.unwrap().to_string()} else {ev.entity.id().to_string()};
 
                         match &fatal_stats.0.get(&ev.stat).unwrap().1 {
@@ -111,6 +151,11 @@ pub struct StatChangeEvent {
     pub amount: i32,
     pub entity: Entity,
 }
+impl StatChangeEvent {
+    pub fn new(stat: StatType, amount: i32, entity: Entity) -> Self {
+        StatChangeEvent {stat, amount, entity}
+    }
+}
 
 // Resources
 /// If true, show hidden and private stats publicly.
@@ -139,22 +184,23 @@ pub enum StatVisibility {
 
 #[derive(Clone)]
 pub struct Stat {
-    pub value: i32,
+    pub base: i32,
+    pub effective: i32,
     pub min: i32,
     pub max: i32,
     pub visibility: StatVisibility,
 }
 impl Stat {
     pub fn new(min: i32, max: i32, visibility: StatVisibility) -> Stat {
-        Stat {value: max, min, max, visibility}
+        Stat {base: max, effective: max, min, max, visibility}
     }
 
     pub fn with_value(value: i32, min: i32, max: i32, visibility: StatVisibility) -> Stat {
-        Stat {value, min, max, visibility}
+        Stat {base: value, effective: value, min, max, visibility}
     }
 }
 
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum StatType {
     Health,
     Resistance,
@@ -215,6 +261,40 @@ impl StatType {
     }
 }
 
+#[derive(Clone, Copy)]
+pub struct StatModification {
+    pub stat_type: StatType,
+    pub operation: Operation,
+}
+impl StatModification {
+    pub fn compute(&self, stat_type: &StatType, stats: &mut Stats) {
+        stats.get_mut(stat_type).unwrap().effective = self.operation.compute(stats[stat_type].effective);
+    }
+    pub fn priority(&self) -> u8 {
+        self.operation.priority()
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum Operation {
+    Add(i32),
+    Divide(i32),
+}
+impl Operation {
+    pub fn compute(&self, x: i32) -> i32 {
+        match self {
+            Operation::Add(n) => x + n,
+            Operation::Divide(n) => x / n,
+        }
+    }
+    pub fn priority(&self) -> u8 {
+        match self {
+            Operation::Add(_) => 2,
+            Operation::Divide(_) => 1,
+        }
+    }
+}
+
 // Components
 #[derive(Component, Clone, Deref, DerefMut)]
 pub struct Stats(pub BTreeMap<StatType, Stat>);
@@ -222,21 +302,30 @@ impl Default for Stats {
     fn default() -> Stats {
         Stats(
             BTreeMap::from([
-                (StatType::Health, Stat{value: 3, min: 0, max: 3, visibility: StatVisibility::Public}),
+                (StatType::Health, Stat::new(0, 3, StatVisibility::Public)),
             ])
         )
     }
 }
 impl Stats {
-    pub fn get_value (&self, stat: &StatType) -> i32 {
+    pub fn get_base (&self, stat: &StatType) -> i32 {
         // TODO: Check if we have the requested value. Otherwise, give 0 and print an error or something.
         if self.0.contains_key(stat) {
-            self.0[&stat].value
+            self.0[&stat].base
         } else {
             eprintln!("ERROR: Stat not found! Returning zero.");
             0
         }
-        
+    }
+
+    pub fn get_effective (&self, stat: &StatType) -> i32 {
+        // TODO: Check if we have the requested value. Otherwise, give 0 and print an error or something.
+        if self.0.contains_key(stat) {
+            self.0[&stat].effective
+        } else {
+            eprintln!("ERROR: Stat not found! Returning zero.");
+            0
+        }
     }
 
     /*

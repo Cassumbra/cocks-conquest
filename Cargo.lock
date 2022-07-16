@@ -1011,7 +1011,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "cock-roguelike-rework-1"
+name = "cocks-conquest"
 version = "0.1.1"
 dependencies = [
  "Inflector",

@@ -68,7 +68,7 @@ pub fn ranged_attack (
             if let Ok(stats_attacker) = stats_query.get(ev.targetting_entity) {
                 if has_cost {
                     can_pay = stats_attacker.0.contains_key(&projectile.cost_type) && 
-                        stats_attacker.0[&projectile.cost_type].value + projectile.cost.total > 0;
+                        stats_attacker.0[&projectile.cost_type].effective + projectile.cost.total > 0;
 
                     if can_pay {
                         // TODO: pay cost
@@ -89,7 +89,7 @@ pub fn ranged_attack (
                 // Burst fire. TODO: Implement blast fire too.
                 'burst_fire: for _ in 0..projectile.count {
                     let d20 = Dice::new("1d20");
-                    let roll = d20.total + stats_attacker.get_value(&projectile.spread_save_type);
+                    let roll = d20.total + stats_attacker.get_effective(&projectile.spread_save_type);
                     let penalty = (roll - projectile.spread_save) as f32 * projectile.spread_penalty;
                     let spread = if penalty < 0.0 {projectile.optimal_spread + penalty} else {projectile.optimal_spread};
                     // TODO: generate angle sexer
@@ -101,7 +101,7 @@ pub fn ranged_attack (
                     let target_position = rotate_point(targetting_position, ev.target.as_vec2(), angle);
                     
                     let d20 = Dice::new("1d20");
-                    let roll = d20.total + stats_attacker.get_value(&projectile.range_save_type);
+                    let roll = d20.total + stats_attacker.get_effective(&projectile.range_save_type);
                     let penalty = (roll - projectile.range_save) as f32 * projectile.range_penalty;
                     let length = if penalty < 0.0 {projectile.optimal_range + penalty} else {projectile.optimal_range};
                     
@@ -201,7 +201,7 @@ pub fn rand_ranged_attack (
                 if has_cost {
                     if let Ok(stats_attacker) = stats_query.get(ev.targetting_entity) {
                         can_pay = stats_attacker.0.contains_key(&projectile.attack.cost_type) && 
-                                  stats_attacker.0[&projectile.attack.cost_type].value + projectile.attack.cost.total > 0;
+                                  stats_attacker.0[&projectile.attack.cost_type].effective + projectile.attack.cost.total > 0;
                     }
                 }
                 
@@ -224,7 +224,7 @@ pub fn rand_ranged_attack (
                         // Burst fire. TODO: Implement blast fire too.
                         for _ in 0..projectile.count {
                             let d20 = Dice::new("1d20");
-                            let roll = d20.total + stats_attacker.get_value(&projectile.spread_save_type);
+                            let roll = d20.total + stats_attacker.get_effective(&projectile.spread_save_type);
                             let penalty = (roll - projectile.spread_save) as f32 * projectile.spread_penalty;
                             let spread = if penalty < 0.0 {projectile.optimal_spread + penalty} else {projectile.optimal_spread};
                             // TODO: generate angle sexer
@@ -234,7 +234,7 @@ pub fn rand_ranged_attack (
                             let target_position = rotate_point(targetting_position, ev.target.as_vec2(), angle);
                             
                             let d20 = Dice::new("1d20");
-                            let roll = d20.total + stats_attacker.get_value(&projectile.range_save_type);
+                            let roll = d20.total + stats_attacker.get_effective(&projectile.range_save_type);
                             let penalty = (roll - projectile.range_save) as f32 * projectile.range_penalty;
                             let length = projectile.optimal_range - penalty;
 

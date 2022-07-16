@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{data::Position, actors::{vision::Vision, TakesTurns, alignments::Relations, stats::{Stats, StatType}, ActorRemovedEvent}, turn::{Turns, TurnEvent}, actions::attack::Dice};
+use crate::{data::Position, actors::{vision::Vision, TakesTurns, alignments::Relations, stats::{Stats, StatType}, ActorRemovedEvent}, turn::Turns, actions::attack::Dice};
 
 use super::Path;
 
@@ -14,7 +14,7 @@ pub struct Engages{
 }
 
 pub fn targetting_behavior (
-    mut turns: ResMut<Turns>,
+    turns: Res<Turns>,
 
     mut ai_query: Query<(&Position, &mut Engages, &Relations, &Vision), With<TakesTurns>>,
     actor_query: Query<(Entity, &Position, &Relations, Option<&Stats>), (With<TakesTurns>)>,
@@ -62,7 +62,7 @@ pub fn targetting_behavior (
             if distance < closest_visible_enemy.1 {
                 if let Some(actor_stats) = opt_actor_stats {
                     if actor_stats.contains_key(&StatType::StealthRange) {
-                        if distance <= actor_stats.get_value(&StatType::StealthRange) as f32 {
+                        if distance <= actor_stats.get_effective(&StatType::StealthRange) as f32 {
                             let d20 = Dice::new("1d20");
                             // TODO: Put perception here.
                             //let roll = d20.total + ;

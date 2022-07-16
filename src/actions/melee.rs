@@ -61,16 +61,16 @@ pub fn bump_melee_attack (
                     if has_cost {
                         if let Ok(stats_attacker) = stats_query.get(ev.bumping_entity) {
                             can_pay = stats_attacker.0.contains_key(&attack.cost_type) && 
-                                      stats_attacker.0[&attack.cost_type].value + attack.cost.total > 0;
+                                      stats_attacker.0[&attack.cost_type].effective + attack.cost.total > 0;
                         }
                     }
                     
                     if let Ok(stats_attacked) = stats_query.get_mut(ev.bumped_entity) {
-                        let value_to_be = stats_attacked.get_value(&attack.damage_type) + attack.damage.total;
+                        let value_to_be = stats_attacked.get_effective(&attack.damage_type) + attack.damage.total;
 
                         if stats_attacked.0.contains_key(&attack.damage_type) {
-                            attack_valid = attack.damage.total < 0 && stats_attacked.get_value(&attack.damage_type) > stats_attacked.get_min(&attack.damage_type) ||
-                                           attack.damage.total > 0 && stats_attacked.get_value(&attack.damage_type) < stats_attacked.get_max(&attack.damage_type);
+                            attack_valid = attack.damage.total < 0 && stats_attacked.get_effective(&attack.damage_type) > stats_attacked.get_min(&attack.damage_type) ||
+                                           attack.damage.total > 0 && stats_attacked.get_effective(&attack.damage_type) < stats_attacked.get_max(&attack.damage_type);
                             println!("attack valid: {}", attack_valid);
                         }
 

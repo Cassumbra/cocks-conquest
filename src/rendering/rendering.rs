@@ -179,7 +179,7 @@ pub fn render_stats_and_log (
 
     for (stat_type, stat) in stats.0.iter() {
         if **show_stats || matches!(stat.visibility, StatVisibility::Public | StatVisibility::Private) {
-            print_fragments.append(&mut Log::fragment_string(format!["{}: {}  ", stat_type.to_string().to_title_case(), stat.value], stat_type.color()));
+            print_fragments.append(&mut Log::fragment_string(format!["{}: {}  ", stat_type.to_string().to_title_case(), stat.effective], stat_type.color()));
         }
 
         
@@ -236,7 +236,7 @@ pub fn render_actor_info (
         if let Some(stats) = opt_stats {
             for (stat_type, stat) in stats.0.iter() {
                 if **show_stats || matches!(stat.visibility, StatVisibility::Public) {
-                    print_fragments.push(LogFragment::new(format!["{}: {}  ", stat_type.abbreviate().to_ascii_uppercase(), stat.value], stat_type.color()));
+                    print_fragments.push(LogFragment::new(format!["{}: {}  ", stat_type.abbreviate().to_ascii_uppercase(), stat.effective], stat_type.color()));
                 }
                 
             }

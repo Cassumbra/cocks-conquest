@@ -18,7 +18,7 @@ pub mod status_effects;
 pub mod temp_stats;
 
 pub mod alignments;
-use self::alignments::{Relations, Alignment};
+use self::{alignments::{Relations, Alignment}, status_effects::{StatusEffectEvent, RemoveStatusEffectEvent}};
 
 // Plugin
 #[derive(Default)]
@@ -28,6 +28,8 @@ impl Plugin for ActorPlugin {
         app
         .add_event::<stats::StatChangeEvent>()
         .init_resource::<Events<ActorRemovedEvent>>()
+        .init_resource::<Events<StatusEffectEvent>>()
+        .init_resource::<Events<RemoveStatusEffectEvent>>()
         .init_resource::<DebugShowStats>();
     }
 }

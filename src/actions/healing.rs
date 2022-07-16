@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{actors::stats::{Stats, StatType}, log::Log};
+use crate::{actors::stats::{Stats, StatType, StatChangeEvent}, log::Log};
 
 
 
@@ -12,21 +12,22 @@ pub struct HealActionEvent{
 
 // Systems
 pub fn heal_action (
-    mut heal_query: Query<(&mut Stats, Option<&Name>), With<CanHeal>>,
+    mut heal_query: Query<(Entity, &mut Stats, Option<&Name>), With<CanHeal>>,
 
     mut ev_heal_event: EventReader<HealActionEvent>,
+    mut ev_stat_change: EventWriter<StatChangeEvent>,
 
     mut log: ResMut<Log>,
 ) {
     for ev in ev_heal_event.iter() {
-        if let Ok((mut stats, opt_name)) = heal_query.get_mut(ev.healing_entity) {
+        if let Ok((entity, mut stats, opt_name)) = heal_query.get_mut(ev.healing_entity) {
             let name = if opt_name.is_some() {opt_name.unwrap().to_string()} else {ev.healing_entity.id().to_string()};
 
             // TODO: Both of these should be retrieved dynamically from the CanHeal component and/or a MaxStats component in the future.
-            if stats.get_value(&StatType::CumPoints) >= 5 && stats.get_value(&StatType::Health) < stats.get_max(&StatType::Health) {
+            if stats.get_effective(&StatType::CumPoints) >= 5 && stats.get_effective(&StatType::Health) < stats.get_max(&StatType::Health) {
                 log.log_string_formatted(format!(" {} uses 5 cum points to heal for 1 health.", name), Color::GREEN);
-                stats.0.get_mut(&StatType::CumPoints).unwrap().value -= 5;
-                stats.0.get_mut(&StatType::Health).unwrap().value += 1;
+                ev_stat_change.send(StatChangeEvent::new(StatType::CumPoints, -5, entity));
+                ev_stat_change.send(StatChangeEvent::new(StatType::CumPoints, 1, entity));
             }
         }
     }

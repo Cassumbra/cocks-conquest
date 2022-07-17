@@ -31,6 +31,7 @@ pub struct ProjectileHitEvent {
 pub fn ranged_attack (
     mut ev_ranged_attack: EventReader<RangedAttackEvent>,
     mut ev_attack_hit: EventWriter<AttackEvent>,
+    mut ev_stat_change: EventWriter<StatChangeEvent>,
 
     name_query: Query<&Name>,
     attacker_query: Query<&RangedAttacker>,
@@ -44,7 +45,6 @@ pub fn ranged_attack (
 ) {
     'events: for ev in ev_ranged_attack.iter() {
         if let Ok(attacker_comp) = attacker_query.get(ev.targetting_entity) {
-            println!("hngghh i have the capacity to attack!!!");
             let mut rng = rand::thread_rng();
 
             let mut attacker_name = ev.targetting_entity.id().to_string();
@@ -62,16 +62,17 @@ pub fn ranged_attack (
 
             projectile.cost.roll();
 
-            has_cost = projectile.attack.cost.total != 0;
+            has_cost = projectile.cost.total != 0;
             
             // TODO: Allow for attacks fired by entities without stats.
             if let Ok(stats_attacker) = stats_query.get(ev.targetting_entity) {
                 if has_cost {
                     can_pay = stats_attacker.0.contains_key(&projectile.cost_type) && 
-                        stats_attacker.0[&projectile.cost_type].effective + projectile.cost.total > 0;
+                        stats_attacker[&projectile.cost_type].effective + projectile.cost.total >= stats_attacker[&projectile.cost_type].min;
+                    // TODO: Check max here too?
 
                     if can_pay {
-                        // TODO: pay cost
+                        ev_stat_change.send(StatChangeEvent { stat: projectile.cost_type, amount: projectile.cost.total, entity: ev.targetting_entity })
                     }
                     else {
                         // early return if can't pay cost

@@ -187,12 +187,14 @@ impl Default for PlayerBundle {
                     attack: Attack {
                         damage: Dice::new("1d4 * -1"),
                         damage_type: StatType::Resistance,
-                        cost: Dice::new("5"),
+                        cost: Dice::new("0"),
                         cost_type: StatType::CumPoints,
 
                         ..default()
                     },
 
+                    cost: Dice::new("-5"),
+                    cost_type: StatType::CumPoints,
                     ..default()
                 }
             ]},

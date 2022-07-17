@@ -18,7 +18,7 @@ pub mod status_effects;
 pub mod temp_stats;
 
 pub mod alignments;
-use self::{alignments::{Relations, Alignment}, status_effects::{StatusEffectEvent, RemoveStatusEffectEvent}};
+use self::{alignments::{Relations, Alignment}, status_effects::{StatusEffectEvent, RemoveStatusEffectEvent, StatusEffects}};
 
 // Plugin
 #[derive(Default)]
@@ -132,6 +132,7 @@ pub struct PlayerBundle {
     pub takes_turns: TakesTurns,
     pub vision: Vision,
     pub mind_map: MindMap,
+    pub status_effects: StatusEffects,
     pub stats: Stats,
     pub fatal_stats: FatalStats,
     pub relations: Relations,
@@ -157,6 +158,7 @@ impl Default for PlayerBundle {
             takes_turns: TakesTurns,
             vision: Vision{..Default::default()},
             mind_map: MindMap{..Default::default()},
+            status_effects: StatusEffects::default(),
             stats: Stats(
                 BTreeMap::from([
                     (StatType::Health, Stat::new(0, 7, StatVisibility::Public)),

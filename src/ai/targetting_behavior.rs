@@ -70,6 +70,9 @@ pub fn targetting_behavior (
                                 continue 'enemy_check;
                             }
                         }
+                        else {
+                            continue 'enemy_check;
+                        }
                     }
                 }
 

@@ -39,18 +39,18 @@ pub fn update_status_effects (
 ) {
     if turns.progress {
         for (entity, mut statuses) in status_query.iter_mut() {
-            let length = statuses.len();
-            for status in statuses.iter_mut() {
-                if let Some(duration) = status.duration.as_mut() {
-                    *duration -= 1;
+            if turns.was_turn(&entity) {
+                let length = statuses.len();
+                for status in statuses.iter_mut() {
+                    if let Some(duration) = status.duration.as_mut() {
+                        *duration -= 1;
+                    }
                 }
-            }
-
-            // TODO: REAL???
-            statuses.retain(|a| a.duration < Some(1));
-
-            if statuses.len() != length {
-                ev_removed_status_effect.send(RemoveStatusEffectEvent{entity});
+                statuses.retain(|a| a.duration != Some(0));
+    
+                if statuses.len() != length {
+                    ev_removed_status_effect.send(RemoveStatusEffectEvent{entity});
+                }
             }
         }
     }
@@ -62,17 +62,14 @@ pub fn apply_status_effects (
     mut status_query: Query<&mut StatusEffects>,
 ) {
     for ev in ev_status_effect.iter() {
-        let mut append = false;
+        let mut append = true;
 
         if let Ok(mut statuses) = status_query.get_mut(ev.entity) {
-            for status in statuses.iter_mut() {
-                if status.status_type == ev.effect.status_type {
-                    match ev.stacking {
-                        StatusEffectStacking::Stacks => {
-                            append = true;
-                            break
-                        }
-                        StatusEffectStacking::Adds => {
+            if !matches!(ev.stacking, StatusEffectStacking::Stacks) {
+                for status in statuses.iter_mut() {
+                    if status.status_type == ev.effect.status_type {
+                        append = false;
+                        if matches!(ev.stacking, StatusEffectStacking::Adds) {
                             if let Some(duration) = status.duration.as_mut() {
                                 if let Some(ev_duration) = ev.effect.duration {
                                     *duration += ev_duration;
@@ -81,16 +78,11 @@ pub fn apply_status_effects (
                                     status.duration = None;
                                 }
                             }
-                            
                         }
-                        StatusEffectStacking::Refreshes => {
+                        else {
                             status.duration = ev.effect.duration;
-                        },
+                        }
                     }
-                }
-                else {
-                    append = true;
-                    break
                 }
             }
         }
@@ -109,11 +101,11 @@ pub fn apply_status_effects (
 #[derive(Component, Clone)]
 pub struct Tranced;
 
-#[derive(Component, Clone, Deref, DerefMut)]
+#[derive(Component, Clone, Default, Deref, DerefMut, Debug)]
 pub struct StatusEffects (Vec<StatusEffect>);
 
 // Data
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum StatusEffectType {
     Tranced,
     Sneaking,
@@ -160,7 +152,7 @@ pub enum StatusEffectStacking {
     Refreshes,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct StatusEffect {
     pub status_type: StatusEffectType,
     pub duration: Option<u32>,

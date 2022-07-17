@@ -9,6 +9,8 @@ use bevy::prelude::*;
 use crate::actions::healing::HealActionEvent;
 use crate::actions::movement::PointMoveEvent;
 use crate::actions::ranged::{RangedAttackEvent, RangedAttacker};
+use crate::actors::stats::{StatModification, StatType, Operation};
+use crate::actors::status_effects::{StatusEffectEvent, StatusEffect, StatusEffectType, StatusEffectStacking};
 use crate::rendering::window::WindowChangeEvent;
 
 use self::targetting::{StartTargetEvent, TargetIntent, FinishTargetEvent};
@@ -45,6 +47,7 @@ pub fn player_input_game (
 
     mut ev_key: EventReader<KeyboardInput>,
     mut ev_movement: EventWriter<PointMoveEvent>,
+    mut ev_status_effect: EventWriter<StatusEffectEvent>,
     mut ev_heal: EventWriter<HealActionEvent>,
     mut ev_target: EventWriter<StartTargetEvent>,
 
@@ -93,6 +96,17 @@ pub fn player_input_game (
 
                     // Do Nothing
                     Some(KeyCode::K) | Some(KeyCode::Numpad5) => {
+                        // TODO: Maybe this should be an effect for anything that doesn't move for a turn instead of just the player?
+                        ev_status_effect.send(StatusEffectEvent{
+                            effect: StatusEffect {
+                                status_type: StatusEffectType::Sneaking,
+                                duration: Some(2),
+                                stat_modification: Some(StatModification{stat_type: StatType::StealthRange, operation: Operation::DivideRound(2)})
+                            
+                            },
+                            stacking: StatusEffectStacking::Refreshes,
+                            entity: player,
+                        });
                         turns.progress_turn();
                     }
 

@@ -53,6 +53,7 @@ pub fn update_effective_stats (
             if let Some(statuses) = opt_statuses {
                 for status in statuses.iter() {
                     if let Some(modification) = status.stat_modification {
+                        
                         modification.compute(&modification.stat_type, &mut stats)
                     }
                 }
@@ -200,7 +201,7 @@ impl Stat {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum StatType {
     Health,
     Resistance,
@@ -261,7 +262,7 @@ impl StatType {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct StatModification {
     pub stat_type: StatType,
     pub operation: Operation,
@@ -275,22 +276,25 @@ impl StatModification {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum Operation {
     Add(i32),
     Divide(i32),
+    DivideRound(i32),
 }
 impl Operation {
     pub fn compute(&self, x: i32) -> i32 {
         match self {
             Operation::Add(n) => x + n,
             Operation::Divide(n) => x / n,
+            Operation::DivideRound(n) => (x as f32 / *n as f32).round() as i32,
         }
     }
     pub fn priority(&self) -> u8 {
         match self {
             Operation::Add(_) => 2,
             Operation::Divide(_) => 1,
+            Operation::DivideRound(_) => 1,
         }
     }
 }

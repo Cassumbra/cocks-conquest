@@ -5,17 +5,13 @@ use crate::turn::Turns;
 
 use super::{TakesTurns, stats::{StatModification, StatType}};
 
-
-
-
-
 // Systems
 // I don't know if I want to move this to be with the rest of the behaviors or not.
 // It may not only affect AI.
 pub fn tranced_behavior (
     mut turns: ResMut<Turns>,
 
-    tranced_query: Query<&Tranced, With<TakesTurns>>,
+    tranced_query: Query<&StatusEffects, With<TakesTurns>>,
 ) {
     // TODO: Maybe we should turn this into a system condition?
     if turns.progress == true {
@@ -24,9 +20,11 @@ pub fn tranced_behavior (
     }
 
     let entity = turns.order[turns.current];
-    if let Ok(_tranced) = tranced_query.get(entity) {
-        println!("wuhh im tranced woah");
-        turns.progress_turn();
+    if let Ok(statuses) = tranced_query.get(entity) {
+        if statuses.has_status_effect(&StatusEffectType::Tranced) {
+            println!("wuhh im tranced woah");
+            turns.progress_turn();
+        }
     }
 }
 
@@ -89,6 +87,7 @@ pub fn apply_status_effects (
 
         if append {
             if let Ok(mut statuses) = status_query.get_mut(ev.entity) {
+                println!("applying {:?}", ev.effect.status_type);
                 statuses.push(ev.effect);
 
                 statuses.sort_by(|a, b| a.priority().cmp(&b.priority()))
@@ -98,11 +97,19 @@ pub fn apply_status_effects (
 }
 
 // Components
-#[derive(Component, Clone)]
-pub struct Tranced;
-
 #[derive(Component, Clone, Default, Deref, DerefMut, Debug)]
 pub struct StatusEffects (Vec<StatusEffect>);
+impl StatusEffects {
+    pub fn has_status_effect(&self, status_effect_type: &StatusEffectType) -> bool {
+        for status in self.iter() {
+            if status.status_type == *status_effect_type {
+                return true
+            }
+        }
+
+        false
+    }
+}
 
 // Data
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]

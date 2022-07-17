@@ -210,6 +210,7 @@ pub struct SoldierBundle {
     pub takes_turns: TakesTurns,
     pub moves: Moves,
     pub vision: Vision,
+    pub status_effects: StatusEffects,
     pub stats: Stats,
     pub fatal_stats: FatalStats,
     pub relations: Relations,
@@ -233,6 +234,7 @@ impl Default for SoldierBundle {
             takes_turns: TakesTurns,
             moves: Moves::default(),
             vision: Vision{..default()},
+            status_effects: StatusEffects::default(),
             stats: Stats(
                 BTreeMap::from([
                     (StatType::Health, Stat::new(0, 7, StatVisibility::Public)),

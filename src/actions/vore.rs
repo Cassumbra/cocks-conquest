@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{log::Log, actors::{status_effects::Tranced, TakesTurns, stats::{Stats, StatType, StatChangeEvent}, ActorRemovedEvent}, data::Collides, rendering::Renderable, turn::Turns};
+use crate::{log::Log, actors::{TakesTurns, stats::{Stats, StatType, StatChangeEvent}, ActorRemovedEvent, status_effects::{StatusEffects, StatusEffectType}}, data::Collides, rendering::Renderable, turn::Turns};
 
 use super::attack::BumpEvent;
 
@@ -20,13 +20,17 @@ pub fn vore_attack (
 
     mut ev_bump_event: EventReader<BumpEvent>,
 
-    prey_query: Query<(&Tranced, Option<&Name>)>,
+    prey_query: Query<(&StatusEffects, Option<&Name>)>,
     pred_query: Query<(&DoesVore, Option<&Name>)>,
 
     mut log: ResMut<Log>,
 ) {
     for ev in ev_bump_event.iter() {
-        if let Ok((_tranced, opt_prey_name)) = prey_query.get(ev.bumped_entity) {
+        if let Ok((statuses, opt_prey_name)) = prey_query.get(ev.bumped_entity) {
+            if !statuses.has_status_effect(&StatusEffectType::Tranced) {
+                return
+            }
+
             if let Ok((_doesvore, opt_pred_name)) = pred_query.get(ev.bumping_entity) {
                 let prey_name = if opt_prey_name.is_some() {opt_prey_name.unwrap().to_string()} else {ev.bumped_entity.id().to_string()};
                 let pred_name = if opt_pred_name.is_some() {opt_pred_name.unwrap().to_string()} else {ev.bumping_entity.id().to_string()};

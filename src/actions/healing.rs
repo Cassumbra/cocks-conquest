@@ -27,7 +27,7 @@ pub fn heal_action (
             if stats.get_effective(&StatType::CumPoints) >= 5 && stats.get_effective(&StatType::Health) < stats.get_max(&StatType::Health) {
                 log.log_string_formatted(format!(" {} uses 5 cum points to heal for 1 health.", name), Color::GREEN);
                 ev_stat_change.send(StatChangeEvent::new(StatType::CumPoints, -5, entity));
-                ev_stat_change.send(StatChangeEvent::new(StatType::CumPoints, 1, entity));
+                ev_stat_change.send(StatChangeEvent::new(StatType::Health, 1, entity));
             }
         }
     }

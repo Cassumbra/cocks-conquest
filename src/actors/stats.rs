@@ -5,7 +5,7 @@ use bevy::prelude::*;
 
 use crate::{data::Collides, rendering::Renderable, log::Log, turn::Turns};
 
-use super::{TakesTurns, status_effects::{Tranced, StatusEffectEvent, RemoveStatusEffectEvent, StatusEffects}, ActorRemovedEvent};
+use super::{TakesTurns, status_effects::{StatusEffectEvent, RemoveStatusEffectEvent, StatusEffects, StatusEffect, StatusEffectType, StatusEffectStacking}, ActorRemovedEvent};
 
 
 // Systems
@@ -69,6 +69,7 @@ pub fn update_fatal (
 
     mut ev_stat_change: EventReader<StatChangeEvent>,
     mut ev_actor_remove_event: EventWriter<ActorRemovedEvent>,
+    mut ev_status_effect: EventWriter<StatusEffectEvent>,
 
     stats_query: Query<(Entity, &Stats, &FatalStats, Option<&Name>)>,
     mut renderable_query: Query<(&mut Renderable)>,
@@ -131,7 +132,15 @@ pub fn update_fatal (
 
                                 log.log_string_formatted(format!(" {} has fallen under a trance!", name), Color::PINK);
 
-                                commands.entity(ent).insert(Tranced);
+                                ev_status_effect.send(StatusEffectEvent{
+                                    effect: StatusEffect {
+                                        status_type: StatusEffectType::Tranced,
+                                        duration: None,
+                                        stat_modification: None,
+                                    },
+                                    stacking: StatusEffectStacking::Refreshes,
+                                    entity: ent,
+                                });
                                 if let Ok(mut renderable) = renderable_query.get_mut(ev.entity) {
                                     renderable.tile.bg_color = Color::PINK;
                                 }

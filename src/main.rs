@@ -151,6 +151,7 @@ fn main () {
         SystemSet::new()
             .label("actor_turn")
             .with_system(targetting_behavior::targetting_behavior.run_in_state(GameState::Playing).label("targetting"))
+            .with_system(status_effects::cumblobbed_behavior.run_in_state(GameState::Playing).label("cumblobbed").before("trance"))
             .with_system(status_effects::tranced_behavior.run_in_state(GameState::Playing).label("trance"))
             .with_system(engage_behavior::engage_behavior.run_in_state(GameState::Playing).label("engage").after("trance").after("targetting"))
             .with_system(melee_behavior::melee_behavior.run_in_state(GameState::Playing).label("melee").after("engage"))

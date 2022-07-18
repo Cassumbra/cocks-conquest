@@ -28,6 +28,26 @@ pub fn tranced_behavior (
     }
 }
 
+pub fn cumblobbed_behavior (
+    mut turns: ResMut<Turns>,
+
+    tranced_query: Query<&StatusEffects, With<TakesTurns>>,
+) {
+    // TODO: Maybe we should turn this into a system condition?
+    if turns.progress == true {
+        println!("no cumblobbing for me!");
+        return;
+    }
+
+    let entity = turns.order[turns.current];
+    if let Ok(statuses) = tranced_query.get(entity) {
+        if statuses.has_status_effect(&&StatusEffectType::Cumblobbed) {
+            println!("wuhh im cumblobbed woah");
+            turns.progress_turn();
+        }
+    }
+}
+
 pub fn update_status_effects (
     turns: Res<Turns>,
 

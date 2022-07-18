@@ -6,11 +6,38 @@ use super::Path;
 
 // Components
 // Warning: Engagements with distances higher than 1.5 will behave strangely if there is no capacity to perform ranged attacks.
-#[derive(Component, Default, Clone)]
-pub struct Engages{
+#[derive(Component, Clone)]
+pub struct Engages {
     pub target: Option<Entity>,
+    pub delay: u32,
+    pub delay_timer: u32,
     pub distance: f32,
     pub path: Path,
+}
+impl Default for Engages {
+    fn default() -> Self {
+        Self {
+            target: Default::default(),
+            delay: 1,
+            delay_timer: Default::default(),
+            distance: Default::default(),
+            path: Default::default()
+        }
+    }
+}
+impl Engages {
+    // Gives our current target if delay timer is above delay
+    pub fn get_target(&self) -> Option<Entity> {
+        if self.delay_timer > self.delay {
+            self.target
+        }
+        else {
+            None
+        }
+    }
+    pub fn get_alert(&self) -> bool {
+        self.target.is_some() && self.delay_timer > 0 && self.delay_timer <= self.delay
+    }
 }
 
 pub fn targetting_behavior (
@@ -36,7 +63,7 @@ pub fn targetting_behavior (
         }
 
         // Stop if we already have a target
-        if engagement.target.is_some() {
+        if engagement.get_target().is_some() {
             return;
         }
 
@@ -52,7 +79,22 @@ pub fn targetting_behavior (
 
             // Check if actor is visible
             if !vision.visible(**actor_pos) {
+                // If our enemy is out of sight, decrease the delay timer.
+                if engagement.target == Some(actor) {
+                    engagement.delay_timer -= 1;
+                    // Remove enemy as target if they have not been visible for too long.
+                    if engagement.delay_timer == 0 {
+                        engagement.target = None;
+                    }
+                }
                 continue 'enemy_check;
+            }
+            
+
+            // If our enemy is in sight, increase the delay timer.
+            if engagement.target == Some(actor)  { //&& engagement.delay != engagement.delay_timer
+                engagement.delay_timer += 1;
+                return
             }
 
             // Get distance between the enemy and us.
@@ -83,6 +125,9 @@ pub fn targetting_behavior (
         // Set our target. (Or None)
         engagement.target = closest_visible_enemy.0;
 
+        if engagement.target.is_some() {
+            engagement.delay_timer += 1;
+        }
         // TODO: We can either check all visible tiles for our enemies, OR
         //       we can check for all enemies to see if any are visible.
         //       For the moment, we should do the latter.

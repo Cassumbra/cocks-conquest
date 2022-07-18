@@ -113,24 +113,22 @@ pub fn ranged_attack (
                     // TODO: we need to ignore ALL allies within the first 3 or so tiles, not just the attacker themself. We cannot do this through removing points, however.
                     
                     line_points.pop_front();
-
-                    println!("points in line: {:?}", line_points);
                     
+                    let mut miss = true;
 
                     for point in line_points {
-
-                        println!("projectile at point {}", point);
                         effect.fragments.push(EffectFragment{duration: Duration::from_secs_f32(0.25), tiles: vec![EffectTile{position: point, tile: Tile { glyph: '-', fg_color: Color::YELLOW, bg_color: Color::BLACK }}]});
 
                         if let Some(collided_entity) = collidables[point] {
                             if ignore_collidables && point != ev.target {
 
                             } else {
+                                miss = false;
+
                                 let mut attacked_name = collided_entity.id().to_string();
                                 if let Ok(name) = name_query.get(collided_entity) {
                                     attacked_name = name.to_string();
                                 }
-                                println!("shooty hit a {}", attacked_name);
 
                                 ev_attack_hit.send(AttackEvent{ attacking_entity: ev.targetting_entity, attacked_entity: collided_entity, attack: projectile.attack.clone() });
                                 
@@ -138,6 +136,12 @@ pub fn ranged_attack (
                             }
                         }
                     }
+
+                    if miss {
+                        // TODO: Add more information here about specifics.
+                        log.log_string_formatted("Attack MISSED!".to_string(), Color::YELLOW);
+                    }
+
                 }
 
                 commands.spawn().insert(effect);

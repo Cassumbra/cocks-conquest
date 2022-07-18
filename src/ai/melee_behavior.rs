@@ -21,11 +21,11 @@ pub fn melee_behavior (
     let ai_ent = turns.order[turns.current];
     if let Ok((pos, engagement, attacker, moves)) = ai_query.get_mut(ai_ent) {
 
-        if engagement.target.is_none() {
+        if engagement.get_target().is_none() {
             return;
         }
 
-        if let Ok(target_pos) = target_query.get(engagement.target.unwrap()) {
+        if let Ok(target_pos) = target_query.get(engagement.get_target().unwrap()) {
             // Check if any of our moves can take us to our target.
             for m in moves.iter() {
                 if **pos + *m == **target_pos {

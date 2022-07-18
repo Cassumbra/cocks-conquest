@@ -298,7 +298,11 @@ pub fn render_actor_info (
                     target_name = temp_name.to_string();
                 }
 
-                print_fragments.push(LogFragment::new(format!["Target: {}  ", target_name], Color::WHITE));
+                if engages.get_alert() {
+                    print_fragments.push(LogFragment::new(format!["Alert: {}  ", target_name], Color::WHITE));
+                } else {
+                    print_fragments.push(LogFragment::new(format!["Target: {}  ", target_name], Color::WHITE));
+                }
             } else {
                 print_fragments.push(LogFragment::new(format!["No target  ", ], Color::WHITE));
             }

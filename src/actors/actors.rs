@@ -15,8 +15,6 @@ use stats::*;
 
 pub mod status_effects;
 
-pub mod temp_stats;
-
 pub mod alignments;
 use self::{alignments::{Relations, Alignment}, status_effects::{StatusEffectEvent, RemoveStatusEffectEvent, StatusEffects, StatusEffectApplication, StatusEffect, StatusEffectType, StatusEffectStacking, TileModification}};
 

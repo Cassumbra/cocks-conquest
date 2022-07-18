@@ -15,7 +15,6 @@ pub fn tranced_behavior (
 ) {
     // TODO: Maybe we should turn this into a system condition?
     if turns.progress == true {
-        println!("no trancing for me!");
         return;
     }
 
@@ -35,7 +34,6 @@ pub fn cumblobbed_behavior (
 ) {
     // TODO: Maybe we should turn this into a system condition?
     if turns.progress == true {
-        println!("no cumblobbing for me!");
         return;
     }
 

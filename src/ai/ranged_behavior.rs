@@ -21,13 +21,13 @@ pub fn ranged_behavior (
     let ai_ent = turns.order[turns.current];
     if let Ok((pos, engagement, attacker, moves, vision)) = ai_query.get_mut(ai_ent) {
 
-        if engagement.target.is_none() {
+        if engagement.get_target().is_none() {
             return;
         }
 
 
 
-        if let Ok(target_pos) = target_query.get(engagement.target.unwrap()) {
+        if let Ok(target_pos) = target_query.get(engagement.get_target().unwrap()) {
 
             // Check if target is visible
             if !vision.visible(**target_pos) {

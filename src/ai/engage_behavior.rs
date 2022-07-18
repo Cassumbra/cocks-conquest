@@ -23,11 +23,11 @@ pub fn engage_behavior (
     let ai_ent = turns.order[turns.current];
     if let Ok((pos, mut engagement, moves, vision)) = ai_query.get_mut(ai_ent) {
 
-        if engagement.target.is_none() {
+        if engagement.get_target().is_none() {
             return;
         }
 
-        if let Ok(target_pos) = target_query.get(engagement.target.unwrap()) {
+        if let Ok(target_pos) = target_query.get(engagement.get_target().unwrap()) {
             let distance = target_pos.as_vec2().distance(pos.as_vec2());
 
             // Do nothing if we are already in range and can see our target.

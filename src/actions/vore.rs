@@ -76,7 +76,7 @@ pub fn update_vore (
                         log.log_string_formatted(format!(" {} has been melted into 15 cum points worth of stinky smelly goo.", prey_name), Color::GREEN);
                         commands.entity(*prey).despawn();
                         ev_actor_remove_event.send(ActorRemovedEvent::new(*prey, turns.count));
-                        ev_stat_change.send(StatChangeEvent::new(StatType::CumPoints, 15, *prey));
+                        ev_stat_change.send(StatChangeEvent::new(StatType::CumPoints, 15, pred));
                     } else {
                         log.log_string_formatted(format!(" {} turns until {} is digested by {}.", digestion.turns_to_digest, prey_name, pred_name), Color::WHITE);
                     }

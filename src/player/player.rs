@@ -10,7 +10,7 @@ use crate::actions::healing::HealActionEvent;
 use crate::actions::movement::PointMoveEvent;
 use crate::actions::ranged::{RangedAttackEvent, RangedAttacker};
 use crate::actors::stats::{StatModification, StatType, Operation};
-use crate::actors::status_effects::{StatusEffectEvent, StatusEffect, StatusEffectType, StatusEffectStacking};
+use crate::actors::status_effects::{StatusEffectEvent, StatusEffect, StatusEffectType, StatusEffectStacking, StatusEffectApplication};
 use crate::rendering::window::WindowChangeEvent;
 
 use self::targetting::{StartTargetEvent, TargetIntent, FinishTargetEvent};
@@ -98,13 +98,17 @@ pub fn player_input_game (
                     Some(KeyCode::K) | Some(KeyCode::Numpad5) => {
                         // TODO: Maybe this should be an effect for anything that doesn't move for a turn instead of just the player?
                         ev_status_effect.send(StatusEffectEvent{
-                            effect: StatusEffect {
-                                status_type: StatusEffectType::Sneaking,
-                                duration: Some(2),
-                                stat_modification: Some(StatModification{stat_type: StatType::StealthRange, operation: Operation::DivideRound(2)})
-                            
+                            application: StatusEffectApplication {
+                                effect: StatusEffect {
+                                    status_type: StatusEffectType::Sneaking,
+                                    tile_modification: None,
+                                    duration: Some(2),
+                                    stat_modification: Some(StatModification{stat_type: StatType::StealthRange, operation: Operation::DivideRound(2)})
+                                
+                                },
+                                stacking: StatusEffectStacking::Refreshes,
                             },
-                            stacking: StatusEffectStacking::Refreshes,
+
                             entity: player,
                         });
                         turns.progress_turn();

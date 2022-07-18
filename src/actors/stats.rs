@@ -5,7 +5,7 @@ use bevy::prelude::*;
 
 use crate::{data::Collides, rendering::Renderable, log::Log, turn::Turns};
 
-use super::{TakesTurns, status_effects::{StatusEffectEvent, RemoveStatusEffectEvent, StatusEffects, StatusEffect, StatusEffectType, StatusEffectStacking}, ActorRemovedEvent};
+use super::{TakesTurns, status_effects::{StatusEffectEvent, RemoveStatusEffectEvent, StatusEffects, StatusEffect, StatusEffectType, StatusEffectStacking, StatusEffectApplication, TileModification}, ActorRemovedEvent};
 
 
 // Systems
@@ -16,6 +16,7 @@ pub fn do_stat_change (
 ) {
     for ev in ev_stat_change.iter() {
         if let Ok(mut stats) = stats_query.get_mut(ev.entity) {
+            println!("stat type: {}", ev.stat);
             stats.get_mut(&ev.stat).unwrap().base += ev.amount;
             
             stats.get_mut(&ev.stat).unwrap().base = stats.get_base(&ev.stat).clamp(stats.get_min(&ev.stat), stats.get_max(&ev.stat));
@@ -118,7 +119,7 @@ pub fn update_fatal (
                                 ev_actor_remove_event.send(ActorRemovedEvent::new(ent, turns.count));
         
                                 if let Ok(mut renderable) = renderable_query.get_mut(ev.entity) {
-                                    renderable.tile.bg_color = Color::ORANGE_RED;
+                                    renderable.base_tile.bg_color = Color::ORANGE_RED;
                                 }
 
                                 fatalities.push((ent, FatalEffect::Corpse));
@@ -133,17 +134,17 @@ pub fn update_fatal (
                                 log.log_string_formatted(format!(" {} has fallen under a trance!", name), Color::PINK);
 
                                 ev_status_effect.send(StatusEffectEvent{
-                                    effect: StatusEffect {
-                                        status_type: StatusEffectType::Tranced,
-                                        duration: None,
-                                        stat_modification: None,
+                                    application : StatusEffectApplication {
+                                        effect: StatusEffect {
+                                            status_type: StatusEffectType::Tranced,
+                                            tile_modification: Some(TileModification {glyph: None, fg_color: None, bg_color: Some(Color::PINK)}),
+                                            duration: None,
+                                            stat_modification: None,
+                                        },
+                                        stacking: StatusEffectStacking::Refreshes,
                                     },
-                                    stacking: StatusEffectStacking::Refreshes,
                                     entity: ent,
                                 });
-                                if let Ok(mut renderable) = renderable_query.get_mut(ev.entity) {
-                                    renderable.tile.bg_color = Color::PINK;
-                                }
 
                                 fatalities.push((ent, FatalEffect::Trance));
                             }

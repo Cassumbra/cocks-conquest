@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{actors::{stats::{StatType, StatChangeEvent, Stats}}, log::Log};
+use crate::{actors::{stats::{StatType, StatChangeEvent, Stats}, status_effects::{StatusEffectApplication, StatusEffectEvent}}, log::Log};
 use bevy::prelude::*;
 use caith::{Roller, RollResultType};
 use rand::Rng;
@@ -33,6 +33,7 @@ pub fn check_attack_cost (
 
 pub fn attack_hit (
     mut ev_stat_change: EventWriter<StatChangeEvent>,
+    mut ev_status_effect: EventWriter<StatusEffectEvent>,
     mut ev_attack_hit: EventReader<AttackEvent>,
 
     name_query: Query<&Name>,
@@ -99,6 +100,10 @@ pub fn attack_hit (
             // TODO: Add capacity for target to dodge/resist attack.
 
             ev_stat_change.send(StatChangeEvent{stat: attack.damage_type, amount: attack.damage.total, entity: ev.attacked_entity});
+            if let Some(status) = attack.status_effect {
+                ev_status_effect.send(StatusEffectEvent { application: status, entity: ev.attacked_entity });
+            }
+            
         
             let text_index = rng.gen_range(0..attack.interact_text.len());
             log.log_string_formatted(format![" {}", strfmt(&attack.interact_text[text_index], &vars).unwrap()], Color::RED);
@@ -163,6 +168,7 @@ pub struct Attack {
     pub save_text: Vec<String>,
     pub save: i32,
     pub save_type: StatType,
+    pub status_effect: Option<(StatusEffectApplication)>,
 }
 impl Default for Attack {
     fn default() -> Attack {
@@ -175,6 +181,7 @@ impl Default for Attack {
             save_text: vec![String::from("{attacked} dodges {attacker}'s attack!")],
             save: 16,
             save_type: StatType::Dexterity,
+            status_effect: None,
         }
     }
 }

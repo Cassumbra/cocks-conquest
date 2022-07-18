@@ -50,14 +50,14 @@ impl Default for WallBundle {
     fn default() -> WallBundle {
         WallBundle {
             position: Position (IVec2::new(0, 0)),
-            renderable: Renderable {
-                tile: Tile {
+            renderable: Renderable::new(
+                Tile {
                     glyph: '#',
                     fg_color: Color::WHITE,
                     bg_color: Color::BLACK,
                 },
-                order: 32
-            },
+                32
+            ),
             collides: Collides,
         }
     }
@@ -72,14 +72,14 @@ impl Default for FloorBundle {
     fn default() -> FloorBundle {
         FloorBundle {
             position: Position (IVec2::new(0, 0)),
-            renderable: Renderable {
-                tile: Tile {
+            renderable: Renderable::new(
+                Tile {
                     glyph: '.',
                     fg_color: Color::DARK_GRAY,
                     bg_color: Color::BLACK,
                 },
-                order: 48
-            },
+                48
+            ),
         }
     }
 }

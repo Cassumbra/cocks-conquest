@@ -137,6 +137,7 @@ fn main () {
     .add_system_set(
         SystemSet::new()
             .label("rendering")
+            .with_system(rendering::update_effective_tiles.run_in_state(GameState::Playing))
             .with_system(rendering::render_level_view.run_in_state(GameState::Playing).label("render_level").before("finish_rendering"))
             .with_system(effects::render_effects.run_in_state(GameState::Playing).after("render_level"))
             .with_system(rendering::render_stats_and_log.run_in_state(GameState::Playing).before("finish_rendering"))

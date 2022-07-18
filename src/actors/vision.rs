@@ -70,7 +70,7 @@ pub fn update_mind_map (
         for e in order.0.iter() {
             if let Ok((rend, rend_pos)) = visible_query.get(*e) {
                 if vis.0.visible[rend_pos.0] {
-                    mind_map.seen[rend_pos.0].push((*e, rend.tile));
+                    mind_map.seen[rend_pos.0].push((*e, rend.effective_tile));
                 }
             }
         }

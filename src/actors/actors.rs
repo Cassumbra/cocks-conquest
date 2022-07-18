@@ -18,7 +18,7 @@ pub mod status_effects;
 pub mod temp_stats;
 
 pub mod alignments;
-use self::{alignments::{Relations, Alignment}, status_effects::{StatusEffectEvent, RemoveStatusEffectEvent, StatusEffects}};
+use self::{alignments::{Relations, Alignment}, status_effects::{StatusEffectEvent, RemoveStatusEffectEvent, StatusEffects, StatusEffectApplication, StatusEffect, StatusEffectType, StatusEffectStacking, TileModification}};
 
 // Plugin
 #[derive(Default)]
@@ -145,14 +145,14 @@ impl Default for PlayerBundle {
     fn default() -> PlayerBundle {
         PlayerBundle {
             position: Position (IVec2::new(0, 0)),
-            renderable: Renderable {
-                tile: Tile {
+            renderable: Renderable::new(
+                Tile {
                     glyph: '@',
                     fg_color: Color::RED,
                     bg_color: Color::NONE,
                 },
-                order: 128
-            },
+                128
+            ),
             collides: Collides,
             player: Player,
             takes_turns: TakesTurns,
@@ -190,6 +190,18 @@ impl Default for PlayerBundle {
                         cost: Dice::new("0"),
                         cost_type: StatType::CumPoints,
 
+                        status_effect: Some(
+                            StatusEffectApplication {
+                                effect: StatusEffect {
+                                    status_type: StatusEffectType::Cumblobbed,
+                                    tile_modification: Some(TileModification {glyph: None, fg_color: None, bg_color: Some(Color::ANTIQUE_WHITE)}),
+                                    duration: Some(3),
+                                    stat_modification: None,
+                                },
+                                stacking: StatusEffectStacking::Refreshes,
+                            },
+                        ),
+
                         ..default()
                     },
 
@@ -224,14 +236,14 @@ impl Default for SoldierBundle {
     fn default() -> SoldierBundle {
         SoldierBundle {
             position: Position (IVec2::new(0, 0)),
-            renderable: Renderable {
-                tile: Tile {
+            renderable: Renderable::new(
+                Tile {
                     glyph: 'H',
                     fg_color: Color::GRAY,
                     bg_color: Color::NONE,
                 },
-                order: 128
-            },
+                128
+            ),
             collides: Collides,
             takes_turns: TakesTurns,
             moves: Moves::default(),
@@ -267,6 +279,7 @@ impl Default for SoldierBundle {
                     save_text: vec![String::from("{attacked} maneuvers out of {attacker's} stab!")],
                     save: 16,
                     save_type: StatType::Dexterity,
+                    ..default()
                 }
             ]},
             ranged_attacker: RangedAttacker{projectiles: vec![

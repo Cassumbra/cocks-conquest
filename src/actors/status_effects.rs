@@ -63,13 +63,13 @@ pub fn apply_status_effects (
         let mut append = true;
 
         if let Ok(mut statuses) = status_query.get_mut(ev.entity) {
-            if !matches!(ev.stacking, StatusEffectStacking::Stacks) {
+            if !matches!(ev.application.stacking, StatusEffectStacking::Stacks) {
                 for status in statuses.iter_mut() {
-                    if status.status_type == ev.effect.status_type {
+                    if status.status_type == ev.application.effect.status_type {
                         append = false;
-                        if matches!(ev.stacking, StatusEffectStacking::Adds) {
+                        if matches!(ev.application.stacking, StatusEffectStacking::Adds) {
                             if let Some(duration) = status.duration.as_mut() {
-                                if let Some(ev_duration) = ev.effect.duration {
+                                if let Some(ev_duration) = ev.application.effect.duration {
                                     *duration += ev_duration;
                                 }
                                 else {
@@ -78,7 +78,7 @@ pub fn apply_status_effects (
                             }
                         }
                         else {
-                            status.duration = ev.effect.duration;
+                            status.duration = ev.application.effect.duration;
                         }
                     }
                 }
@@ -87,8 +87,8 @@ pub fn apply_status_effects (
 
         if append {
             if let Ok(mut statuses) = status_query.get_mut(ev.entity) {
-                println!("applying {:?}", ev.effect.status_type);
-                statuses.push(ev.effect);
+                println!("applying {:?}", ev.application.effect.status_type);
+                statuses.push(ev.application.effect);
 
                 statuses.sort_by(|a, b| a.priority().cmp(&b.priority()))
             }
@@ -149,7 +149,7 @@ impl StatusEffectType {
 }
 
 // Determines how a status effect interacts with other statuses of the same kind.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum StatusEffectStacking {
     // Lets multiple of the same status exist on the same entity
     Stacks,
@@ -160,8 +160,16 @@ pub enum StatusEffectStacking {
 }
 
 #[derive(Clone, Copy, Debug)]
+pub struct TileModification {
+    pub glyph: Option<char>,
+    pub fg_color: Option<Color>,
+    pub bg_color: Option<Color>,
+}
+
+#[derive(Clone, Copy, Debug)]
 pub struct StatusEffect {
     pub status_type: StatusEffectType,
+    pub tile_modification: Option<TileModification>,
     pub duration: Option<u32>,
     pub stat_modification: Option<StatModification>,
 }
@@ -176,11 +184,16 @@ impl StatusEffect {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct StatusEffectApplication {
+    pub effect: StatusEffect,
+    pub stacking: StatusEffectStacking,
+}
+
 // Events
 #[derive(Clone, Copy)]
 pub struct StatusEffectEvent {
-    pub effect: StatusEffect,
-    pub stacking: StatusEffectStacking,
+    pub application: StatusEffectApplication,
     pub entity: Entity,
 }
 

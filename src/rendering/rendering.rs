@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_ascii_terminal::{Tile, Terminal};
 use inflector::Inflector;
-use crate::{actors::{vision::{Vision, MindMap}, stats::{StatVisibility, DebugShowStats}}, player::targetting::Targetting, actions::ranged::get_line_points, ai::targetting_behavior::Engages};
+use crate::{actors::{vision::{Vision, MindMap}, stats::{StatVisibility, DebugShowStats}, status_effects::{StatusEffectEvent, RemoveStatusEffectEvent, StatusEffects}}, player::targetting::Targetting, actions::ranged::get_line_points, ai::targetting_behavior::Engages};
 use crate::actors::stats::Stats;
 
 use super::*;
@@ -26,8 +26,14 @@ impl Plugin for RenderingPlugin {
 //Components
 #[derive(Component, Default, Copy, Clone)]
 pub struct Renderable {
-    pub tile: Tile,
+    pub base_tile: Tile,
+    pub effective_tile: Tile,
     pub order: u8,
+}
+impl Renderable {
+    pub fn new(tile: Tile, order: u8) -> Self {
+        Self {base_tile: tile, effective_tile: tile, order}
+    }
 }
 
 //Resources
@@ -68,6 +74,46 @@ impl Default for LeftSize {
 pub struct TemporaryTerminal(pub Terminal);
 
 //Systems
+pub fn update_effective_tiles (
+    mut ev_status_effect: EventReader<StatusEffectEvent>,
+    mut ev_removed_status_effect: EventReader<RemoveStatusEffectEvent>,
+
+    mut renderable_query: Query<(&mut Renderable, Option<&StatusEffects>)>,
+) {
+    // TODO performance: THIS IS BAD. We are updating all stats on the actor instead of the changed stat. FIX THIS.
+    let mut entities = Vec::<Entity>::new();
+    
+    // TODO performance: for these first two, we only need to push if the status actually has an effect on stats
+    for ev in ev_status_effect.iter() {
+        entities.push(ev.entity);
+    }
+    for ev in ev_removed_status_effect.iter() {
+        entities.push(ev.entity);
+    }
+
+    // TODO performance: We are looping through all of our things to record things that need changes and then looping through them again. This is 2x more costly than it needs to be.
+    for entity in entities {
+        if let Ok((mut renderable, opt_statuses)) = renderable_query.get_mut(entity) {
+            renderable.effective_tile = renderable.base_tile;
+            if let Some(statuses) = opt_statuses {
+                for status in statuses.iter() {
+                    if let Some(modification) = status.tile_modification {
+                        if let Some(glyph_mod) = modification.glyph {
+                            renderable.effective_tile.glyph = glyph_mod;
+                        }
+                        if let Some(bg_mod) = modification.bg_color {
+                            renderable.effective_tile.bg_color = bg_mod;
+                        }
+                        if let Some(fg_mod) = modification.fg_color {
+                            renderable.effective_tile.fg_color = fg_mod;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// Updates the order in which entities are drawn.
 /// Only gets updated when necessary.
 pub fn update_render_order(
@@ -129,7 +175,7 @@ pub fn render_level_view (
                 let i_pos_x = pos.0.x + left_size.width as i32;
                 let i_pos_y = pos.0.y + bottom_size.height as i32;
                 
-                let tile = rend.tile;
+                let tile = rend.effective_tile;
                 
                 let current_tile = terminal.0.get_tile([i_pos_x, i_pos_y]);
 

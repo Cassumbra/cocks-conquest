@@ -101,8 +101,11 @@ pub fn attack_hit (
             // TODO: Add capacity for target to dodge/resist attack.
 
             ev_stat_change.send(StatChangeEvent{stat: attack.damage_type, amount: attack.damage.total, entity: ev.attacked_entity});
-            if let Some(status) = attack.status_effect {
-                ev_status_effect.send(StatusEffectEvent { application: status, entity: ev.attacked_entity });
+            if let Some(application) = attack.status_effect {
+                // TODO: This is silly, can we not implement some way of changing "from" before we get to this point?
+                let mut a = application;
+                a.effect.from = Some(ev.attacking_entity);
+                ev_status_effect.send(StatusEffectEvent { application: a, entity: ev.attacked_entity });
             }
             
         

@@ -1,6 +1,6 @@
 // Working title: Cock's Conquest (Cocklike)
 
-//#![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
@@ -152,9 +152,9 @@ fn main () {
             .label("actor_turn")
             .with_system(targetting_behavior::target_on_attack.run_in_state(GameState::Playing).label("targetting"))
             .with_system(targetting_behavior::targetting_behavior.run_in_state(GameState::Playing).label("targetting"))
-            .with_system(status_effects::cumblobbed_behavior.run_in_state(GameState::Playing).label("cumblobbed").before("trance"))
-            .with_system(status_effects::tranced_behavior.run_in_state(GameState::Playing).label("trance"))
-            .with_system(engage_behavior::engage_behavior.run_in_state(GameState::Playing).label("engage").after("trance").after("targetting"))
+            .with_system(status_effects::cumblobbed_behavior.run_in_state(GameState::Playing).label("cumblobbed").after("targetting"))
+            .with_system(status_effects::tranced_behavior.run_in_state(GameState::Playing).label("trance").after("targetting"))
+            .with_system(engage_behavior::engage_behavior.run_in_state(GameState::Playing).label("engage").after("trance"))
             .with_system(melee_behavior::melee_behavior.run_in_state(GameState::Playing).label("melee").after("engage"))
             .with_system(ranged_behavior::ranged_behavior.run_in_state(GameState::Playing).label("ranged").after("melee"))
             .with_system(wander_behavior::wander_behavior.run_in_state(GameState::Playing).after("ranged"))

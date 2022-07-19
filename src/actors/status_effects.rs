@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::fmt::Display;
 
-use crate::turn::Turns;
+use crate::{turn::Turns, ai::targetting_behavior::Engages};
 
 use super::{TakesTurns, stats::{StatModification, StatType}};
 
@@ -30,7 +30,7 @@ pub fn tranced_behavior (
 pub fn cumblobbed_behavior (
     mut turns: ResMut<Turns>,
 
-    tranced_query: Query<&StatusEffects, With<TakesTurns>>,
+    mut tranced_query: Query<(&StatusEffects, Option<&mut Engages>), With<TakesTurns>>,
 ) {
     // TODO: Maybe we should turn this into a system condition?
     if turns.progress == true {
@@ -38,8 +38,12 @@ pub fn cumblobbed_behavior (
     }
 
     let entity = turns.order[turns.current];
-    if let Ok(statuses) = tranced_query.get(entity) {
-        if statuses.has_status_effect(&&StatusEffectType::Cumblobbed) {
+    if let Ok((statuses, mut opt_engagement)) = tranced_query.get_mut(entity) {
+        if let Some(from) = statuses.status_from(&&StatusEffectType::Cumblobbed) {
+            if let Some(mut engagement) = opt_engagement {
+                engagement.delay_timer = engagement.delay;
+                engagement.target = from;
+            }
             println!("wuhh im cumblobbed woah");
             turns.progress_turn();
         }
@@ -127,6 +131,16 @@ impl StatusEffects {
 
         false
     }
+
+    pub fn status_from(&self, status_effect_type: &StatusEffectType) -> Option<Option<Entity>> {
+        for status in self.iter() {
+            if status.status_type == *status_effect_type {
+                return Some(status.from)
+            }
+        }
+
+        None
+    }
 }
 
 // Data
@@ -187,6 +201,7 @@ pub struct TileModification {
 #[derive(Clone, Copy, Debug)]
 pub struct StatusEffect {
     pub status_type: StatusEffectType,
+    pub from: Option<Entity>,
     pub tile_modification: Option<TileModification>,
     pub duration: Option<u32>,
     pub stat_modification: Option<StatModification>,

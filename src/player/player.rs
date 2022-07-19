@@ -101,10 +101,10 @@ pub fn player_input_game (
                             application: StatusEffectApplication {
                                 effect: StatusEffect {
                                     status_type: StatusEffectType::Sneaking,
+                                    from: Some(player),
                                     tile_modification: None,
                                     duration: Some(2),
                                     stat_modification: Some(StatModification{stat_type: StatType::StealthRange, operation: Operation::DivideRound(2)})
-                                
                                 },
                                 stacking: StatusEffectStacking::Refreshes,
                             },

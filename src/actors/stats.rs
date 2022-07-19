@@ -137,6 +137,7 @@ pub fn update_fatal (
                                     application : StatusEffectApplication {
                                         effect: StatusEffect {
                                             status_type: StatusEffectType::Tranced,
+                                            from: None,
                                             tile_modification: Some(TileModification {glyph: None, fg_color: None, bg_color: Some(Color::PINK)}),
                                             duration: None,
                                             stat_modification: None,

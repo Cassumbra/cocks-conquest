@@ -192,6 +192,7 @@ impl Default for PlayerBundle {
                             StatusEffectApplication {
                                 effect: StatusEffect {
                                     status_type: StatusEffectType::Cumblobbed,
+                                    from: None,
                                     tile_modification: Some(TileModification {glyph: None, fg_color: None, bg_color: Some(Color::ANTIQUE_WHITE)}),
                                     duration: Some(3),
                                     stat_modification: None,

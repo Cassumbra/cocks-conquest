@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{data::Position, actors::{vision::Vision, TakesTurns, alignments::Relations, stats::{Stats, StatType}, ActorRemovedEvent}, turn::Turns, actions::attack::Dice};
+use crate::{data::Position, actors::{vision::Vision, TakesTurns, alignments::Relations, stats::{Stats, StatType}, ActorRemovedEvent}, turn::Turns, actions::attack::{Dice, AttackEvent}};
 
 use super::Path;
 
@@ -37,6 +37,30 @@ impl Engages {
     }
     pub fn get_alert(&self) -> bool {
         self.target.is_some() && self.delay_timer > 0 && self.delay_timer <= self.delay
+    }
+}
+
+pub fn target_on_attack (
+    mut ev_attack_hit: EventReader<AttackEvent>,
+    mut ai_query: Query<(&mut Engages, &Relations, &Vision), With<TakesTurns>>,
+) {
+    for ev in ev_attack_hit.iter() {
+        if let Ok((mut engagement, relations, vision)) = ai_query.get_mut(ev.attacked_entity) {
+            match ev.attack_type {
+                crate::actions::attack::AttackType::Ranged => {
+                    engagement.target = Some(ev.attacking_entity);
+                    engagement.delay_timer = engagement.delay;
+                }
+                crate::actions::attack::AttackType::Melee => {
+                    engagement.target = Some(ev.attacking_entity);
+                    engagement.delay_timer = engagement.delay + 1;
+                }
+                crate::actions::attack::AttackType::Digestion => {
+                    engagement.target = Some(ev.attacking_entity);
+                    engagement.delay_timer = engagement.delay + 1;
+                },
+            }
+        }
     }
 }
 

@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_ascii_terminal::Tile;
 use rand::Rng;
 
-use crate::{rendering::effects::{EffectFragment, EffectTile, Effect}, actors::stats::{StatChangeEvent, Stats, StatType}, log::Log, data::Position, actions::attack::Dice};
+use crate::{rendering::effects::{EffectFragment, EffectTile, Effect}, actors::stats::{StatChangeEvent, Stats, StatType}, log::Log, data::Position, actions::attack::{Dice, AttackType}};
 
 use super::{attack::{Attack, AttackEvent}, movement::Collidables};
 
@@ -130,7 +130,7 @@ pub fn ranged_attack (
                                     attacked_name = name.to_string();
                                 }
 
-                                ev_attack_hit.send(AttackEvent{ attacking_entity: ev.targetting_entity, attacked_entity: collided_entity, attack: projectile.attack.clone() });
+                                ev_attack_hit.send(AttackEvent{ attacking_entity: ev.targetting_entity, attacked_entity: collided_entity, attack: projectile.attack.clone(), attack_type: AttackType::Ranged });
                                 
                                 continue 'burst_fire;
                             }

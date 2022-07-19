@@ -4,7 +4,7 @@ use bevy::{prelude::*};
 use rand::Rng;
 use strfmt::strfmt;
 
-use crate::{actors::stats::{StatChangeEvent, Stats}, log::Log};
+use crate::{actors::stats::{StatChangeEvent, Stats}, log::Log, actions::attack::AttackType};
 use super::attack::{Attack, BumpEvent, AttackEvent};
 
 
@@ -77,7 +77,7 @@ pub fn bump_melee_attack (
                         if attack_valid && (has_cost == can_pay) {
                             println!("doing melee attack!");
 
-                            ev_attack_hit.send(AttackEvent { attacking_entity: ev.bumping_entity, attacked_entity: ev.bumped_entity, attack });
+                            ev_attack_hit.send(AttackEvent { attacking_entity: ev.bumping_entity, attacked_entity: ev.bumped_entity, attack, attack_type: AttackType::Melee });
 
                             /*
                             ev_stat_change.send(StatChangeEvent{stat: attack.damage_type, amount: attack.damage.total, entity: ev.bumped_entity});

@@ -150,6 +150,7 @@ fn main () {
     .add_system_set(
         SystemSet::new()
             .label("actor_turn")
+            .with_system(targetting_behavior::target_on_attack.run_in_state(GameState::Playing).label("targetting"))
             .with_system(targetting_behavior::targetting_behavior.run_in_state(GameState::Playing).label("targetting"))
             .with_system(status_effects::cumblobbed_behavior.run_in_state(GameState::Playing).label("cumblobbed").before("trance"))
             .with_system(status_effects::tranced_behavior.run_in_state(GameState::Playing).label("trance"))

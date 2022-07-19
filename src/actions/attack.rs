@@ -22,6 +22,7 @@ pub struct AttackEvent {
     pub attacked_entity: Entity,
     // TODO: Should this be an index?
     pub attack: Attack,
+    pub attack_type: AttackType,
 }
 
 // Systems
@@ -184,4 +185,11 @@ impl Default for Attack {
             status_effect: None,
         }
     }
+}
+
+#[derive(Clone, Copy)]
+pub enum AttackType {
+    Ranged,
+    Melee,
+    Digestion,
 }

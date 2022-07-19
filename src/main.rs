@@ -153,7 +153,7 @@ fn main () {
             .with_system(targetting_behavior::target_on_attack.run_in_state(GameState::Playing).label("targetting"))
             .with_system(targetting_behavior::targetting_behavior.run_in_state(GameState::Playing).label("targetting"))
             .with_system(status_effects::cumblobbed_behavior.run_in_state(GameState::Playing).label("cumblobbed").after("targetting"))
-            .with_system(status_effects::tranced_behavior.run_in_state(GameState::Playing).label("trance").after("targetting"))
+            .with_system(status_effects::tranced_behavior.run_in_state(GameState::Playing).label("trance").after("cumblobbed"))
             .with_system(engage_behavior::engage_behavior.run_in_state(GameState::Playing).label("engage").after("trance"))
             .with_system(melee_behavior::melee_behavior.run_in_state(GameState::Playing).label("melee").after("engage"))
             .with_system(ranged_behavior::ranged_behavior.run_in_state(GameState::Playing).label("ranged").after("melee"))

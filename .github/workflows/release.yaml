@@ -7,7 +7,7 @@ on:
 
 env:
   # update with the name of the main binary
-  binary: cock-roguelike-rework-1
+  binary: cocks-conquest
 
 
 jobs:

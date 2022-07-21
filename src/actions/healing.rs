@@ -34,7 +34,9 @@ pub fn heal_action (
 
 }
 
+
 // Components
 // Should be dynamic like how attacks are (at some point but i dont care)
 #[derive(Component, Default, Copy, Clone)]
 pub struct CanHeal;
+

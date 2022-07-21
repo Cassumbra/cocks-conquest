@@ -3,7 +3,7 @@ use std::fmt::Display;
 
 use bevy::prelude::*;
 
-use crate::{data::Collides, rendering::Renderable, log::Log, turn::Turns};
+use crate::{data::Collides, rendering::Renderable, log::Log, turn::Turns, actions::attack::Dice};
 
 use super::{TakesTurns, status_effects::{StatusEffectEvent, RemoveStatusEffectEvent, StatusEffects, StatusEffect, StatusEffectType, StatusEffectStacking, StatusEffectApplication, TileModification}, ActorRemovedEvent};
 
@@ -284,6 +284,20 @@ impl StatModification {
     }
     pub fn priority(&self) -> u8 {
         self.operation.priority()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct StatChange {
+    pub stat_type: StatType,
+    pub change: Dice,
+}
+impl StatChange {
+    pub fn compute(&self, stat_type: &StatType, stats: &mut Stats) {
+        self.change.roll();
+        let mut stat = stats.get_mut(stat_type).unwrap();
+        stat.base += self.change.total;
+        stat.base.clamp(stat.min, stat.max);
     }
 }
 

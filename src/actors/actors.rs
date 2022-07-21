@@ -18,6 +18,9 @@ pub mod status_effects;
 pub mod alignments;
 use self::{alignments::{Relations, Alignment}, status_effects::{StatusEffectEvent, RemoveStatusEffectEvent, StatusEffects, StatusEffectApplication, StatusEffect, StatusEffectType, StatusEffectStacking, TileModification}};
 
+pub mod progressive_stats;
+
+
 // Plugin
 #[derive(Default)]
 pub struct ActorPlugin;

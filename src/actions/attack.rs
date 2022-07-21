@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{actors::{stats::{StatType, StatChangeEvent, Stats}, status_effects::{StatusEffectApplication, StatusEffectEvent}}, log::Log};
+use crate::{actors::{stats::{StatType, StatChangeEvent, Stats, StatChange}, status_effects::{StatusEffectApplication, StatusEffectEvent}}, log::Log};
 use bevy::prelude::*;
 use caith::{Roller, RollResultType};
 use rand::Rng;
@@ -123,7 +123,7 @@ pub fn attack_hit (
 }
 
 // Misc Data
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Dice {
     pub expression: String,
     pub reason: String,
@@ -162,13 +162,13 @@ impl Dice {
     }
 }
 
+
 #[derive(Clone)]
 pub struct Attack {
     pub interact_text: Vec<String>,
-    pub damage: Dice,
-    pub damage_type: StatType,
-    pub cost: Dice,
-    pub cost_type: StatType,
+    // Applies every damage. First damage is used for interact text. Other damages are included in parenthesis.
+    pub damage: Vec<StatChange>,
+    pub cost: Vec<StatChange>,
     pub save_text: Vec<String>,
     pub save: i32,
     pub save_type: StatType,
@@ -178,10 +178,8 @@ impl Default for Attack {
     fn default() -> Attack {
         Attack {
             interact_text: vec![String::from("{attacker} hits {attacked} for {amount} damage!")],
-            damage: Dice::new("1d4 * -1"),
-            damage_type: StatType::Health,
-            cost: Dice::new("0"),
-            cost_type: StatType::Health,
+            damage: vec![StatChange {stat_type: StatType::Health, change: Dice::new("1d4 * -1")}],
+            cost: vec![StatChange {stat_type: StatType::Health, change: Dice::new("0")}],
             save_text: vec![String::from("{attacked} dodges {attacker}'s attack!")],
             save: 16,
             save_type: StatType::Dexterity,

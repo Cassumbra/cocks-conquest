@@ -1,5 +1,7 @@
 # Cock's Conquest
 
+<put premise here>
+
 Controls
 ========
 
@@ -15,8 +17,9 @@ Attacking is performed by "bumping" into enemies (Attempting to walk into the ti
 
 'v' is used to heal at the cost of 5 cum points and 1 turn.
 
-'c' is used to begin targetting a cumshot.
+'c' is used to begin targetting a cumshot. You fire through pressing 'c' again or 'enter'.
 
 After resistance of an enemy is dropped to zero, it will become tranced, and can be consumed.
 
 Digestion of an enemy takes 3 turns and restores 15 cum points.
+

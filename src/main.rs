@@ -24,6 +24,10 @@ use actors::*;
 mod ai;
 use ai::*;
 
+#[path = "help/help.rs"]
+mod help;
+use help::*;
+
 #[path = "log/log.rs"]
 mod log;
 use log::*;
@@ -50,6 +54,7 @@ mod setup;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
+    Help,
     Setup, MapGen, SpawnActors, FinishSetup,
     Playing, Targetting,
     Restart,
@@ -162,7 +167,8 @@ fn main () {
             //.with_system(ai::tranced_brain.run_in_state(GameState::Playing))
             .with_system(player::player_input_game.run_in_state(GameState::Playing))
             .with_system(player::player_receive_targetting.run_in_state(GameState::Playing))
-            .with_system(player::player_input_meta.run_in_state(GameState::Playing))
+            .with_system(player::player_input_meta_playing.run_in_state(GameState::Playing))
+            .with_system(player::player_input_meta_general)
     )
     .add_system_set(
         SystemSet::new()

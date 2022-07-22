@@ -348,6 +348,12 @@ pub fn render_targetting (
     }
 }
 
+pub fn render_help_page (
+
+) {
+    
+}
+
 // Helper Systems
 fn put_string_vec (
     position: [i32; 2],

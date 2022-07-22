@@ -204,6 +204,12 @@ pub fn player_input_meta_playing (
                     ev_exit.send(AppExit);
                 }
 
+                Some(KeyCode::Slash) => {
+                    if keys.pressed(KeyCode::LShift) || keys.pressed(KeyCode::RShift) {
+                        commands.insert_resource(NextState(GameState::Help));
+                    }
+                }
+
                 _ => {}
             }
         }

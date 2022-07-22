@@ -1,6 +1,6 @@
 // Working title: Cock's Conquest (Cocklike)
 
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
@@ -102,6 +102,7 @@ fn main () {
     .add_plugin(rendering::RenderingPlugin)
     .add_plugin(turn::TurnPlugin)
     .add_plugin(map::MapPlugin)
+    .add_plugin(help::HelpPlugin)
 
     .add_state(GameState::Setup)
 
@@ -151,7 +152,13 @@ fn main () {
     )
 
 
-    
+    .add_system_set(
+        SystemSet::new()
+            .label("help")
+            .with_system(help::help_input.run_in_state(GameState::Help))
+            .with_system(help::update_help_page.run_in_state(GameState::Help))
+    )
+
     .add_system_set(
         SystemSet::new()
             .label("actor_turn")

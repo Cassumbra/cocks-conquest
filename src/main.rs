@@ -78,6 +78,9 @@ fn main () {
 
     let mut restart = SystemStage::parallel();
     restart.add_system(setup::restart);
+
+    let mut help = SystemStage::parallel();
+    help.add_system(help::start_help);
     
 
     App::new()
@@ -116,6 +119,8 @@ fn main () {
             .with_enter_stage(GameState::FinishSetup, finish_setup)
 
             .with_enter_stage(GameState::Restart, restart)
+
+            .with_enter_stage(GameState::Help, help)
     )
 
     .add_system(rendering::update_render_order.run_in_state(GameState::Playing))

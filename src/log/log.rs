@@ -13,7 +13,7 @@ impl Plugin for LogPlugin {
 }
 
 // Data
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct LogFragment {
     pub text: String,
     pub color: Color,
@@ -37,7 +37,72 @@ impl Log {
             .collect();
         strings
     }
+
+    pub fn string_to_lines_by_width ( string: String, color: Color, width: usize) -> Vec<Vec<LogFragment>> {
+        let fragments: Vec<LogFragment> = string
+            .split_inclusive([' ', '\n'])
+            .map(|s| LogFragment{text: s.to_string(), color: color} )
+            .collect();
+
+        let mut current_width = 0;
+        let mut lines: Vec<Vec<LogFragment>> = Vec::new();
+        let mut line: Vec<LogFragment> = Vec::new();
+        for fragment in fragments {
+            let mut fragment_temp = fragment.clone();
+
+            // Does this need to be separated out like this?
+            let mut newline = false;
+            if fragment_temp.text.contains('\n') {
+                println!("newlinetime");
+                // Does this pop properly even???
+                println!("{:?}", fragment_temp);
+                fragment_temp.text.pop();
+                println!("{:?}", fragment_temp);
+                newline = true;
+            }
+
+            if fragment_temp.text.len() > width {
+                //let mut temp_fragment = fragment;
+
+                // TODO: I don't wanna do this shit, man.
+                todo!();
+            }
+            else if fragment_temp.text.len() + current_width > width {
+                lines.push(line);
+                line = Vec::new();
+                line.push(fragment_temp.clone());
+                current_width = fragment_temp.text.len();
+
+                if newline {
+                    current_width = 0;
+                    line = Vec::new();
+                    lines.push(line);
+                    line = Vec::new();
+                }
+            }
+            else {
+                if newline {
+                    lines.push(line);
+                    line = Vec::new();
+                    line.push(fragment_temp.clone());
+                    current_width = fragment_temp.text.len();
+                }
+                else {
+                    line.push(fragment_temp.clone());
+                    current_width += fragment_temp.text.len();
+                }
+            }
+        }
+
+        lines.push(line);
+
+        println!("{:?}", lines);
+
+        lines
+    }
+
     /// Cuts a string into lines based on line width
+    /*
     pub fn string_to_lines_by_width ( string: String, color: Color, width: usize) -> Vec<Vec<LogFragment>> {
         // Create empty string that we can use whenever we want an empty string. This means we shouldn't have to deal with loads of reallocations.
         let empty_string = String::with_capacity(width);
@@ -71,7 +136,7 @@ impl Log {
             }
 
             if current_width > width {
-                
+
 
                 if fragment.text.len() > width {
                     line.push(fragment);
@@ -91,6 +156,7 @@ impl Log {
 
         todo!()
     }
+     */
     pub fn log_fragments ( &mut self, fragments: Vec<LogFragment> ) {
         self.lines.push(fragments);
     }

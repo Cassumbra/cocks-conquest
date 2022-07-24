@@ -4,7 +4,7 @@ use bevy::{prelude::*, app::AppExit, input::{ElementState, keyboard::KeyboardInp
 use bevy_ascii_terminal::Terminal;
 use iyes_loopless::prelude::*;
 
-use crate::{rendering::{window::WindowChangeEvent, put_string_vec_formatted}, GameState, log::{Log, LogFragment}};
+use crate::{rendering::{EolAction, put_string_vec_formatted, LeftSize}, GameState, log::{Log, LogFragment}};
 
 //Plugin
 #[derive(Default)]
@@ -14,7 +14,8 @@ impl Plugin for HelpPlugin {
     fn build(&self, app: &mut App) {
         app
         .init_resource::<CurrentHelpPage>()
-        .init_resource::<Events<HelpPageChangeEvent>>();
+        .init_resource::<Events<HelpPageChangeEvent>>()
+        .init_resource::<Events<HelpPageScrollEvent>>();
     }
 }
 
@@ -60,6 +61,12 @@ pub fn help_input (
     }
 }
 
+pub fn start_help (
+    mut ev_help_page_change: EventWriter<HelpPageChangeEvent>,
+) {
+    ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Intro));
+}
+
 pub fn update_help_page (
     mut ev_help_page_change: EventReader<HelpPageChangeEvent>,
 
@@ -67,13 +74,15 @@ pub fn update_help_page (
 
     mut terminal_query: Query<&mut Terminal>,
 ) {
+    let mut terminal = terminal_query.single_mut();
+
     let mut update_page = false;
 
     if let Some(ev) = ev_help_page_change.iter().next() {
         let page_text = fs::read_to_string(ev.path())
             .expect("Something went wrong reading the file.");
 
-        let fragments = Log::fragment_string(page_text, Color::WHITE);
+        let fragments = Log::string_to_lines_by_width(page_text, Color::WHITE, terminal.width() as usize);
 
         current_help_page.contents = fragments;
 
@@ -81,19 +90,24 @@ pub fn update_help_page (
     }
 
     if update_page {
-        let mut terminal = terminal_query.single_mut();
+        terminal.clear();
 
         let lines: &[Vec<LogFragment>];
 
-        if log.lines.len() < bottom_size.height as usize {
-            lines = &log.lines[..];
+        let line_count = current_help_page.contents.len();
+
+        let mut current_line = (terminal.height() + 1) as i32;
+        let mut current_length = 0;
+
+        if line_count < terminal.height() as usize {
+            lines = &current_help_page.contents[..];
         } else {
-            lines = &log.lines[log.lines.len()-bottom_size.height as usize..log.lines.len()]
+            lines = &current_help_page.contents[line_count-terminal.height() as usize..line_count]
         }
 
-        for line in lines.iter().rev() {
+        for line in lines.iter() {
             current_line -= 1;
-            [current_length, current_line] = put_string_vec_formatted([(left_size.width-1) as i32, current_line], line, &mut terminal.0, EolAction::None);
+            [current_length, current_line] = put_string_vec_formatted([0, current_line], line, &mut terminal, EolAction::None);
         }
     }
 
@@ -123,7 +137,7 @@ impl HelpPage {
 #[derive(Clone)]
 pub struct CurrentHelpPage{
     pub page: HelpPage,
-    pub contents: Vec<LogFragment>,
+    pub contents: Vec<Vec<LogFragment>>,
     pub scrolling: usize,
 }
 impl Default for CurrentHelpPage {

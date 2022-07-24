@@ -364,11 +364,11 @@ fn put_string_vec (
     for string in strings.iter() {
 
         if string == "\n " {
-            
             current_length = position[0];
             current_line -= 1;
             continue;
         }
+
 
         if !terminal.is_in_bounds([current_length + string.len() as i32, current_line]) {
             current_length = position[0];
@@ -402,6 +402,9 @@ pub fn put_string_vec_formatted (
             
             current_length = position[0];
             current_line -= 1;
+            continue;
+        }
+        else if string == "" {
             continue;
         }
 
@@ -472,7 +475,7 @@ fn change_brightness(color: Color, amount: f32) -> Color {
 // TODO: Create helper for inverting color. This will be good for highlighting text as "selected" (probably?)
 
 // Data
-enum EolAction {
+pub enum EolAction {
     //Abbreviate,
     //Truncate,
     Wrap(i32),

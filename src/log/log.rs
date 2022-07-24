@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use unicode_segmentation::UnicodeSegmentation;
 
 //Plugin
 #[derive(Default)]
@@ -12,7 +13,7 @@ impl Plugin for LogPlugin {
 }
 
 // Data
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct LogFragment {
     pub text: String,
     pub color: Color,
@@ -35,6 +36,60 @@ impl Log {
             .map(|s| LogFragment{text: s.to_string(), color: color} )
             .collect();
         strings
+    }
+    /// Cuts a string into lines based on line width
+    pub fn string_to_lines_by_width ( string: String, color: Color, width: usize) -> Vec<Vec<LogFragment>> {
+        // Create empty string that we can use whenever we want an empty string. This means we shouldn't have to deal with loads of reallocations.
+        let empty_string = String::with_capacity(width);
+        
+        let mut current_width = 0;
+        let mut lines: Vec<Vec<LogFragment>> = Vec::new();
+        let mut line: Vec<LogFragment> = Vec::new();
+        let mut fragment = LogFragment {text: empty_string, color};
+
+        for c in string.graphemes(true) {
+
+
+            if c == " " {
+                fragment.text.push_str(c);
+                current_width += 1;
+
+                line.push(fragment);
+                fragment.text = empty_string;
+            }
+            // TODO: Will this work???
+            else if c == "\n" {
+                line.push(fragment);
+                fragment.text = empty_string;
+
+                lines.push(line);
+                current_width = 0;
+            }
+            else {
+                fragment.text.push_str(c);
+                current_width += 1;
+            }
+
+            if current_width > width {
+                
+
+                if fragment.text.len() > width {
+                    line.push(fragment);
+                    fragment.text = empty_string;
+
+                    lines.push(line);
+                    current_width = 0;
+                }
+                else {
+                    lines.push(line);
+                    current_width = 0;
+                }
+            }
+
+
+        }
+
+        todo!()
     }
     pub fn log_fragments ( &mut self, fragments: Vec<LogFragment> ) {
         self.lines.push(fragments);

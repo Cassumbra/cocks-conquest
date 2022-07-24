@@ -1,9 +1,10 @@
 use std::fs;
 
 use bevy::{prelude::*, app::AppExit, input::{ElementState, keyboard::KeyboardInput}, ecs::event::Events};
+use bevy_ascii_terminal::Terminal;
 use iyes_loopless::prelude::*;
 
-use crate::{rendering::window::WindowChangeEvent, GameState};
+use crate::{rendering::{window::WindowChangeEvent, put_string_vec_formatted}, GameState, log::{Log, LogFragment}};
 
 //Plugin
 #[derive(Default)]
@@ -26,6 +27,7 @@ pub fn help_input (
 
     mut ev_key: EventReader<KeyboardInput>,
     mut ev_help_page_change: EventWriter<HelpPageChangeEvent>,
+    mut ev_help_page_scroll: EventWriter<HelpPageScrollEvent>,
     //mut ev_restart: EventWriter<RestartEvent>,
 ) {
     for ev in ev_key.iter() {
@@ -42,15 +44,14 @@ pub fn help_input (
                 }
 
                 Some(KeyCode::Up) => {
-
+                    ev_help_page_scroll.send(HelpPageScrollEvent(-1))
                 }
                 Some(KeyCode::Down) => {
-                    
+                    ev_help_page_scroll.send(HelpPageScrollEvent(1))
                 }
                 
                 Some(KeyCode::I) => {
-                    println!("A");
-                    ev_help_page_change.send(HelpPageChangeEvent{page: HelpPage::Intro});
+                    ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Intro));
                 }
 
                 _ => {}
@@ -61,13 +62,41 @@ pub fn help_input (
 
 pub fn update_help_page (
     mut ev_help_page_change: EventReader<HelpPageChangeEvent>,
+
+    mut current_help_page: ResMut<CurrentHelpPage>,
+
+    mut terminal_query: Query<&mut Terminal>,
 ) {
+    let mut update_page = false;
+
     if let Some(ev) = ev_help_page_change.iter().next() {
-        let page_text = fs::read_to_string(ev.page.path())
+        let page_text = fs::read_to_string(ev.path())
             .expect("Something went wrong reading the file.");
 
-        println!("{}", page_text);
+        let fragments = Log::fragment_string(page_text, Color::WHITE);
+
+        current_help_page.contents = fragments;
+
+        update_page = true;
     }
+
+    if update_page {
+        let mut terminal = terminal_query.single_mut();
+
+        let lines: &[Vec<LogFragment>];
+
+        if log.lines.len() < bottom_size.height as usize {
+            lines = &log.lines[..];
+        } else {
+            lines = &log.lines[log.lines.len()-bottom_size.height as usize..log.lines.len()]
+        }
+
+        for line in lines.iter().rev() {
+            current_line -= 1;
+            [current_length, current_line] = put_string_vec_formatted([(left_size.width-1) as i32, current_line], line, &mut terminal.0, EolAction::None);
+        }
+    }
+
 }
 
 // Data
@@ -94,7 +123,7 @@ impl HelpPage {
 #[derive(Clone)]
 pub struct CurrentHelpPage{
     pub page: HelpPage,
-    pub contents: String,
+    pub contents: Vec<LogFragment>,
     pub scrolling: usize,
 }
 impl Default for CurrentHelpPage {
@@ -105,7 +134,9 @@ impl Default for CurrentHelpPage {
 
 
 // Events
-#[derive(Clone)]
-pub struct HelpPageChangeEvent {
-    pub page: HelpPage,
-}
+#[derive(Clone, Deref, DerefMut)]
+pub struct HelpPageChangeEvent(HelpPage);
+
+// Events
+#[derive(Clone, Deref, DerefMut)]
+pub struct HelpPageScrollEvent(i32);

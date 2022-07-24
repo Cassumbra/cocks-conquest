@@ -388,7 +388,7 @@ fn put_string_vec (
 // TODO: Add thing for limiting where text is placed (how far to the right it can go, also maybe how far down it can go?) other than terminal limits
 //       Could be an enum type thing. Could give option to abbreviate instead of wrap around (remove vowels until enough space. remove inner consonants if no more vowels to remove)
 //       Enum could also have option to remove last three characters and replace them with ...
-fn put_string_vec_formatted (
+pub fn put_string_vec_formatted (
     position: [i32; 2],
     fragments: &Vec<LogFragment>,
     terminal: &mut Terminal,

@@ -71,10 +71,9 @@ impl Log {
                 current_width = fragment_temp.text.len();
 
                 if newline {
-                    current_width = 0;
-                    line = Vec::new();
                     lines.push(line);
                     line = Vec::new();
+                    current_width = 0;
                 }
             }
             else {

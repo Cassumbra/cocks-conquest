@@ -53,11 +53,8 @@ impl Log {
             // Does this need to be separated out like this?
             let mut newline = false;
             if fragment_temp.text.contains('\n') {
-                println!("newlinetime");
                 // Does this pop properly even???
-                println!("{:?}", fragment_temp);
                 fragment_temp.text.pop();
-                println!("{:?}", fragment_temp);
                 newline = true;
             }
 
@@ -95,8 +92,6 @@ impl Log {
         }
 
         lines.push(line);
-
-        println!("{:?}", lines);
 
         lines
     }

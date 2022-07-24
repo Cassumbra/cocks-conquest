@@ -54,6 +54,12 @@ pub fn help_input (
                 Some(KeyCode::I) => {
                     ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Intro));
                 }
+                Some(KeyCode::C) => {
+                    ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Controls));
+                }
+                Some(KeyCode::X) => {
+                    ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Combat));
+                }
 
                 _ => {}
             }
@@ -118,6 +124,7 @@ pub fn update_help_page (
 pub enum HelpPage {
     Intro,
     Controls,
+    Combat,
     Stealth,
     Tips,
 
@@ -126,9 +133,10 @@ impl HelpPage {
     pub fn path(&self) -> &str {
         match self {
             HelpPage::Intro => "assets/help/intro.txt",
-            HelpPage::Controls => todo!(),
-            HelpPage::Stealth => todo!(),
-            HelpPage::Tips => todo!(),
+            HelpPage::Controls => "assets/help/controls.txt",
+            HelpPage::Combat => "assets/help/combat.txt",
+            HelpPage::Stealth => "assets/help/stealth.txt",
+            HelpPage::Tips => "assets/help/tips.txt",
         }
     }
 }

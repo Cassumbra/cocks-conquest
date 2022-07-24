@@ -82,9 +82,9 @@ impl Log {
             }
             else {
                 if newline {
+                    line.push(fragment_temp.clone());
                     lines.push(line);
                     line = Vec::new();
-                    line.push(fragment_temp.clone());
                     current_width = fragment_temp.text.len();
                 }
                 else {

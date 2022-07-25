@@ -39,10 +39,14 @@ impl Log {
     }
 
     pub fn string_to_lines_by_width ( string: String, color: Color, width: usize) -> Vec<Vec<LogFragment>> {
-        let fragments: Vec<LogFragment> = string
-            .split_inclusive([' ', '\n', '\r'])
+        let no_crlf = string.replace("\r\n", "\n");
+
+        let fragments: Vec<LogFragment> = no_crlf
+            .split_inclusive([' ', '\n'])
             .map(|s| LogFragment{text: s.to_string(), color: color} )
             .collect();
+
+        println!("fragments length: {}", fragments.len());
 
         let mut current_width = 0;
         let mut lines: Vec<Vec<LogFragment>> = Vec::new();
@@ -52,9 +56,8 @@ impl Log {
 
             // Does this need to be separated out like this?
             let mut newline = false;
-            if fragment_temp.text.contains(['\n', '\r']) {
-                // Does this pop properly even???
-                fragment_temp.text.pop();
+            if fragment_temp.text.contains(['\n']) {
+                fragment_temp.text = fragment_temp.text.trim().to_string();
                 newline = true;
             }
 

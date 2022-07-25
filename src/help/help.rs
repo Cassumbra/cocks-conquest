@@ -104,9 +104,6 @@ pub fn update_help_page (
     }
 
     if update_page {
-        println!("terminal size: {}" term_size);
-        println!("terminal width: {}", terminal.width)
-
         terminal.clear();
 
         let lines: &[Vec<LogFragment>];

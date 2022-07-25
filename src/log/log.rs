@@ -64,7 +64,7 @@ impl Log {
                 // TODO: I don't wanna do this shit, man.
                 todo!();
             }
-            else if fragment_temp.text.len() + current_width > width {
+            else if fragment_temp.text.len() + 1 + current_width > width {
                 lines.push(line);
                 line = Vec::new();
                 line.push(fragment_temp.clone());

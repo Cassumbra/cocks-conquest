@@ -121,7 +121,7 @@ pub fn update_help_page (
 
         for line in lines.iter() {
             current_line -= 1;
-            [current_length, current_line] = put_string_vec_formatted([0, current_line], line, &mut terminal, EolAction::Wrap(term_size.x as i32));
+            [current_length, current_line] = put_string_vec_formatted([0, current_line], line, &mut terminal, EolAction::None);
         }
     }
 

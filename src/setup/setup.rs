@@ -56,7 +56,7 @@ pub fn restart (
 
     commands.insert_resource(Log{
         lines: vec![
-        Log::fragment_string(" Welcome to Cock's Conquest!  \n Play with your index finger on j or numpad 4. You can move cardinally, diagonally, or wait.  \n Press v to heal.  \n You can restart with shift+r at any time.".to_string(), Color::CYAN),
+        Log::fragment_string(" Welcome to Cock's Conquest!  \n Press shift+/ (?) for help.  \n You can restart with shift+r at any time.".to_string(), Color::CYAN),
         ]
     });
 

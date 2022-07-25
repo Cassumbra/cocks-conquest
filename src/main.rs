@@ -1,6 +1,6 @@
 // Working title: Cock's Conquest (Cocklike)
 
-//#![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;

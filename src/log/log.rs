@@ -70,7 +70,11 @@ impl Log {
                 line.push(fragment_temp.clone());
                 current_width = fragment_temp.text.len();
 
+                println!("current width after wrap: {}", current_width);
+
                 if newline {
+                    println!("newline after wrap");
+
                     lines.push(line);
                     line = Vec::new();
                     current_width = 0;
@@ -91,6 +95,8 @@ impl Log {
         }
 
         lines.push(line);
+
+        println!("line count: {}", lines.len());
 
         lines
     }

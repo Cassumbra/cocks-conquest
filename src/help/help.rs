@@ -60,6 +60,12 @@ pub fn help_input (
                 Some(KeyCode::X) => {
                     ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Combat));
                 }
+                Some(KeyCode::S) => {
+                    ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Stealth));
+                }
+                Some(KeyCode::T) => {
+                    ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Tips));
+                }
 
                 _ => {}
             }
@@ -82,6 +88,8 @@ pub fn update_help_page (
 ) {
     let mut terminal = terminal_query.single_mut();
 
+    let term_size = terminal.size();
+
     let mut update_page = false;
 
     if let Some(ev) = ev_help_page_change.iter().next() {
@@ -96,6 +104,9 @@ pub fn update_help_page (
     }
 
     if update_page {
+        println!("terminal size: {}", term_size);
+        println!("terminal width: {}", terminal.width());
+
         terminal.clear();
 
         let lines: &[Vec<LogFragment>];
@@ -113,7 +124,7 @@ pub fn update_help_page (
 
         for line in lines.iter() {
             current_line -= 1;
-            [current_length, current_line] = put_string_vec_formatted([0, current_line], line, &mut terminal, EolAction::None);
+            [current_length, current_line] = put_string_vec_formatted([0, current_line], line, &mut terminal, EolAction::Wrap(term_size.x as i32));
         }
     }
 

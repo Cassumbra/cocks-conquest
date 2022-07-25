@@ -6,3 +6,5 @@ Welcome to the help menu! You can find information on how to play the game here 
 (i)ntro (you are here)
 (c)ontrols
 (x) combat
+(s)tealth
+(t)ips

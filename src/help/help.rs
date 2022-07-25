@@ -96,7 +96,7 @@ pub fn update_help_page (
         let page_text = fs::read_to_string(ev.path())
             .expect("Something went wrong reading the file.");
 
-        let fragments = Log::string_to_lines_by_width(page_text, Color::WHITE, terminal.width() as usize);
+        let fragments = Log::string_to_lines_by_width(page_text, Color::WHITE, terminal.width() as usize + 1);
 
         current_help_page.contents = fragments;
 
@@ -104,8 +104,8 @@ pub fn update_help_page (
     }
 
     if update_page {
-        println!("terminal size: {}", term_size);
-        println!("terminal width: {}", terminal.width());
+        println!("terminal size: {}" term_size);
+        println!("terminal width: {}", terminal.width)
 
         terminal.clear();
 

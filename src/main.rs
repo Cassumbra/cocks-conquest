@@ -1,6 +1,6 @@
 // Working title: Cock's Conquest (Cocklike)
 
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]
 
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
@@ -55,6 +55,7 @@ mod setup;
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
     Help,
+    //PickName,
     Setup, MapGen, SpawnActors, FinishSetup,
     Playing, Targetting,
     Restart,

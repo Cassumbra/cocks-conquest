@@ -422,10 +422,10 @@ pub fn put_string_vec_formatted (
             EolAction::None => {},
         }
 
-        if !terminal.is_in_bounds([current_length - 1 + string.len() as i32, current_line]) {
+        if !terminal.is_in_bounds([current_length - 0 + string.len() as i32, current_line]) {
             current_length = position[0];
             current_line -= 1;
-            if !terminal.is_in_bounds([current_length - 1 + string.len() as i32, current_line]) {
+            if !terminal.is_in_bounds([current_length - 0 + string.len() as i32, current_line]) {
                 //eprintln!("ERROR: Cannot fit strings in terminal!");
                 break;
             }

@@ -1,6 +1,12 @@
 // Working title: Cock's Conquest (Cocklike)
 
-#![windows_subsystem = "windows"]
+#![cfg_attr(
+    all(
+      target_os = "windows",
+      not(feature = "console"),
+    ),
+    windows_subsystem = "windows"
+)]
 
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
@@ -10,7 +16,6 @@ use bevy_tiled_camera::*;
 
 mod data;
 use data::*;
-
 
 #[path = "actions/actions.rs"]
 mod actions;

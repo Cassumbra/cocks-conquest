@@ -25,6 +25,9 @@ caith = "4.2.2"
 #bevy-inspector-egui = "0.8.2"
 #bevy_ecs_tilemap = { version = "0.5.0"}
 
+[features]
+console = []
+
 [profile.dev]
 opt-level = 1
 

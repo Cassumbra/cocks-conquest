@@ -9,7 +9,6 @@ use crate::{rendering::{EolAction, put_string_vec_formatted, LeftSize}, GameStat
 //Plugin
 #[derive(Default)]
 pub struct HelpPlugin;
-
 impl Plugin for HelpPlugin {
     fn build(&self, app: &mut App) {
         app

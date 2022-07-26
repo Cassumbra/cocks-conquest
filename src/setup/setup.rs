@@ -32,7 +32,7 @@ pub fn setup (
             .with_tile_count(size))
             .insert(Indestructible);
 
-    commands.insert_resource(NextState(GameState::Restart));
+    commands.insert_resource(NextState(GameState::PickName));
 }
 
 pub fn restart (

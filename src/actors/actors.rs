@@ -4,7 +4,7 @@ use bevy_ascii_terminal::Tile;
 use iyes_loopless::state::NextState;
 use sark_grids::Grid;
 
-use crate::{actions::{attack::{Attack, Dice}, melee::MeleeAttacker, ranged::{RangedAttacker, Projectile}, vore::DoesVore, healing::CanHeal}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{wander_behavior::Wanderer, targetting_behavior::Engages}, GameState, rendering::Renderable, turn::TurnEvent, player::Player};
+use crate::{actions::{attack::{Attack, Dice}, melee::MeleeAttacker, ranged::{RangedAttacker, Projectile}, vore::DoesVore, healing::CanHeal}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{wander_behavior::Wanderer, targetting_behavior::Engages}, GameState, rendering::Renderable, turn::TurnEvent, player::Player, ui::PlayerName};
 
 
 pub mod vision;
@@ -59,6 +59,7 @@ impl TurnEvent for ActorRemovedEvent {
 pub fn setup_actors (
     mut commands: Commands,
     
+    mut name: ResMut<PlayerName>,
     rooms: Res<Rooms>,
     map_size: Res<MapSize>,
 ) {
@@ -78,7 +79,7 @@ pub fn setup_actors (
             ..Default::default()
         })
         .insert(Position(room_first.center()))
-        .insert(Name::new("Cass Cock"));
+        .insert(Name::new(format!("{}", **name)));
 
     
     

@@ -57,18 +57,22 @@ use rendering::*;
 mod setup;
 //use setup::*;
 
+#[path = "ui/ui.rs"]
+mod ui;
+use ui::*;
+
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
     Help,
-    //PickName,
-    Setup, MapGen, SpawnActors, FinishSetup,
+    Setup, PickName, MapGen, SpawnActors, FinishSetup,
     Playing, Targetting,
     Restart,
 }
 
 fn main () {
     let mut setup = SystemStage::parallel();
-    setup.add_system(setup::setup);
+    setup.add_system(setup::setup.label("setup"));
+    setup.add_system(window::change_size.after("setup"));
 
     let mut map_gen = SystemStage::parallel();
     map_gen.add_system(map::entity_map_rooms_passages);
@@ -112,6 +116,7 @@ fn main () {
     .add_plugin(turn::TurnPlugin)
     .add_plugin(map::MapPlugin)
     .add_plugin(help::HelpPlugin)
+    .add_plugin(ui::UiPlugin)
 
     .add_state(GameState::Setup)
 
@@ -168,6 +173,12 @@ fn main () {
             .label("help")
             .with_system(help::help_input.run_in_state(GameState::Help))
             .with_system(help::update_help_page.run_in_state(GameState::Help))
+    )
+
+    .add_system_set(
+        SystemSet::new()
+            .label("ui")
+            .with_system(ui::name_character.run_in_state(GameState::PickName))
     )
 
     .add_system_set(

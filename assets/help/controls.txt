@@ -19,6 +19,6 @@ Escape can be used cancel targetting.
 
 shift+r restarts the game.
 
-shift+/ opens the help menu. It can be used again to close it, as can escape.
+'?' opens the help menu. It can be used again to close it, as can escape.
 
 Escape can be used while playing to quit the game.

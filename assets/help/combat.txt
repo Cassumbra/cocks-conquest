@@ -1,6 +1,8 @@
 Combat
 
 
+Cumshots require 5 cum points and stun enemies for 3 turns.
+
 After resistance of an enemy is dropped to zero, it will become tranced, and can be consumed.
 
 Digestion of an enemy takes 3 turns and restores 15 cum points.

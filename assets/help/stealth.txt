@@ -3,6 +3,8 @@ Stealth
 
 Enemies have a chance to notice you while you are within their stealth range.
 
+If you wait a turn, your stealth range will be halved (rounded up) for that turn and the turn afterwards.
+
 When enemies notice you, they go on "alert".
 
 You have one turn to remove yourself from the sight of an enemy before they begin targetting you. Stealth range does not factor in at this point.

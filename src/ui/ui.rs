@@ -20,7 +20,7 @@ impl Plugin for UiPlugin {
 pub fn name_character (
     mut commands: Commands,
 
-    mut char_evr: EventReader<ReceivedCharacter>,
+    mut ev_char: EventReader<ReceivedCharacter>,
 
     mut name: ResMut<PlayerName>,
 
@@ -40,7 +40,7 @@ pub fn name_character (
 
     terminal.put_string([(term_size.x / 2) as i32 - (display_text.len() as i32 / 2), term_size.y as i32 / 2 ], &display_text);
 
-    for ev in char_evr.iter() {
+    for ev in ev_char.iter() {
         match ev.char {
             '\n' => {}
             '\r' => {}

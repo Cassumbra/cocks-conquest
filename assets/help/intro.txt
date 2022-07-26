@@ -8,3 +8,5 @@ Welcome to the help menu! You can find information on how to play the game here 
 (x) combat
 (s)tealth
 (t)ips
+
+'?' or 'esc' can be used to leave this screen.

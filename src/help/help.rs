@@ -25,11 +25,26 @@ pub fn help_input (
 
     keys: Res<Input<KeyCode>>,
 
+    mut ev_char: EventReader<ReceivedCharacter>,
     mut ev_key: EventReader<KeyboardInput>,
     mut ev_help_page_change: EventWriter<HelpPageChangeEvent>,
     mut ev_help_page_scroll: EventWriter<HelpPageScrollEvent>,
     //mut ev_restart: EventWriter<RestartEvent>,
 ) {
+    for ev in ev_char.iter() {
+        match ev.char {
+            'i' => ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Intro)),
+            'c' => ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Controls)),
+            'x' => ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Combat)),
+            's' => ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Stealth)),
+            't' => ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Tips)),
+
+            '?' => commands.insert_resource(NextState(GameState::Playing)),
+        
+            _ => {}
+        }
+    }
+
     for ev in ev_key.iter() {
         if ev.state == ElementState::Pressed {
             match ev.key_code {
@@ -37,11 +52,7 @@ pub fn help_input (
                     commands.insert_resource(NextState(GameState::Playing));
                 }
                 
-                Some(KeyCode::Slash) => {
-                    if keys.pressed(KeyCode::LShift) || keys.pressed(KeyCode::RShift) {
-                        commands.insert_resource(NextState(GameState::Playing));
-                    }
-                }
+
 
                 Some(KeyCode::Up) => {
                     ev_help_page_scroll.send(HelpPageScrollEvent(-1))
@@ -49,22 +60,7 @@ pub fn help_input (
                 Some(KeyCode::Down) => {
                     ev_help_page_scroll.send(HelpPageScrollEvent(1))
                 }
-                
-                Some(KeyCode::I) => {
-                    ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Intro));
-                }
-                Some(KeyCode::C) => {
-                    ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Controls));
-                }
-                Some(KeyCode::X) => {
-                    ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Combat));
-                }
-                Some(KeyCode::S) => {
-                    ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Stealth));
-                }
-                Some(KeyCode::T) => {
-                    ev_help_page_change.send(HelpPageChangeEvent(HelpPage::Tips));
-                }
+    
 
                 _ => {}
             }

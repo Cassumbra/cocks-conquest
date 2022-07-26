@@ -192,22 +192,25 @@ pub fn player_input_meta_playing (
 
     keys: Res<Input<KeyCode>>,
 
+    mut ev_char: EventReader<ReceivedCharacter>,
     mut ev_key: EventReader<KeyboardInput>,
     mut ev_exit: EventWriter<AppExit>,
     mut ev_window_change: EventWriter<WindowChangeEvent>,
     //mut ev_restart: EventWriter<RestartEvent>,
 ) {
+    for ev in ev_char.iter() {
+        match ev.char {
+            '?' => commands.insert_resource(NextState(GameState::Help)),
+        
+            _ => {}
+        }
+    }
+
     for ev in ev_key.iter() {
         if ev.state == ElementState::Pressed {
             match ev.key_code {
                 Some(KeyCode::Escape) => {
                     ev_exit.send(AppExit);
-                }
-
-                Some(KeyCode::Slash) => {
-                    if keys.pressed(KeyCode::LShift) || keys.pressed(KeyCode::RShift) {
-                        commands.insert_resource(NextState(GameState::Help));
-                    }
                 }
 
                 _ => {}

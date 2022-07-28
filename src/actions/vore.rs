@@ -2,9 +2,15 @@ use bevy::prelude::*;
 
 use crate::{log::Log, actors::{TakesTurns, stats::{Stats, StatType, StatChangeEvent}, ActorRemovedEvent, status_effects::{StatusEffects, StatusEffectType}}, data::Collides, rendering::Renderable, turn::Turns};
 
-use super::attack::BumpEvent;
+use super::attack::{BumpEvent, Attack};
 
 
+// Event
+#[derive(Clone)]
+pub struct VoreAttackEvent{
+    pub predator: Entity,
+    pub target: IVec2,
+}
 
 // Systems
 // TODO: Add digestion attack (?)
@@ -18,14 +24,19 @@ pub fn digestion_attack (
 pub fn vore_attack (
     mut commands: Commands,
 
-    mut ev_bump_event: EventReader<BumpEvent>,
+    mut ev_bump: EventReader<BumpEvent>,
+    mut ev_vore_attack: EventReader<VoreAttackEvent>,
 
     prey_query: Query<(&StatusEffects, Option<&Name>)>,
     pred_query: Query<(&DoesVore, Option<&Name>)>,
 
     mut log: ResMut<Log>,
 ) {
-    for ev in ev_bump_event.iter() {
+    for ev in ev_vore_attack.iter() {
+        
+    }
+
+    for ev in ev_bump.iter() {
         if let Ok((statuses, opt_prey_name)) = prey_query.get(ev.bumped_entity) {
             if !statuses.has_status_effect(&StatusEffectType::Tranced) {
                 return

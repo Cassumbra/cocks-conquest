@@ -16,6 +16,7 @@ impl Plugin for ActionPlugin {
         app
          .add_event::<attack::BumpEvent>()
          .add_event::<attack::AttackEvent>()
+         .add_event::<vore::VoreAttackEvent>()
          .add_event::<ranged::RandRangedAttackEvent>()
          .add_event::<ranged::RangedAttackEvent>()
          .add_event::<ranged::ProjectileHitEvent>()

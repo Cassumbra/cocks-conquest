@@ -172,7 +172,7 @@ pub struct Attack {
     pub save_text: Vec<String>,
     pub save: i32,
     pub save_type: StatType,
-    pub status_effect: Option<(StatusEffectApplication)>,
+    pub status_effect: Option<StatusEffectApplication>,
 }
 impl Default for Attack {
     fn default() -> Attack {

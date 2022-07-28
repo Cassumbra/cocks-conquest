@@ -9,6 +9,7 @@ use bevy::prelude::*;
 use crate::actions::healing::HealActionEvent;
 use crate::actions::movement::PointMoveEvent;
 use crate::actions::ranged::{RangedAttackEvent, RangedAttacker};
+use crate::actions::vore::VoreAttackEvent;
 use crate::actors::stats::{StatModification, StatType, Operation};
 use crate::actors::status_effects::{StatusEffectEvent, StatusEffect, StatusEffectType, StatusEffectStacking, StatusEffectApplication};
 use crate::rendering::window::WindowChangeEvent;
@@ -29,7 +30,8 @@ impl Plugin for PlayerPlugin {
         app
         .add_event::<targetting::StartTargetEvent>()
         .add_event::<targetting::FinishTargetEvent>()
-        .init_resource::<targetting::Targetting>();
+        .add_event::<targetting::MoveTargetEvent>();
+        //.init_resource::<targetting::Targetting>();
     }
 }
 
@@ -114,16 +116,25 @@ pub fn player_input_game (
                         turns.progress_turn();
                     }
 
+                    // Vore
+                    Some(KeyCode::X) => {
+                        // this is UGLY
+                        ev_target.send(StartTargetEvent::new(TargetIntent::VoreAttack, **player_pos))
+                    }
+
+                    // Cumshot
+                    Some(KeyCode::C) => {
+                        // this is UGLY
+                        ev_target.send(StartTargetEvent::new(TargetIntent::RangedAttack(RangedAttackEvent{targetting_entity: player, target: **player_pos, projectile: ranged.projectiles[0].clone() }) , **player_pos))
+                    }
+
                     // Heal
                     Some(KeyCode::V) => {
                         ev_heal.send(HealActionEvent{healing_entity: player});
                         turns.progress_turn();
                     }
 
-                    Some(KeyCode::C) => {
-                        // this is UGLY
-                        ev_target.send(StartTargetEvent::new(TargetIntent::RangedAttack(RangedAttackEvent{targetting_entity: player, target: **player_pos, projectile: ranged.projectiles[0].clone() }) , **player_pos))
-                    }
+
 
                     _ => {}
                 }
@@ -133,6 +144,7 @@ pub fn player_input_game (
 }
 
 pub fn player_receive_targetting (
+    mut ev_vore_attack: EventWriter<VoreAttackEvent>,
     mut ev_ranged_attack: EventWriter<RangedAttackEvent>,
     mut ev_finish_target: EventReader<FinishTargetEvent>,
 
@@ -141,9 +153,14 @@ pub fn player_receive_targetting (
     for ev in ev_finish_target.iter() {
         match &ev.intent {
             TargetIntent::RangedAttack(attack) => {
-
                 ev_ranged_attack.send(attack.clone());
     
+                turns.progress_turn();
+            }
+
+            TargetIntent::VoreAttack(attack) => {
+                ev_vore_attack.send(attack.clone());
+
                 turns.progress_turn();
             }
     

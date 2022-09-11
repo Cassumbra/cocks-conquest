@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use self::attack::Dice;
+
 pub mod movement;
 pub mod attack;
 pub mod healing;
@@ -24,4 +26,53 @@ impl Plugin for ActionPlugin {
          .add_event::<movement::PointMoveEvent>();
 
     }
+}
+
+// Data
+pub trait ActionEffect {
+    fn apply_effect(&self, mut world: &World, actor: Entity, target: TargetType) {}
+}
+
+pub trait ActionCondition {
+
+}
+
+pub struct StatChangeEffect {
+
+}
+impl ActionEffect for StatChangeEffect {
+    
+}
+
+pub enum TargetType {
+    Tile(IVec2),
+    MultiTile(IVec2),
+    Actor(Entity),
+    MultiActor(Entity),
+}
+
+pub struct Action {
+    pub conditions: Vec<Box<dyn ActionCondition>>,
+    pub effects: Vec<Box<dyn ActionEffect>>,
+    pub duration: Dice,
+}
+impl Action {
+    pub fn new_melee_attack() -> Action {
+        todo!()
+    }
+
+    pub fn new_projectile() -> Action {
+        todo!()
+    }
+
+    pub fn add_cost(&self) -> Action {
+        todo!()
+    }
+}
+
+// Events
+pub struct ActionEvent {
+    pub action: Action,
+    pub actor: Entity,
+    pub target: TargetType,
 }

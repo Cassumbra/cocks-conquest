@@ -9,7 +9,7 @@ env:
   # update with the name of the main binary
   binary: cocks-conquest
   add_binaries_to_github_release: true
-  itch_target: Cassumbra/Cock's Conquest
+  itch_target: Cassumbra/cocks-conquest
 
 
 jobs:

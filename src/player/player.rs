@@ -2,7 +2,7 @@
 
 use std::any::TypeId;
 
-use bevy::input::{ElementState, keyboard::KeyboardInput};
+use bevy::input::{ButtonState, keyboard::KeyboardInput};
 use bevy::app::AppExit;
 use bevy::prelude::*;
 
@@ -56,7 +56,7 @@ pub fn player_input_game (
     let ent = turns.order[turns.current];
     if let Ok((player, player_pos, ranged)) = query.get(ent) {
         for ev in ev_key.iter() {
-            if ev.state == ElementState::Pressed {
+            if ev.state == ButtonState::Pressed {
                 match ev.key_code {
                     // Cardinal Movement
                     Some(KeyCode::I) | Some(KeyCode::Numpad8) => {
@@ -167,7 +167,7 @@ pub fn player_input_meta_general (
     //mut ev_restart: EventWriter<RestartEvent>,
 ) {
     for ev in ev_key.iter() {
-        if ev.state == ElementState::Pressed {
+        if ev.state == ButtonState::Pressed {
             match ev.key_code {
                 Some(KeyCode::NumpadAdd) | Some(KeyCode::Equals) => {
                     ev_window_change.send(WindowChangeEvent(1));
@@ -207,7 +207,7 @@ pub fn player_input_meta_playing (
     }
 
     for ev in ev_key.iter() {
-        if ev.state == ElementState::Pressed {
+        if ev.state == ButtonState::Pressed {
             match ev.key_code {
                 Some(KeyCode::Escape) => {
                     ev_exit.send(AppExit);

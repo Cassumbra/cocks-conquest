@@ -1,4 +1,4 @@
-use bevy::{prelude::*, input::{keyboard::KeyboardInput, ElementState}};
+use bevy::{prelude::*, input::{keyboard::KeyboardInput, ButtonState}};
 use iyes_loopless::state::NextState;
 
 use crate::{GameState, map::MapSize, actions::ranged::RangedAttackEvent, turn::Turns};
@@ -71,7 +71,7 @@ pub fn targetting (
     //bottom_size: Res<BottomSize>,
 ) {
     for ev in ev_key.iter() {
-        if ev.state == ElementState::Pressed {
+        if ev.state == ButtonState::Pressed {
             match ev.key_code {
                 // Cardinal Movement
                 Some(KeyCode::I) | Some(KeyCode::Numpad8) => {

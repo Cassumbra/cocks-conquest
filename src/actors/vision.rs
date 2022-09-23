@@ -1,4 +1,4 @@
-use adam_fov_rs::{fov, VisibilityMap};
+use adam_fov_rs::{fov, VisibilityMap, GridPoint};
 use crate::{actions::movement::{PointMoveEvent, Collidables}, rendering::RenderOrder};
 
 use super::*;
@@ -90,10 +90,10 @@ impl Map {
 }
 
 impl VisibilityMap for Map {
-    fn is_opaque(&self, p: IVec2) -> bool { self.opaque[p].is_some() }
-    fn is_in_bounds(&self, p: IVec2) -> bool { p.cmpge(IVec2::ZERO).all() && p.cmplt(self.size()).all() }
-    fn set_visible(&mut self, p: IVec2) { self.visible[p] = true; }
-    fn dist(&self, a: IVec2, b: IVec2) -> f32 { a.as_vec2().distance(b.as_vec2()) }
+    fn is_opaque(&self, p: impl GridPoint) -> bool { self.opaque[p].is_some() }
+    fn is_in_bounds(&self, p: impl GridPoint) -> bool { p.as_ivec2().cmpge(IVec2::ZERO).all() && p.as_ivec2().cmplt(self.size()).all() }
+    fn set_visible(&mut self, p: impl GridPoint) { self.visible[p] = true; }
+    fn dist(&self, a: impl GridPoint, b: impl GridPoint) -> f32 { a.as_vec2().distance(b.as_vec2()) }
 }
 
 // Components

@@ -1,6 +1,6 @@
 use std::fs;
 
-use bevy::{prelude::*, app::AppExit, input::{ElementState, keyboard::KeyboardInput}, ecs::event::Events};
+use bevy::{prelude::*, app::AppExit, input::{ButtonState, keyboard::KeyboardInput}, ecs::event::Events};
 use bevy_ascii_terminal::Terminal;
 use iyes_loopless::prelude::*;
 
@@ -46,7 +46,7 @@ pub fn help_input (
     }
 
     for ev in ev_key.iter() {
-        if ev.state == ElementState::Pressed {
+        if ev.state == ButtonState::Pressed {
             match ev.key_code {
                 Some(KeyCode::Escape) => {
                     commands.insert_resource(NextState(GameState::Playing));

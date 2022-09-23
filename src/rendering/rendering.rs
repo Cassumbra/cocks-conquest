@@ -138,7 +138,7 @@ pub fn finish_render (
 ) {
     let mut terminal = terminal_query.single_mut();
 
-    terminal.tiles = temporary_terminal.0.tiles.clone();
+    *terminal = temporary_terminal.0.clone();
     
     temporary_terminal.0 = Terminal::with_size([terminal.width(), terminal.height()]);
 }
@@ -431,7 +431,7 @@ pub fn put_string_vec_formatted (
             }
         }
         
-        terminal.put_string_formatted([current_length, current_line], string, StringFormat { pivot: Pivot::BottomLeft, fg_color: fragment.color, bg_color: Color::BLACK });
+        terminal.put_string([current_length, current_line], string.fg(fragment.color));
         current_length += string.len() as i32;
     }
     [current_length, current_line]

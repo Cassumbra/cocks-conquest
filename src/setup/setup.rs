@@ -40,6 +40,7 @@ pub fn restart (
 
     map_size: Res<MapSize>,
     bottom_size: Res<BottomSize>,
+    left_size: Res<LeftSize>,
 
     query: Query<Entity, Without<Indestructible>>,
 ) {
@@ -47,7 +48,7 @@ pub fn restart (
         commands.entity(ent).despawn();
     }
 
-    let size = [map_size.width, map_size.height + bottom_size.height];
+    let size = [map_size.width + left_size.width, map_size.height + bottom_size.height];
 
     let collidables: Grid<Option<Entity>> = Grid::default([map_size.width, map_size.height]);
     commands.insert_resource(Collidables(collidables));

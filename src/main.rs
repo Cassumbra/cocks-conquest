@@ -93,9 +93,9 @@ fn main () {
     help.add_system(help::start_help);
     
 
-    App::new()
+    let mut app = App::new();
 
-    .insert_resource(WindowDescriptor{
+    app.insert_resource(WindowDescriptor{
         title: "Cock's Conquest".to_string(),
         resizable: false,
         ..Default::default()}
@@ -242,7 +242,17 @@ fn main () {
             .with_system(turn::update_turn_order.run_in_state(GameState::Playing).label("update_turn_order"))
             .with_system(turn::update_turn.run_in_state(GameState::Playing).label("update_turn").after("update_turn_order"))
             .with_system(turn::turn_event_manager::<ActorRemovedEvent>.after("update_turn"))
-    )
+    );
 
-    .run();
+    {
+        use iyes_loopless::condition::IntoConditionalExclusiveSystem;
+    
+        app.add_system(actions::process_actions
+            .run_in_state(GameState::Playing)
+            .at_end()
+        );
+            
+    }
+    
+    app.run();
 }

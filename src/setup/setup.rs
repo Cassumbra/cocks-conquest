@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use bevy_ascii_terminal::*;
 use bevy_tiled_camera::*;
 use sark_grids::Grid;
+use crate::actions::attack::Dice;
 use crate::actions::movement::Collidables;
 use crate::rendering::window::WindowChangeEvent;
 
@@ -42,6 +43,8 @@ pub fn restart (
     bottom_size: Res<BottomSize>,
     left_size: Res<LeftSize>,
 
+    mut ev_actions: EventWriter<ActionEvent>,
+
     query: Query<Entity, Without<Indestructible>>,
 ) {
     for ent in query.iter() {
@@ -60,6 +63,9 @@ pub fn restart (
         Log::fragment_string(" Welcome to Cock's Conquest!  \n Press shift+/ (?) for help.  \n You can restart with shift+r at any time.".to_string(), Color::CYAN),
         ]
     });
+
+
+    ev_actions.send(ActionEvent { action: Action { conditions: vec![], effects: vec![Box::new(ConsolePrintEffect{print_string: "Holy shit we are doing the action".to_string()})], duration: Dice::new("1") }, actor: ActorType::None, target: TargetType::None });
 
     commands.insert_resource(NextState(GameState::MapGen));
 }

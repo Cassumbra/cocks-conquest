@@ -23,6 +23,14 @@ pub struct Turns {
     pub count: u32,
 }
 impl Turns {
+    pub fn turn_ent(&self) -> Option<Entity> {
+        if self.order.len() > 0 && !self.progress {
+            Some(self.order[self.current])
+        }
+        else {
+            None
+        }
+    }
     pub fn is_turn(&self, entity: &Entity) -> bool {
         //println!("{:?}", self.order);
         self.order.len() > 0 && self.order[self.current] == *entity && !self.progress

@@ -2,9 +2,11 @@ use std::collections::BTreeMap;
 use bevy::{prelude::*, ecs::event::Events};
 use bevy_ascii_terminal::Tile;
 use iyes_loopless::state::NextState;
+use multimap::MultiMap;
 use sark_grids::Grid;
+use thunderdome::{Arena, Index};
 
-use crate::{actions::{attack::{Attack, Dice}, melee::MeleeAttacker, ranged::{RangedAttacker, Projectile}, vore::DoesVore, healing::CanHeal}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{wander_behavior::Wanderer, targetting_behavior::Engages}, GameState, rendering::Renderable, turn::TurnEvent, player::Player, ui::PlayerName};
+use crate::{actions::{attack::{Attack, Dice}, melee::MeleeAttacker, ranged::{RangedAttacker, Projectile}, vore::DoesVore, healing::CanHeal, Actions, Action, ConsolePrintEffect, Trigger}, map::{MapSize, Rooms}, data::{Position, Collides}, ai::{wander_behavior::Wanderer, targetting_behavior::Engages}, GameState, rendering::Renderable, turn::TurnEvent, player::Player, ui::PlayerName};
 
 
 pub mod vision;
@@ -66,6 +68,16 @@ pub fn setup_actors (
     let mut other_rooms = rooms.0.clone();
     let room_first = other_rooms.swap_remove(0);
 
+    let mut actions = Arena::new();
+    let funnyprint = actions.insert(Action { conditions: vec![],
+                                             effects: vec![Box::new(ConsolePrintEffect{print_string: "Hehehehe u pressed the e button!!!!".to_string()})],
+                                             duration: Dice::new("1") }
+                                           );
+
+    let mut bindings = MultiMap::<Trigger, Index>::new();
+
+    bindings.insert(Trigger::CharBinding('e'), funnyprint);
+
     commands.spawn()
         .insert_bundle(PlayerBundle{
             vision: Vision( Map {
@@ -79,7 +91,8 @@ pub fn setup_actors (
             ..Default::default()
         })
         .insert(Position(room_first.center()))
-        .insert(Name::new(format!("{}", **name)));
+        .insert(Name::new(format!("{}", **name)))
+        .insert(Actions{ actions, bindings });
 
     
     

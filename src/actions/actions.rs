@@ -3,6 +3,8 @@ use dyn_clonable::clonable;
 use multimap::MultiMap;
 use thunderdome::{Arena, Index};
 
+use crate::turn::Turns;
+
 use self::attack::Dice;
 
 pub mod movement;
@@ -33,18 +35,53 @@ impl Plugin for ActionPlugin {
 }
 
 pub fn process_actions (
-    //mut ev_actions: EventReader<ActionEvent>,
     world: &mut World,
 ) {
     let mut system_state: SystemState<(
-        EventReader<ActionEvent>
+        // TODO: Uh oh! Can't read and write at the same time!
+        //EventWriter<ActionEvent>,
+        EventReader<ActionEvent>,
+        EventReader<ReceivedCharacter>,
+
+        ResMut<Turns>,
+    
+        Query<(&Actions)>,
     )> = SystemState::new(world);
 
-    let (mut ev_actions) = system_state.get_mut(world);
+    let (
+        //mut ev_actions_write,
+        mut ev_actions_read,
+        mut ev_char,
+        
+        mut turns,
+        
+        mut query
+    ) = system_state.get_mut(world);
 
-    let actions = ev_actions.iter().map(|x| x.clone()).collect::<Vec<ActionEvent>>();
+    let mut action_events = ev_actions_read.iter().map(|x| x.clone()).collect::<Vec<ActionEvent>>();
 
-    for ev in actions.iter() {
+    if let Some(turn_ent) = turns.turn_ent() {
+        if let Ok(actions) = query.get(turn_ent) {
+            for ev in ev_char.iter() {
+                let opt_action_index = actions.bindings.get(&Trigger::CharBinding(ev.char));
+                if let Some(action_index) = opt_action_index {
+                    let action = actions.actions[*action_index].clone();
+                    action_events.push(ActionEvent{action, actor: ActorType::Entity(turn_ent), target: TargetType::None});
+                }
+                
+            
+                
+
+                //ev_actions_write.send(ActionEvent{action, actor: ActorType::Entity(turn_ent), target: TargetType::None})
+            }
+        }
+    }
+    
+
+
+    
+
+    for ev in action_events.iter() {
         ev.action.do_action(world, &ev.actor, &ev.target);
     }
 }
@@ -127,7 +164,7 @@ pub enum ActorType {
     None, // How can you have an action that is triggered by nothing?
     //Tile(IVec2), // Maybe if we make tiles be distinct from entities.
     //System(dyn IntoSystemDescriptor<Params>), // Disgusting.
-    Actor(Entity),
+    Entity(Entity),
     //MultiActor(Entity), // Ehh?? Maybe??
 }
 
@@ -175,22 +212,21 @@ impl Action {
     }
 }
 
+#[derive(Hash, PartialEq, Eq)]
 pub enum Trigger {
-    CharBinding(char)
-}
-
-pub struct ID {
-
+    CharBinding(char),
+    KeyCode(KeyCode),
+    Bump,
+    // AI triggers
+    Melee,
+    Ranged,
+    Movement,
 }
 
 // Components
-/*
-pub struct Actions<'a> {
-    pub actions: Vec<Action>,
-    pub bindings: MultiMap<Binding, &'a Action>, 
-}
- */
-
+/// Actions only trigger on an entity's turn.
+/// We might make another component for reaction based actions later if necessary, but hopefully it won't be.
+#[derive(Component)]
 pub struct Actions {
     pub actions: Arena<Action>,
     pub bindings: MultiMap<Trigger, Index>,

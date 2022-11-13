@@ -64,9 +64,6 @@ pub fn restart (
         ]
     });
 
-
-    ev_actions.send(ActionEvent { action: Action { conditions: vec![], effects: vec![Box::new(ConsolePrintEffect{print_string: "Holy shit we are doing the action".to_string()})], duration: Dice::new("1") }, actor: ActorType::None, target: TargetType::None });
-
     commands.insert_resource(NextState(GameState::MapGen));
 }
 

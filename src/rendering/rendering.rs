@@ -1,6 +1,7 @@
-use bevy::prelude::*;
+use bevy::{prelude::*};
 use bevy_ascii_terminal::{Tile, Terminal};
 use inflector::Inflector;
+use serde::{Deserialize, Serialize};
 use crate::{actors::{vision::{Vision, MindMap}, stats::{StatVisibility, DebugShowStats}, status_effects::{StatusEffectEvent, RemoveStatusEffectEvent, StatusEffects}}, player::targetting::Targetting, actions::ranged::get_line_points, ai::targetting_behavior::Engages};
 use crate::actors::stats::Stats;
 

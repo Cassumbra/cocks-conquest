@@ -1,7 +1,7 @@
 use bevy::{prelude::*, input::{keyboard::KeyboardInput, ButtonState}};
-use iyes_loopless::state::NextState;
+use iyes_loopless::state::{NextState, CurrentState};
 
-use crate::{GameState, map::MapSize, actions::ranged::RangedAttackEvent, turn::Turns};
+use crate::{GameState, map::MapSize, actions::ranged::RangedAttackEvent, turn::Turns, helpers::change_state};
 
 
 // Data
@@ -50,12 +50,14 @@ pub fn start_targetting (
     mut ev_start_targetting: EventReader<StartTargetEvent>,
     
     mut targetting: ResMut<Targetting>,
+    current_state: Res<CurrentState<GameState>>,
 ) {
     if let Some(ev) = ev_start_targetting.iter().next() {
         targetting.intent = ev.intent.clone();
         targetting.position = ev.position;
         targetting.target = ev.position;
-        commands.insert_resource(NextState(GameState::Targetting));
+        change_state(commands, current_state.0.clone(), GameState::Targetting);
+        //commands.insert_resource(NextState(GameState::Targetting));
     }
 }
 

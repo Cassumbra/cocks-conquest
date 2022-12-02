@@ -61,13 +61,19 @@ mod setup;
 mod ui;
 use ui::*;
 
+mod helpers;
+use helpers::*;
+
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
     Help,
     Setup, PickName, MapGen, SpawnActors, FinishSetup,
     Playing, Targetting,
     Restart,
+    SaveQuit,
 }
+
+pub struct PreviousState (GameState);
 
 fn main () {
     let mut setup = SystemStage::parallel();
@@ -100,6 +106,8 @@ fn main () {
         resizable: false,
         ..Default::default()}
     )
+
+    .insert_resource(PreviousState)
 
     .add_plugins(DefaultPlugins)
     .add_plugin(TerminalPlugin)

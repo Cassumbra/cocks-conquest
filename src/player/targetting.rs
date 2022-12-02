@@ -56,8 +56,7 @@ pub fn start_targetting (
         targetting.intent = ev.intent.clone();
         targetting.position = ev.position;
         targetting.target = ev.position;
-        change_state(commands, current_state.0.clone(), GameState::Targetting);
-        //commands.insert_resource(NextState(GameState::Targetting));
+        change_state(commands, current_state.0, GameState::Targetting);
     }
 }
 

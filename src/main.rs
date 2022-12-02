@@ -53,6 +53,10 @@ use player::*;
 mod rendering;
 use rendering::*;
 
+#[path = "saveload/saveload.rs"]
+mod saveload;
+use saveload::*;
+
 #[path = "setup/setup.rs"]
 mod setup;
 //use setup::*;
@@ -64,15 +68,17 @@ use ui::*;
 mod helpers;
 use helpers::*;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum GameState {
     Help,
     Setup, PickName, MapGen, SpawnActors, FinishSetup,
     Playing, Targetting,
     Restart,
+    Save,
     SaveQuit,
 }
 
+#[derive(Deref, DerefMut, Clone, Copy)]
 pub struct PreviousState (GameState);
 
 fn main () {
@@ -97,6 +103,14 @@ fn main () {
 
     let mut help = SystemStage::parallel();
     help.add_system(help::start_help);
+
+    let mut save = SystemStage::parallel();
+    save.add_system(saveload::save.label("save"));
+    save.add_system(helpers::reverse_state.after("save"));
+
+    let mut save_quit = SystemStage::parallel();
+    save_quit.add_system(saveload::save.label("save"));
+    save_quit.add_system(saveload::quit.after("save"));
     
 
     let mut app = App::new();
@@ -138,6 +152,8 @@ fn main () {
             .with_enter_stage(GameState::FinishSetup, finish_setup)
 
             .with_enter_stage(GameState::Restart, restart)
+            .with_enter_stage(GameState::Save, save)
+            .with_enter_stage(GameState::SaveQuit, save_quit)
 
             .with_enter_stage(GameState::Help, help)
     )

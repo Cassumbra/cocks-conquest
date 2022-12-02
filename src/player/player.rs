@@ -3,7 +3,6 @@
 use std::any::TypeId;
 
 use bevy::input::{ButtonState, keyboard::KeyboardInput};
-use bevy::app::AppExit;
 use bevy::prelude::*;
 
 use crate::actions::healing::HealActionEvent;
@@ -162,7 +161,6 @@ pub fn player_input_meta_general (
     keys: Res<Input<KeyCode>>,
 
     mut ev_key: EventReader<KeyboardInput>,
-    mut ev_exit: EventWriter<AppExit>,
     mut ev_window_change: EventWriter<WindowChangeEvent>,
     //mut ev_restart: EventWriter<RestartEvent>,
 ) {
@@ -190,11 +188,11 @@ pub fn player_input_meta_general (
 pub fn player_input_meta_playing (
     mut commands: Commands,
 
+    current_state: Res<CurrentState<GameState>>,
     keys: Res<Input<KeyCode>>,
 
     mut ev_char: EventReader<ReceivedCharacter>,
     mut ev_key: EventReader<KeyboardInput>,
-    mut ev_exit: EventWriter<AppExit>,
     mut ev_window_change: EventWriter<WindowChangeEvent>,
     //mut ev_restart: EventWriter<RestartEvent>,
 ) {
@@ -206,16 +204,22 @@ pub fn player_input_meta_playing (
         }
     }
 
+    let mut quit = false;
+
     for ev in ev_key.iter() {
         if ev.state == ButtonState::Pressed {
             match ev.key_code {
                 Some(KeyCode::Escape) => {
-                    ev_exit.send(AppExit);
+                    quit = true;
                 }
 
                 _ => {}
             }
         }
+    }
+
+    if quit {
+        change_state(commands, current_state.0, GameState::SaveQuit);
     }
 }
 
